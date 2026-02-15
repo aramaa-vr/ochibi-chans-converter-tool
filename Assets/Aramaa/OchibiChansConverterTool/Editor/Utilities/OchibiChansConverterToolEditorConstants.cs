@@ -16,7 +16,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// </summary>
     internal static class OchibiChansConverterToolEditorConstants
     {
-        public const string ToolVersion = "0.5.4-beta.2";
+        public const string ToolVersion = "0.5.4-beta.3";
         public const string LatestVersionUrl = "https://aramaa-vr.github.io/vpm-repos/latest.json";
         public const string TargetPackageId = "jp.aramaa.ochibi-chans-converter-tool";
         public const int LatestJsonSchemaVersion = 1;
