@@ -1,0 +1,50 @@
+# =========================
+# Ignore everything by default
+# =========================
+*
+
+# =========================
+# Keep the VPM package sources (and their meta files)
+# =========================
+!Assets/
+!Assets.meta
+!Assets/Aramaa/
+!Assets/Aramaa.meta
+!Assets/Aramaa/OchibiChansConverterTool/
+!Assets/Aramaa/OchibiChansConverterTool.meta
+!Assets/Aramaa/OchibiChansConverterTool/**
+
+# =========================
+# Also keep top-level repo files you likely want
+# =========================
+!.gitignore
+!.editorconfig
+!README.md
+!CHANGELOG.md
+!THIRD_PARTY_NOTICES.md
+!LICENSE*
+!Tools/
+!Tools/**
+!docs/
+!docs/**
+!LicenseVN3/
+!LicenseVN3/**
+
+# IDE generated
+.vs/
+.idea/
+.vscode/
+*.csproj
+*.sln
+*.user
+*.suo
+.vsconfig
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# docs
+docs/Gemfile.lock
+docs/_site/

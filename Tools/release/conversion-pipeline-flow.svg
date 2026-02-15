@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="2500" viewBox="0 0 1200 2500" role="img" aria-label="おちびちゃんズ変換 開発者向け 変換パイプライン（上から下）">
+  <defs>
+    <style>
+      .bg { fill:#f8fafc; }
+      .title { font:700 34px 'Noto Sans JP','Yu Gothic',sans-serif; fill:#0f172a; }
+      .sub { font:500 18px 'Noto Sans JP','Yu Gothic',sans-serif; fill:#334155; }
+      .phase { font:700 20px 'Noto Sans JP','Yu Gothic',sans-serif; fill:#0f172a; }
+      .head { font:700 22px 'Noto Sans JP','Yu Gothic',sans-serif; fill:#0f172a; }
+      .text { font:500 17px 'Noto Sans JP','Yu Gothic',sans-serif; fill:#1f2937; }
+      .mono { font:600 15px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; fill:#334155; }
+      .note { font:500 16px 'Noto Sans JP','Yu Gothic',sans-serif; fill:#475569; }
+    </style>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+      <path d="M0 0 L14 7 L0 14 z" fill="#475569"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1200" height="2500"/>
+
+  <text x="40" y="58" class="title">おちびちゃんズ変換 - 開発者向け変換パイプライン</text>
+  <text x="40" y="90" class="sub">入口 → 主要工程 → 出口を、上から下へ順に追える構成です（実装コメントと整合）。</text>
+
+  <!-- Entry -->
+  <g filter="url(#shadow)">
+    <rect x="80" y="130" width="1040" height="130" rx="16" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
+    <text x="110" y="170" class="phase">入口（UI）</text>
+    <text x="110" y="198" class="text">入力: sourceChibiPrefab / sourceTarget / applyMaboneProxyProcessing</text>
+    <text x="110" y="226" class="note">呼出: QueueApplyFromFields() → delayCall → DuplicateThenApply()</text>
+  </g>
+
+  <line x1="600" y1="260" x2="600" y2="300" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 1 -->
+  <g filter="url(#shadow)">
+    <rect x="120" y="310" width="960" height="150" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
+    <text x="150" y="352" class="head">1) 入力検証</text>
+    <text x="150" y="382" class="text">sourceChibiPrefab が Project上のPrefabアセットか、sourceTarget が有効かを検証。</text>
+    <text x="150" y="412" class="mono">if (sourceChibiPrefab == null || !IsPersistent) / if (sourceTarget == null)</text>
+    <text x="150" y="440" class="note">不正時: DisplayDialog して false return（以降ステップへ進まない）</text>
+  </g>
+
+  <line x1="600" y1="460" x2="600" y2="500" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 2 -->
+  <g filter="url(#shadow)">
+    <rect x="120" y="510" width="960" height="170" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
+    <text x="150" y="552" class="head">2) 元アバター複製（Ctrl+D 相当）</text>
+    <text x="150" y="582" class="text">DuplicateLikeCtrlD で複製し、重複接尾辞を避けた命名を適用。</text>
+    <text x="150" y="612" class="mono">DuplicateLikeCtrlD.Duplicate() / BuildDuplicateNameWithSuffix()</text>
+    <text x="150" y="640" class="text">出力: duplicatedTargets（以降は常に複製先を処理対象にする）</text>
+    <text x="150" y="666" class="note">失敗時: Error.DuplicateFailed を記録して false return</text>
+  </g>
+
+  <line x1="600" y1="680" x2="600" y2="720" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 3 -->
+  <g filter="url(#shadow)">
+    <rect x="120" y="730" width="960" height="130" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
+    <text x="150" y="772" class="head">3) （任意）MA BoneProxy 補正</text>
+    <text x="150" y="802" class="text">applyMaboneProxyProcessing=true かつ CHIBI_MODULAR_AVATAR 定義時のみ実行。</text>
+    <text x="150" y="830" class="mono">OchibiChansConverterToolModularAvatarBoneProxyUtility.ProcessBoneProxies()</text>
+  </g>
+
+  <line x1="600" y1="860" x2="600" y2="900" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 4 -->
+  <g filter="url(#shadow)">
+    <rect x="120" y="910" width="960" height="130" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
+    <text x="150" y="952" class="head">4) Blueprint ID クリア</text>
+    <text x="150" y="982" class="text">複製先の PipelineManager.blueprintId を空文字にして引き継ぎ事故を防止。</text>
+    <text x="150" y="1010" class="mono">ClearPipelineBlueprintId() / Undo.RecordObject() / SetDirty()</text>
+  </g>
+
+  <line x1="600" y1="1040" x2="600" y2="1080" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 5 -->
+  <g filter="url(#shadow)">
+    <rect x="120" y="1090" width="960" height="220" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
+    <text x="150" y="1132" class="head">5) 変換元 Prefab 展開（読み取り専用）</text>
+    <text x="150" y="1162" class="text">入力: sourceChibiPrefab の AssetPath / 展開: LoadPrefabContents()</text>
+    <text x="150" y="1192" class="text">5-1) FX Controller 参照を取得</text>
+    <text x="150" y="1222" class="text">5-2) Expressions Menu / Parameters 参照を取得</text>
+    <text x="150" y="1252" class="text">5-3) Ex AddMenu の PrefabAsset / 親パス / ローカル姿勢を取得</text>
+    <text x="150" y="1280" class="note">終了時: UnloadPrefabContents()（元アセットを直接書き換えない）</text>
+  </g>
+
+  <line x1="600" y1="1310" x2="600" y2="1350" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 6 -->
+  <g filter="url(#shadow)">
+    <rect x="120" y="1360" width="960" height="300" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
+    <text x="150" y="1402" class="head">6) 複製先へ同期適用（コア処理）</text>
+    <text x="150" y="1432" class="text">6-1) ルート localScale を同期（Undo 付き）</text>
+    <text x="150" y="1462" class="text">6-2) Armature Transform（位置/回転/スケール）をパス一致で同期</text>
+    <text x="150" y="1492" class="text">6-3) 不足 Component を追加し、ObjectReference を複製先へリマップ</text>
+    <text x="150" y="1522" class="text">6-4) SkinnedMeshRenderer は BlendShape ウェイトのみ同期</text>
+    <text x="150" y="1552" class="text">6-5) Ex AddMenu Prefab を未配置時のみ追加（重複判定あり）</text>
+    <text x="150" y="1582" class="mono">ApplyCoreAvatarSynchronization() / TryAddExPrefabIfMissing()</text>
+    <text x="150" y="1610" class="note">同期対象: duplicatedTargets（元アバターへ直接適用しない）</text>
+    <text x="150" y="1638" class="note">補足: Ex AddMenu は Prefab アセットを Instantiate して配置</text>
+  </g>
+
+  <line x1="600" y1="1660" x2="600" y2="1700" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 7 -->
+  <g filter="url(#shadow)">
+    <rect x="120" y="1710" width="960" height="180" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
+    <text x="150" y="1752" class="head">7) VRC Descriptor 同期 + MA 衣装調整</text>
+    <text x="150" y="1782" class="text">7-1) FX / Expressions / ViewPosition を複製先へ同期</text>
+    <text x="150" y="1812" class="text">7-2) （任意）Modular Avatar 衣装スケール調整</text>
+    <text x="150" y="1842" class="mono">SetFxPlayableLayerController / SetExpressionsMenuAndParameters / TryCopyViewPosition...</text>
+    <text x="150" y="1870" class="note">Modular Avatar 非導入環境では安全にスキップ</text>
+  </g>
+
+  <line x1="600" y1="1890" x2="600" y2="1930" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 8 -->
+  <g filter="url(#shadow)">
+    <rect x="120" y="1940" width="960" height="150" rx="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2.4"/>
+    <text x="150" y="1982" class="head">8) 完了</text>
+    <text x="150" y="2012" class="text">成功時: 複製先を選択（元アバター非アクティブ化は呼出元後段）。</text>
+    <text x="150" y="2042" class="text">Undo: グループ化した操作を Collapse（複製+反映を戻しやすく維持）</text>
+    <text x="150" y="2070" class="note">呼出元後段で SetActive(false)（適用成功時のみ）</text>
+  </g>
+
+  <!-- Guardrail -->
+  <rect x="120" y="2120" width="960" height="120" rx="12" fill="#fff7ed" stroke="#fb923c" stroke-width="2"/>
+  <text x="150" y="2154" class="phase" fill="#9a3412">ガードレール（仕様）</text>
+  <text x="150" y="2184" class="text" fill="#9a3412">・元アバターへ直接適用しない ・順序は仕様（変更時はログ文言も更新）</text>
+  <text x="150" y="2212" class="text" fill="#9a3412">・Prefab は読み取り展開で扱い、アセットを直接変更しない</text>
+
+  <!-- Error handling summary -->
+  <rect x="120" y="2260" width="960" height="170" rx="12" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+  <text x="150" y="2294" class="phase" fill="#991b1b">主な中断条件（DuplicateThenApply の false return）</text>
+  <text x="150" y="2324" class="text" fill="#991b1b">・入力検証 NG（sourceChibiPrefab / sourceTarget）</text>
+  <text x="150" y="2354" class="text" fill="#991b1b">・DuplicateLikeCtrlD 失敗（duplicatedTargets 取得不可）</text>
+  <text x="150" y="2382" class="text" fill="#991b1b">・MA 衣装スケール調整失敗（AdjustCostumeScales... が false）</text>
+  <text x="150" y="2410" class="note" fill="#991b1b">※中断時も Undo グループは finally で適切に後処理される</text>
+</svg>

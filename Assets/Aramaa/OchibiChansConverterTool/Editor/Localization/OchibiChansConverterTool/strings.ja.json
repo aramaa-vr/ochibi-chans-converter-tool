@@ -1,0 +1,617 @@
+{
+  "language": "ja",
+  "entries": [
+    {
+      "key": "Button.DiscordHelp",
+      "value": "困ったらツールサイトへ（ガイド・FAQ）→"
+    },
+    {
+      "key": "Button.Execute",
+      "value": "③ 実行（コピー→変換）"
+    },
+    {
+      "key": "Dialog.ConversionTitle",
+      "value": "おちびちゃんズ化ツール（Ochibi-chans Converter Tool）"
+    },
+    {
+      "key": "Dialog.InvalidSourcePrefab",
+      "value": "sourceChibiPrefab（変換元のおちびちゃんズ Prefab）が未指定、または Prefab アセットではありません。\n\nProject 上の Prefab を指定してください。"
+    },
+    {
+      "key": "Dialog.InvalidSourcePrefabApply",
+      "value": "sourceChibiPrefab（変換元のおちびちゃんズ Prefab）が未指定、または Prefab アセットではありません。\n\nProject 上の Prefab アセットを指定してください。"
+    },
+    {
+      "key": "Dialog.InvalidTargets",
+      "value": "変換対象（Hierarchy 上の GameObject）が取得できませんでした。\n\nHierarchy でアバターを 1 つ選択してから実行してください。"
+    },
+    {
+      "key": "Dialog.Ok",
+      "value": "OK"
+    },
+    {
+      "key": "Dialog.SelectSourceAvatar",
+      "value": "Hierarchy で元のアバターを 1 つ選んでください。"
+    },
+    {
+      "key": "Dialog.SelectSourcePrefab",
+      "value": "Project でおちびちゃんズの Prefab を 1 つ選んでください。"
+    },
+    {
+      "key": "Dialog.TargetsNotFound",
+      "value": "変換対象が見つかりませんでした。"
+    },
+    {
+      "key": "Dialog.ToolTitle",
+      "value": "Ochibi-chans Converter Tool"
+    },
+    {
+      "key": "Error.DuplicateFailed",
+      "value": "[OchibiChansConverterTool] Ctrl+D 相当の複製に失敗しました。変換は実行しません。"
+    },
+    {
+      "key": "Error.SourcePrefabPathMissing",
+      "value": "[OchibiChansConverterTool] sourceChibiPrefab のアセットパス取得に失敗しました。"
+    },
+    {
+      "key": "Help.ExecuteQueued",
+      "value": "実行を予約しました。処理が完了するまで少し待ってください。"
+    },
+    {
+      "key": "Help.MaboneProxy",
+      "value": "ONにすると、複製後にMA Bone Ploxyの処理を疑似的に実行し、オブジェクトをArmatureへ移動後にスケールの調節を行います。"
+    },
+    {
+      "key": "Help.ManualPrefabWarning",
+      "value": "手動で選んだ Prefab が元アバターに合っているか確認してから実行してください。"
+    },
+    {
+      "key": "Help.NoPrefabCandidates",
+      "value": "対応するおちびちゃんズ Prefab が見つかりません。手動で選んでください。"
+    },
+    {
+      "key": "Help.NotPrefabSelected",
+      "value": "Prefab ではないものが選ばれています。Project の Prefab を指定してください。"
+    },
+    {
+      "key": "Help.SelectPrefabFromProject",
+      "value": "Project からおちびちゃんズの Prefab を選んでください。"
+    },
+    {
+      "key": "Help.SelectSourceAvatar",
+      "value": "左のHierarchyで、元のアバターをクリックしてください。"
+    },
+    {
+      "key": "Help.SourceAvatarAssetInvalid",
+      "value": "Project のアセットは対象外です。Hierarchy のシーン上アバターを選んでください。"
+    },
+    {
+      "key": "Label.CandidateList",
+      "value": "候補一覧（自動検出）"
+    },
+    {
+      "key": "Language.Label",
+      "value": "Language"
+    },
+    {
+      "key": "Language.OptionEnglish",
+      "value": "English"
+    },
+    {
+      "key": "Language.OptionChineseSimplified",
+      "value": "简体中文"
+    },
+    {
+      "key": "Language.OptionChineseTraditional",
+      "value": "繁體中文"
+    },
+    {
+      "key": "Language.OptionKorean",
+      "value": "한국어"
+    },
+    {
+      "key": "Language.OptionJapanese",
+      "value": "日本語"
+    },
+    {
+      "key": "Log.AddMissingComponents",
+      "value": "Armature 配下の不足コンポーネント追加: 実行（値は非表示）"
+    },
+    {
+      "key": "Log.ArmatureExcludedCount",
+      "value": "[MA] ボーン収集フィルタ: 除外(非1スケール&ベース未存在)={0}"
+    },
+    {
+      "key": "Log.ArmatureExcludedHeader",
+      "value": "[MA] 除外されたTransform（先頭のみ）:"
+    },
+    {
+      "key": "Log.ArmatureTransformApplied",
+      "value": "Armature Transform同期: 実行（値は非表示）"
+    },
+    {
+      "key": "Log.ArmatureTransformUpdated",
+      "value": "Armature Transform同期: 更新数={0}"
+    },
+    {
+      "key": "Log.BaseArmatureMissing",
+      "value": "[MA] Base Prefab の Armature が見つからなかったため、ボーン収集フィルタは無効です。"
+    },
+    {
+      "key": "Log.BaseArmaturePathCount",
+      "value": "[MA] ボーン収集フィルタ: Base Armature のパス数={0}"
+    },
+    {
+      "key": "Log.BaseBlendShapeHeader",
+      "value": "=== Base Prefab BlendShape Index（衣装同期用） ==="
+    },
+    {
+      "key": "Log.BaseBlendshapeDuplicate",
+      "value": "[Base] Duplicate skipped: Mesh='{0}', Shape='{1}'（最初の値を採用）"
+    },
+    {
+      "key": "Log.BasePrefabRootSummary",
+      "value": "BasePrefabRoot: '{0}', SMR数: {1}"
+    },
+    {
+      "key": "Log.BaseSmrSummary",
+      "value": "[Base] SMR: {0} / Mesh='{1}' / BlendShape数={2}"
+    },
+    {
+      "key": "Log.BlendshapeEntry",
+      "value": "  - {0}"
+    },
+    {
+      "key": "Log.BlendshapeNoRenderer",
+      "value": " - 対象となる SkinnedMeshRenderer が見つかりませんでした。"
+    },
+    {
+      "key": "Log.BlendshapeRendererDetail",
+      "value": " - {0}: {1} / {2}"
+    },
+    {
+      "key": "Log.BlendshapeRendererZero",
+      "value": " - {0}: 0"
+    },
+    {
+      "key": "Log.BlendshapeSyncSummary",
+      "value": "BlendShape 同期: 対象SMR数={0}, 対象BlendShape名数={1}（値は非表示）"
+    },
+    {
+      "key": "Log.BlendshapeSynced",
+      "value": "  -> synced（値は非表示）: {0}"
+    },
+    {
+      "key": "Log.BlueprintClearApplied",
+      "value": "BlueprintIDクリア: 実行（複製物のIDを空にしました）"
+    },
+    {
+      "key": "Log.BlueprintClearHeader",
+      "value": "=== BlueprintIDクリア（複製物のみ） ==="
+    },
+    {
+      "key": "Log.BlueprintClearSkippedEmpty",
+      "value": "BlueprintIDクリア: スキップ（既に空です）"
+    },
+    {
+      "key": "Log.BlueprintClearSkippedMissing",
+      "value": "BlueprintIDクリア: スキップ（ルートにPipelineManagerが見つかりません）"
+    },
+    {
+      "key": "Log.ComponentAdded",
+      "value": " - 追加: {0} / {1}"
+    },
+    {
+      "key": "Log.CoreHeader",
+      "value": "=== 基本反映（1〜4） ==="
+    },
+    {
+      "key": "Log.CostumeApplied",
+      "value": "衣装: {0} / 適用数: {1}"
+    },
+    {
+      "key": "Log.CostumeBlendshapeHeader",
+      "value": "=== MA Mesh Settings 配下 BlendShape確認: '{0}' ==="
+    },
+    {
+      "key": "Log.CostumeCount",
+      "value": "対象衣装数: {0}"
+    },
+    {
+      "key": "Log.CostumeScaleHeader",
+      "value": "=== 衣装スケール調整（MA Mesh Settings） ==="
+    },
+    {
+      "key": "Log.CostumeSmrCount",
+      "value": "衣装SMR数: {0}"
+    },
+    {
+      "key": "Log.CostumeSmrMeshMissing",
+      "value": "[Costume] SMR: {0} / Mesh=(null) -> スキップ"
+    },
+    {
+      "key": "Log.CostumeSmrSummary",
+      "value": "[Costume] SMR: {0} / Mesh='{1}' / BlendShape数={2}"
+    },
+    {
+      "key": "Log.DuplicateSuccess",
+      "value": "複製: 成功"
+    },
+    {
+      "key": "Log.DuplicateTarget",
+      "value": " - 複製先: {0}"
+    },
+    {
+      "key": "Log.Error.CostumeScaleFailed",
+      "value": "[ERROR] 衣装スケール調整に失敗したため処理を中断しました。"
+    },
+    {
+      "key": "Log.Error.DuplicateFailed",
+      "value": "[ERROR] Ctrl+D 相当の複製に失敗しました。変換は実行しません。"
+    },
+    {
+      "key": "Log.Error.ExceptionOccurred",
+      "value": "[ERROR] 例外が発生しました。詳細はConsoleを確認してください。"
+    },
+    {
+      "key": "Log.ExPrefabAdded",
+      "value": "EXプレハブ: 追加 / {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabAddedTo",
+      "value": " - 追加先: {0}"
+    },
+    {
+      "key": "Log.ExPrefabAlreadyExists",
+      "value": "EXプレハブ: 既に存在するため追加なし / {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabCreationFailed",
+      "value": "[WARN] EXプレハブ生成に失敗: {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabHeader",
+      "value": "=== EXプレハブ ==="
+    },
+    {
+      "key": "Log.ExPrefabParent",
+      "value": " - 親: {0}"
+    },
+    {
+      "key": "Log.ExPrefabTransformApplied",
+      "value": " - Transform反映: 実行（値は非表示）"
+    },
+    {
+      "key": "Log.ExecutionTime",
+      "value": "実行時刻: {0}"
+    },
+    {
+      "key": "Log.ExpressionsApply",
+      "value": "Expressions反映: Menu={0}, Parameters={1}"
+    },
+    {
+      "key": "Log.ExpressionsApplySkipped",
+      "value": "Expressions反映: スキップ（変換元Prefabから取得できませんでした）"
+    },
+    {
+      "key": "Log.FxAfter",
+      "value": "FX(後): {0}"
+    },
+    {
+      "key": "Log.FxApply",
+      "value": "FX反映: {0}"
+    },
+    {
+      "key": "Log.FxApplySkipped",
+      "value": "FX反映: スキップ（変換元Prefabから取得できませんでした）"
+    },
+    {
+      "key": "Log.FxBefore",
+      "value": "FX(前): {0}"
+    },
+    {
+      "key": "Log.FxChanged",
+      "value": " - FX: 変更あり"
+    },
+    {
+      "key": "Log.Header.Main",
+      "value": "=== おちびちゃんズ化（複製→反映）ログ ==="
+    },
+    {
+      "key": "Log.MaboneProxyCount",
+      "value": "MABoneProxy: 対象数={0}"
+    },
+    {
+      "key": "Log.MaboneProxyHeader",
+      "value": "=== MABoneProxy処理（複製物のみ） ==="
+    },
+    {
+      "key": "Log.MaboneProxyNone",
+      "value": "MABoneProxy: 対象なし"
+    },
+    {
+      "key": "Log.MaboneProxyPrefabUnpacked",
+      "value": " - Prefabアンパック: {0}"
+    },
+    {
+      "key": "Log.MaboneProxyProcessed",
+      "value": " - 処理済み: {0}"
+    },
+    {
+      "key": "Log.MaboneProxySkipDetail",
+      "value": " - スキップ: {0} ({1})"
+    },
+    {
+      "key": "Log.MaboneProxySkipped",
+      "value": "Modular Avatar が未導入のため MABoneProxy 処理はスキップしました。"
+    },
+    {
+      "key": "Log.MatchArmature",
+      "value": "アーマチュア"
+    },
+    {
+      "key": "Log.MatchContains",
+      "value": "含む"
+    },
+    {
+      "key": "Log.MatchExact",
+      "value": "完全一致"
+    },
+    {
+      "key": "Log.MenuAfter",
+      "value": "Menu(後): {0}"
+    },
+    {
+      "key": "Log.MenuBefore",
+      "value": "Menu(前): {0}"
+    },
+    {
+      "key": "Log.MenuChanged",
+      "value": " - Menu: 変更あり"
+    },
+    {
+      "key": "Log.MissingComponentsAdded",
+      "value": "不足コンポーネント追加: 追加数={0}"
+    },
+    {
+      "key": "Log.ModularAvatarMissing",
+      "value": "[WARN] Modular Avatar が未導入のため衣装スケール調整はスキップしました。"
+    },
+    {
+      "key": "Log.NoneValue",
+      "value": "(なし)"
+    },
+    {
+      "key": "Log.NotFound",
+      "value": "見つかりません"
+    },
+    {
+      "key": "Log.NullValue",
+      "value": "（null）"
+    },
+    {
+      "key": "Log.ParametersAfter",
+      "value": "Parameters(後): {0}"
+    },
+    {
+      "key": "Log.ParametersBefore",
+      "value": "Parameters(前): {0}"
+    },
+    {
+      "key": "Log.ParametersChanged",
+      "value": " - Parameters: 変更あり"
+    },
+    {
+      "key": "Log.PathEntry",
+      "value": " - {0}"
+    },
+    {
+      "key": "Log.PathEntryEllipsis",
+      "value": " - ..."
+    },
+    {
+      "key": "Log.PrefabExpand",
+      "value": "Prefab展開: {0}"
+    },
+    {
+      "key": "Log.QueuedApply",
+      "value": "[OchibiChansConverterTool] Queued apply: target='{0}', sourcePrefab='{1}'"
+    },
+    {
+      "key": "Log.RootScaleApplied",
+      "value": "ルートスケール同期: 実行（値は非表示）"
+    },
+    {
+      "key": "Log.Separator",
+      "value": "------------------------------------------------------------"
+    },
+    {
+      "key": "Log.SourceAvatar",
+      "value": "元のアバター: {0}"
+    },
+    {
+      "key": "Log.SourcePrefab",
+      "value": "変換元Prefab: {0} / {1}"
+    },
+    {
+      "key": "Log.TargetEntry",
+      "value": "対象: {0}"
+    },
+    {
+      "key": "Log.ToolVersion",
+      "value": "{0}：v{1}"
+    },
+    {
+      "key": "Log.UnityVersion",
+      "value": "Unity：{0}"
+    },
+    {
+      "key": "Log.UnknownVersion",
+      "value": "不明"
+    },
+    {
+      "key": "Log.ViewPositionApplied",
+      "value": "ViewPosition同期: 実行（値は非表示）"
+    },
+    {
+      "key": "Log.ViewPositionSkipped",
+      "value": "ViewPosition同期: スキップ（取得/適用できませんでした）"
+    },
+    {
+      "key": "Log.VrcSdkVersion",
+      "value": "VRC SDK：{0}"
+    },
+    {
+      "key": "LogWindow.CloseButton",
+      "value": "閉じる"
+    },
+    {
+      "key": "LogWindow.CopyButton",
+      "value": "ログをクリップボードにコピー"
+    },
+    {
+      "key": "LogWindow.NoLogs",
+      "value": "(ログはありません)"
+    },
+    {
+      "key": "Section.ManualPrefabLabel",
+      "value": "おちびちゃんズ Prefab（Project からドラッグ＆ドロップ）"
+    },
+    {
+      "key": "Section.SourceAvatarLabel",
+      "value": "① 変換元アバター（左のHierarchyで選択）"
+    },
+    {
+      "key": "Section.TargetPrefabLabel",
+      "value": "② 変換先おちびちゃんズ（下のプルダウンから選択）"
+    },
+    {
+      "key": "Toggle.MaboneProxy",
+      "value": "MA Bone Proxyで設定している髪・小物がずれる場合に合わせる"
+    },
+    {
+      "key": "Toggle.ShowLogs",
+      "value": "ログを表示する"
+    },
+    {
+      "key": "Tool.LogWindowTitle",
+      "value": "おちびちゃんズ化ツール（Ochibi-chans Converter Tool）ログ"
+    },
+    {
+      "key": "Tool.Name",
+      "value": "おちびちゃんズ化ツール（Ochibi-chans Converter Tool）"
+    },
+    {
+      "key": "Undo.AddExPrefab",
+      "value": "EX Prefab を追加"
+    },
+    {
+      "key": "Undo.AdjustCostumeScales",
+      "value": "衣装スケール調整"
+    },
+    {
+      "key": "Undo.ClearBlueprintId",
+      "value": "BlueprintId をクリア"
+    },
+    {
+      "key": "Undo.CopyViewPosition",
+      "value": "View Position をコピー"
+    },
+    {
+      "key": "Undo.OchibiChansConverterToolSyncBlendShapes",
+      "value": "OchibiChansConverterTool Sync BlendShapes"
+    },
+    {
+      "key": "Undo.DuplicateApply",
+      "value": "おちびちゃんズ化（複製→反映）"
+    },
+    {
+      "key": "Undo.SetExpressionsReferences",
+      "value": "Expressions 参照を設定"
+    },
+    {
+      "key": "Undo.SetFxPlayableLayer",
+      "value": "FX Playable Layer を設定"
+    },
+    {
+      "key": "Undo.SyncArmatureTransform",
+      "value": "Armature Transform を同期"
+    },
+    {
+      "key": "Undo.SyncBlendShapes",
+      "value": "BlendShapes を同期"
+    },
+    {
+      "key": "Undo.SyncRootScale",
+      "value": "ルートスケールを同期"
+    },
+    {
+      "key": "Version.Ahead",
+      "value": "現在のバージョン {0}（最新 {1} より新しい開発版）を使用中です。"
+    },
+    {
+      "key": "Version.Available",
+      "value": "現在のバージョン {0} です。最新バージョン {1} が利用可能です。"
+    },
+    {
+      "key": "Version.CheckFailed",
+      "value": "現在のバージョン {0} の最新確認に失敗しました: {1}"
+    },
+    {
+      "key": "Version.Checking",
+      "value": "現在のバージョン {0} の最新情報を確認中です..."
+    },
+    {
+      "key": "Version.ErrorMissingUrl",
+      "value": "最新バージョン取得先が未設定です。"
+    },
+    {
+      "key": "Version.ErrorInvalidUrl",
+      "value": "バージョン確認の設定が不正なため、最新情報を取得できませんでした。"
+    },
+    {
+      "key": "Version.ExtractFailed",
+      "value": "レスポンスからバージョンを取得できませんでした。"
+    },
+    {
+      "key": "Version.NoInfo",
+      "value": "現在のバージョン {0} の最新情報を取得できませんでした。"
+    },
+    {
+      "key": "Version.Unknown",
+      "value": "現在のバージョン {0} の情報を取得できませんでした。"
+    },
+    {
+      "key": "Version.UpToDate",
+      "value": "現在のバージョン {0} は最新バージョンです。"
+    },
+    {
+      "key": "Warning.AddMenuPrefabMissing",
+      "value": "[OchibiChansConverterTool] sourceChibiPrefab 内に...chibichans_Addmenu のネストPrefab参照が見つかりませんでした。追加メニューの付与はスキップします。"
+    },
+    {
+      "key": "Warning.BlendshapeCopyFailed",
+      "value": "[OchibiChansConverterTool] Blendshape copy failed for SMR on {0}: {1}"
+    },
+    {
+      "key": "Warning.FaceMeshCacheLoadFailed",
+      "value": "[OchibiChansConverterTool] フェイスメッシュキャッシュの読み込みに失敗しました: {0}"
+    },
+    {
+      "key": "Warning.FaceMeshCacheSaveFailed",
+      "value": "[OchibiChansConverterTool] フェイスメッシュキャッシュの保存に失敗しました: {0}"
+    },
+    {
+      "key": "Warning.SerializedBlendshapeCopyFailed",
+      "value": "[OchibiChansConverterTool] Serialized blendshape copy failed for SMR on {0}: {1}"
+    },
+    {
+      "key": "Window.Description",
+      "value": "元のアバターはそのまま。コピーを作って「おちびちゃんズ化」します。"
+    },
+    {
+      "key": "Window.TitleWithVersion",
+      "value": "{0} v{1}"
+    }
+  ]
+}

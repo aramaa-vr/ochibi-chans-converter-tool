@@ -1,0 +1,25 @@
+{
+  "name": "Aramaa.OchibiChansConverterTool.Editor",
+  "rootNamespace": "Aramaa.OchibiChansConverterTool",
+  "references": [
+    "nadena.dev.modular-avatar.core",
+    "VRC.SDK3A"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [
+    {
+      "name": "nadena.dev.modular-avatar",
+      "expression": "",
+      "define": "CHIBI_MODULAR_AVATAR"
+    }
+  ],
+  "noEngineReferences": false
+}

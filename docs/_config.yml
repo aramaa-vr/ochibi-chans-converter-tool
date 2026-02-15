@@ -1,0 +1,42 @@
+title: おちびちゃんズ化ツール（OCT）
+description: VRChatアバターを「おちびちゃんズ」向けに変換するUnity Editor拡張の説明書
+url: https://aramaa-vr.github.io
+baseurl: /ochibi-chans-converter-tool
+lang: ja
+locale: ja_JP
+remote_theme: just-the-docs/just-the-docs
+plugins:
+- jekyll-remote-theme
+search_enabled: true
+heading_anchors: true
+back_to_top: true
+back_to_top_text: ページ上部へ
+enable_copy_code_button: true
+gh_edit_link: true
+gh_edit_repository: https://github.com/aramaa-vr/ochibi-chans-converter-tool
+gh_edit_branch: master
+gh_edit_source: docs
+gh_edit_view_mode: tree
+callouts_level: quiet
+callouts:
+  note:
+    title: 補足
+    color: purple
+  tip:
+    title: ヒント
+    color: green
+  warning:
+    title: 注意
+    color: yellow
+  danger:
+    title: 重要
+    color: red
+aux_links_new_tab: true
+aux_links:
+  Booth: https://aramaa.booth.pm/items/7906711
+  VRChat Group だこちて！たかいたかい！: "https://vrc.group/LIFTME.6305"
+  Discord: https://discord.gg/BJ3BpVnMna
+  GitHub: https://github.com/aramaa-vr/ochibi-chans-converter-tool
+permalink: pretty
+footer_content: © あらまあ素敵なショップ / おちびちゃんズ化ツール（Ochibi-chans Converter Tool）
+nav_sort: case_insensitive

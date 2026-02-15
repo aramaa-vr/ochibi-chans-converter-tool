@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="320" viewBox="0 0 1024 320" role="img" aria-label="OchibiChansConverterTool 変換フロー">
+  <rect x="0" y="0" width="1024" height="320" fill="#ffffff"/>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#111">
+    <text x="40" y="40" font-size="26">変換フロー（概要）</text>
+    <g>
+      <rect x="40" y="90" width="260" height="140" rx="16" fill="#f3f4f6" stroke="#111" stroke-width="2"/>
+      <text x="70" y="135" font-size="22">① 変換元アバター</text>
+      <text x="70" y="165">Hierarchyで選択</text>
+      <text x="70" y="195">（元は残る）</text>
+    </g>
+    <g>
+      <rect x="382" y="90" width="260" height="140" rx="16" fill="#f3f4f6" stroke="#111" stroke-width="2"/>
+      <text x="410" y="135" font-size="22">② おちびちゃんズ</text>
+      <text x="410" y="165">Prefabを指定</text>
+      <text x="410" y="195">（自動候補/手動）</text>
+    </g>
+    <g>
+      <rect x="724" y="90" width="260" height="140" rx="16" fill="#f3f4f6" stroke="#111" stroke-width="2"/>
+      <text x="752" y="135" font-size="22">③ 実行</text>
+      <text x="752" y="165">Ctrl+Dで複製</text>
+      <text x="752" y="195">設定を同期</text>
+    </g>
+    <g stroke="#111" stroke-width="3" fill="none">
+      <path d="M300 160 H362" />
+      <path d="M642 160 H704" />
+      <path d="M362 160 l-12 -8 l0 16 z" fill="#111"/>
+      <path d="M704 160 l-12 -8 l0 16 z" fill="#111"/>
+    </g>
+    <text x="40" y="290" font-size="14" fill="#555">生成: 2026-02-03</text>
+  </g>
+</svg>

@@ -1,0 +1,55 @@
+{%- comment -%}
+  Custom head additions for social sharing / minor performance tweaks.
+  (Works with just-the-docs: https://just-the-docs.github.io/just-the-docs/docs/customization/)
+{%- endcomment -%}
+
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#ec4899" />
+{%- assign page_title = page.title | default: site.title | strip_html | strip_newlines | escape -%}
+{%- assign page_desc = page.description | default: site.description | strip_html | strip_newlines | escape -%}
+{%- assign canonical = site.url | append: site.baseurl | append: page.url -%}
+{%- assign og_image = site.url | append: site.baseurl | append: "/assets/img/ochibi-chans-converter-tool/common/hero.webp" -%}
+
+{%- comment -%} Ensure a strong per-page meta description even when theme defaults vary. {%- endcomment -%}
+<meta name="description" content="{{ page_desc }}" />
+
+<link rel="canonical" href="{{ canonical }}" />
+
+<meta property="og:site_name" content="{{ site.title }}" />
+<meta property="og:locale" content="{{ site.locale | default: 'ja_JP' }}" />
+<meta property="og:title" content="{{ page_title }}" />
+<meta property="og:description" content="{{ page_desc }}" />
+<meta property="og:url" content="{{ canonical }}" />
+<meta property="og:image" content="{{ og_image }}" />
+<meta property="og:image:alt" content="おちびちゃんズ化ツールの紹介画像" />
+<meta property="og:type" content="{% if page.url == '/' %}website{% else %}article{% endif %}" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ page_title }}" />
+<meta name="twitter:description" content="{{ page_desc }}" />
+<meta name="twitter:image" content="{{ og_image }}" />
+<meta name="twitter:image:alt" content="おちびちゃんズ化ツールの紹介画像" />
+
+{%- comment -%} Preload the hero image only on the landing page. {%- endcomment -%}
+{%- if page.url == '/' or page.url == '/index.html' -%}
+  <link rel="preload" as="image" href="{{ "/assets/img/ochibi-chans-converter-tool/common/hero.webp" | relative_url }}" imagesrcset="{{ "/assets/img/ochibi-chans-converter-tool/common/hero.webp" | relative_url }}" fetchpriority="high" />
+{%- endif -%}
+
+{%- comment -%} Basic structured data for richer snippets. {%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "{{ site.title | escape }}",
+  "url": "{{ site.url | append: site.baseurl | escape }}",
+  "inLanguage": "{{ site.lang | default: 'ja' | escape }}",
+  "description": "{{ site.description | escape }}"
+}
+</script>
+
+<link rel="icon" href="{{ "/assets/img/favicon.ico" | relative_url }}" sizes="any" />
+<link rel="icon" href="{{ "/assets/img/favicon-256.png" | relative_url }}" type="image/png" />
+
+<link rel="stylesheet" href="{{ "/assets/css/custom.css" | relative_url }}" />
+
+<script defer src="{{ "/assets/js/site.js" | relative_url }}"></script>

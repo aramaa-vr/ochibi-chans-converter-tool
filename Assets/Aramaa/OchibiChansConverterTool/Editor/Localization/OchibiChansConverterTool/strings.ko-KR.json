@@ -1,0 +1,617 @@
+{
+  "language": "ko-KR",
+  "entries": [
+    {
+      "key": "Button.DiscordHelp",
+      "value": "도움이 필요하신가요? 도구 웹사이트 열기(가이드/FAQ) →"
+    },
+    {
+      "key": "Button.Execute",
+      "value": "3) 실행 (복사 → 변환)"
+    },
+    {
+      "key": "Dialog.ConversionTitle",
+      "value": "Ochibi-chans"
+    },
+    {
+      "key": "Dialog.InvalidSourcePrefab",
+      "value": "sourceChibiPrefab(변환 원본 Ochibi-chans 프리팹)이 없거나 프리팹 에셋이 아닙니다.\n\nProject에서 프리팹을 선택하세요."
+    },
+    {
+      "key": "Dialog.InvalidSourcePrefabApply",
+      "value": "sourceChibiPrefab(변환 원본 Ochibi-chans 프리팹)이 없거나 프리팹 에셋이 아닙니다.\n\nProject에서 프리팹 에셋을 선택하세요."
+    },
+    {
+      "key": "Dialog.InvalidTargets",
+      "value": "Hierarchy에서 대상 GameObject를 가져올 수 없습니다.\n\n실행 전에 Hierarchy에서 아바타를 하나 선택하세요."
+    },
+    {
+      "key": "Dialog.Ok",
+      "value": "확인"
+    },
+    {
+      "key": "Dialog.SelectSourceAvatar",
+      "value": "Hierarchy에서 원본 아바타를 하나 선택하세요."
+    },
+    {
+      "key": "Dialog.SelectSourcePrefab",
+      "value": "Project에서 Ochibi-chans 프리팹을 하나 선택하세요."
+    },
+    {
+      "key": "Dialog.TargetsNotFound",
+      "value": "변환 대상이 없습니다."
+    },
+    {
+      "key": "Dialog.ToolTitle",
+      "value": "Ochibi-chans Converter Tool"
+    },
+    {
+      "key": "Error.DuplicateFailed",
+      "value": "[Ochibi-chans] 복제에 실패했습니다(Ctrl+D와 동일). 변환을 실행하지 않습니다."
+    },
+    {
+      "key": "Error.SourcePrefabPathMissing",
+      "value": "[Ochibi-chans] sourceChibiPrefab의 에셋 경로를 가져오지 못했습니다."
+    },
+    {
+      "key": "Help.ExecuteQueued",
+      "value": "실행이 대기열에 추가되었습니다. 처리 완료까지 기다려 주세요."
+    },
+    {
+      "key": "Help.MaboneProxy",
+      "value": "활성화하면 복제 후 MA Bone Proxy 처리를 유사 실행하고, 오브젝트를 Armature로 이동한 뒤 스케일을 조정합니다."
+    },
+    {
+      "key": "Help.ManualPrefabWarning",
+      "value": "실행 전에 수동으로 선택한 프리팹이 원본 아바타와 일치하는지 확인하세요."
+    },
+    {
+      "key": "Help.NoPrefabCandidates",
+      "value": "일치하는 Ochibi-chans 프리팹을 찾지 못했습니다. 수동으로 선택하세요."
+    },
+    {
+      "key": "Help.NotPrefabSelected",
+      "value": "프리팹이 아닌 에셋이 선택되었습니다. Project에서 프리팹을 선택하세요."
+    },
+    {
+      "key": "Help.SelectPrefabFromProject",
+      "value": "Project에서 Ochibi-chans 프리팹을 선택하세요."
+    },
+    {
+      "key": "Help.SelectSourceAvatar",
+      "value": "왼쪽 Hierarchy에서 원본 아바타를 클릭하세요."
+    },
+    {
+      "key": "Help.SourceAvatarAssetInvalid",
+      "value": "Project 에셋은 지원하지 않습니다. Hierarchy에서 씬 아바타를 선택하세요."
+    },
+    {
+      "key": "Label.CandidateList",
+      "value": "후보 목록(자동 감지)"
+    },
+    {
+      "key": "Language.Label",
+      "value": "Language"
+    },
+    {
+      "key": "Language.OptionEnglish",
+      "value": "English"
+    },
+    {
+      "key": "Language.OptionChineseSimplified",
+      "value": "简体中文"
+    },
+    {
+      "key": "Language.OptionChineseTraditional",
+      "value": "繁體中文"
+    },
+    {
+      "key": "Language.OptionKorean",
+      "value": "한국어"
+    },
+    {
+      "key": "Language.OptionJapanese",
+      "value": "日本語"
+    },
+    {
+      "key": "Log.AddMissingComponents",
+      "value": "Armature 아래의 누락된 컴포넌트 추가: 적용됨(값 숨김)"
+    },
+    {
+      "key": "Log.ArmatureExcludedCount",
+      "value": "[MA] 본 수집 필터: 제외(스케일 1 아님 & 베이스에 없음)={0}"
+    },
+    {
+      "key": "Log.ArmatureExcludedHeader",
+      "value": "[MA] 제외된 Transform(일부):"
+    },
+    {
+      "key": "Log.ArmatureTransformApplied",
+      "value": "Armature Transform 동기화: 적용됨(값 숨김)"
+    },
+    {
+      "key": "Log.ArmatureTransformUpdated",
+      "value": "Armature Transform 동기화: 업데이트={0}"
+    },
+    {
+      "key": "Log.BaseArmatureMissing",
+      "value": "[MA] Base prefab의 Armature를 찾지 못해 본 수집 필터를 비활성화했습니다."
+    },
+    {
+      "key": "Log.BaseArmaturePathCount",
+      "value": "[MA] 본 수집 필터: Base Armature 경로 수={0}"
+    },
+    {
+      "key": "Log.BaseBlendShapeHeader",
+      "value": "=== Base Prefab BlendShape 인덱스(의상 동기화용) ==="
+    },
+    {
+      "key": "Log.BaseBlendshapeDuplicate",
+      "value": "[Base] 중복 건너뜀: Mesh='{0}', Shape='{1}' (첫 값 유지)"
+    },
+    {
+      "key": "Log.BasePrefabRootSummary",
+      "value": "BasePrefabRoot: '{0}', SMR 수: {1}"
+    },
+    {
+      "key": "Log.BaseSmrSummary",
+      "value": "[Base] SMR: {0} / Mesh='{1}' / BlendShape 수={2}"
+    },
+    {
+      "key": "Log.BlendshapeEntry",
+      "value": "  - {0}"
+    },
+    {
+      "key": "Log.BlendshapeNoRenderer",
+      "value": " - 대상 SkinnedMeshRenderer를 찾지 못했습니다."
+    },
+    {
+      "key": "Log.BlendshapeRendererDetail",
+      "value": " - {0}: {1} / {2}"
+    },
+    {
+      "key": "Log.BlendshapeRendererZero",
+      "value": " - {0}: 0"
+    },
+    {
+      "key": "Log.BlendshapeSyncSummary",
+      "value": "BlendShape 동기화: SMR 쌍={0}, BlendShape 이름={1} (값 숨김)"
+    },
+    {
+      "key": "Log.BlendshapeSynced",
+      "value": "  -> 동기화됨(값 숨김): {0}"
+    },
+    {
+      "key": "Log.BlueprintClearApplied",
+      "value": "BlueprintID 삭제: 적용됨(복제본 ID 삭제)"
+    },
+    {
+      "key": "Log.BlueprintClearHeader",
+      "value": "=== BlueprintID 삭제(복제본만) ==="
+    },
+    {
+      "key": "Log.BlueprintClearSkippedEmpty",
+      "value": "BlueprintID 삭제: 건너뜀(이미 비어 있음)"
+    },
+    {
+      "key": "Log.BlueprintClearSkippedMissing",
+      "value": "BlueprintID 삭제: 건너뜀(루트에 PipelineManager 없음)"
+    },
+    {
+      "key": "Log.ComponentAdded",
+      "value": " - 추가됨: {0} / {1}"
+    },
+    {
+      "key": "Log.CoreHeader",
+      "value": "=== 코어 적용(1–4) ==="
+    },
+    {
+      "key": "Log.CostumeApplied",
+      "value": "의상: {0} / 적용됨: {1}"
+    },
+    {
+      "key": "Log.CostumeBlendshapeHeader",
+      "value": "=== MA Mesh Settings 아래 BlendShape 확인: '{0}' ==="
+    },
+    {
+      "key": "Log.CostumeCount",
+      "value": "의상 수: {0}"
+    },
+    {
+      "key": "Log.CostumeScaleHeader",
+      "value": "=== 의상 스케일 조정(MA Mesh Settings) ==="
+    },
+    {
+      "key": "Log.CostumeSmrCount",
+      "value": "의상 SMR 수: {0}"
+    },
+    {
+      "key": "Log.CostumeSmrMeshMissing",
+      "value": "[Costume] SMR: {0} / Mesh=(null) -> 건너뜀"
+    },
+    {
+      "key": "Log.CostumeSmrSummary",
+      "value": "[Costume] SMR: {0} / Mesh='{1}' / BlendShape 수={2}"
+    },
+    {
+      "key": "Log.DuplicateSuccess",
+      "value": "복제: 성공"
+    },
+    {
+      "key": "Log.DuplicateTarget",
+      "value": " - 복제 대상: {0}"
+    },
+    {
+      "key": "Log.Error.CostumeScaleFailed",
+      "value": "[ERROR] 의상 스케일 조정에 실패했습니다. 처리가 중단되었습니다."
+    },
+    {
+      "key": "Log.Error.DuplicateFailed",
+      "value": "[ERROR] 복제 실패(Ctrl+D와 동일). 변환을 실행하지 않습니다."
+    },
+    {
+      "key": "Log.Error.ExceptionOccurred",
+      "value": "[ERROR] 예외가 발생했습니다. 자세한 내용은 Console을 확인하세요."
+    },
+    {
+      "key": "Log.ExPrefabAdded",
+      "value": "EX 프리팹: 추가됨 / {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabAddedTo",
+      "value": " - 추가 위치: {0}"
+    },
+    {
+      "key": "Log.ExPrefabAlreadyExists",
+      "value": "EX 프리팹: 이미 존재함, 추가하지 않음 / {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabCreationFailed",
+      "value": "[WARN] EX 프리팹 생성 실패: {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabHeader",
+      "value": "=== EX 프리팹 ==="
+    },
+    {
+      "key": "Log.ExPrefabParent",
+      "value": " - 부모: {0}"
+    },
+    {
+      "key": "Log.ExPrefabTransformApplied",
+      "value": " - Transform 적용됨(값 숨김)"
+    },
+    {
+      "key": "Log.ExecutionTime",
+      "value": "실행 시간: {0}"
+    },
+    {
+      "key": "Log.ExpressionsApply",
+      "value": "Expressions 적용됨: Menu={0}, Parameters={1}"
+    },
+    {
+      "key": "Log.ExpressionsApplySkipped",
+      "value": "Expressions 적용됨: 건너뜀(원본 프리팹에서 가져올 수 없음)"
+    },
+    {
+      "key": "Log.FxAfter",
+      "value": "FX(이후): {0}"
+    },
+    {
+      "key": "Log.FxApply",
+      "value": "FX 적용됨: {0}"
+    },
+    {
+      "key": "Log.FxApplySkipped",
+      "value": "FX 적용됨: 건너뜀(원본 프리팹에서 가져올 수 없음)"
+    },
+    {
+      "key": "Log.FxBefore",
+      "value": "FX(이전): {0}"
+    },
+    {
+      "key": "Log.FxChanged",
+      "value": " - FX: 변경됨"
+    },
+    {
+      "key": "Log.Header.Main",
+      "value": "=== Ochibi-chans (복제 → 적용) 로그 ==="
+    },
+    {
+      "key": "Log.MaboneProxyCount",
+      "value": "MABoneProxy: 수={0}"
+    },
+    {
+      "key": "Log.MaboneProxyHeader",
+      "value": "=== MABoneProxy 처리(복제본만) ==="
+    },
+    {
+      "key": "Log.MaboneProxyNone",
+      "value": "MABoneProxy: 없음"
+    },
+    {
+      "key": "Log.MaboneProxyPrefabUnpacked",
+      "value": " - 프리팹 언팩됨: {0}"
+    },
+    {
+      "key": "Log.MaboneProxyProcessed",
+      "value": " - 처리됨: {0}"
+    },
+    {
+      "key": "Log.MaboneProxySkipDetail",
+      "value": " - 건너뜀: {0} ({1})"
+    },
+    {
+      "key": "Log.MaboneProxySkipped",
+      "value": "Modular Avatar가 설치되지 않아 MABoneProxy 처리를 건너뛰었습니다."
+    },
+    {
+      "key": "Log.MatchArmature",
+      "value": "Armature"
+    },
+    {
+      "key": "Log.MatchContains",
+      "value": "포함"
+    },
+    {
+      "key": "Log.MatchExact",
+      "value": "정확히 일치"
+    },
+    {
+      "key": "Log.MenuAfter",
+      "value": "메뉴(이후): {0}"
+    },
+    {
+      "key": "Log.MenuBefore",
+      "value": "메뉴(이전): {0}"
+    },
+    {
+      "key": "Log.MenuChanged",
+      "value": " - 메뉴: 변경됨"
+    },
+    {
+      "key": "Log.MissingComponentsAdded",
+      "value": "누락된 컴포넌트 추가됨: 수={0}"
+    },
+    {
+      "key": "Log.ModularAvatarMissing",
+      "value": "[WARN] Modular Avatar가 설치되지 않아 의상 스케일 조정을 건너뛰었습니다."
+    },
+    {
+      "key": "Log.NoneValue",
+      "value": "(없음)"
+    },
+    {
+      "key": "Log.NotFound",
+      "value": "찾지 못함"
+    },
+    {
+      "key": "Log.NullValue",
+      "value": "(null)"
+    },
+    {
+      "key": "Log.ParametersAfter",
+      "value": "Parameters(이후): {0}"
+    },
+    {
+      "key": "Log.ParametersBefore",
+      "value": "Parameters(이전): {0}"
+    },
+    {
+      "key": "Log.ParametersChanged",
+      "value": " - Parameters: 변경됨"
+    },
+    {
+      "key": "Log.PathEntry",
+      "value": " - {0}"
+    },
+    {
+      "key": "Log.PathEntryEllipsis",
+      "value": " - ..."
+    },
+    {
+      "key": "Log.PrefabExpand",
+      "value": "프리팹 펼침: {0}"
+    },
+    {
+      "key": "Log.QueuedApply",
+      "value": "[Ochibi-chans] 적용 대기: target='{0}', sourcePrefab='{1}'"
+    },
+    {
+      "key": "Log.RootScaleApplied",
+      "value": "루트 스케일 동기화: 적용됨(값 숨김)"
+    },
+    {
+      "key": "Log.Separator",
+      "value": "------------------------------------------------------------"
+    },
+    {
+      "key": "Log.SourceAvatar",
+      "value": "원본 아바타: {0}"
+    },
+    {
+      "key": "Log.SourcePrefab",
+      "value": "원본 프리팹: {0} / {1}"
+    },
+    {
+      "key": "Log.TargetEntry",
+      "value": "대상: {0}"
+    },
+    {
+      "key": "Log.ToolVersion",
+      "value": "{0}: v{1}"
+    },
+    {
+      "key": "Log.UnityVersion",
+      "value": "Unity: {0}"
+    },
+    {
+      "key": "Log.UnknownVersion",
+      "value": "알 수 없음"
+    },
+    {
+      "key": "Log.ViewPositionApplied",
+      "value": "ViewPosition 동기화: 적용됨(값 숨김)"
+    },
+    {
+      "key": "Log.ViewPositionSkipped",
+      "value": "ViewPosition 동기화: 건너뜀(가져오거나 적용할 수 없음)"
+    },
+    {
+      "key": "Log.VrcSdkVersion",
+      "value": "VRC SDK: {0}"
+    },
+    {
+      "key": "LogWindow.CloseButton",
+      "value": "닫기"
+    },
+    {
+      "key": "LogWindow.CopyButton",
+      "value": "로그를 클립보드에 복사"
+    },
+    {
+      "key": "LogWindow.NoLogs",
+      "value": "(로그 없음)"
+    },
+    {
+      "key": "Section.ManualPrefabLabel",
+      "value": "Ochibi-chans 프리팹(Project에서 드래그 앤 드롭)"
+    },
+    {
+      "key": "Section.SourceAvatarLabel",
+      "value": "1) 원본 아바타(Hierarchy에서 선택)"
+    },
+    {
+      "key": "Section.TargetPrefabLabel",
+      "value": "2) 대상 Ochibi-chans 프리팹(아래 드롭다운에서 선택)"
+    },
+    {
+      "key": "Toggle.MaboneProxy",
+      "value": "MA Bone Proxy로 설정한 헤어/액세서리 정렬이 어긋났을 때 보정"
+    },
+    {
+      "key": "Toggle.ShowLogs",
+      "value": "로그 표시"
+    },
+    {
+      "key": "Tool.LogWindowTitle",
+      "value": "Ochibi-chans 로그"
+    },
+    {
+      "key": "Tool.Name",
+      "value": "Ochibi-chans Converter Tool"
+    },
+    {
+      "key": "Undo.AddExPrefab",
+      "value": "EX 프리팹 추가"
+    },
+    {
+      "key": "Undo.AdjustCostumeScales",
+      "value": "의상 스케일 조정"
+    },
+    {
+      "key": "Undo.ClearBlueprintId",
+      "value": "BlueprintId 지우기"
+    },
+    {
+      "key": "Undo.CopyViewPosition",
+      "value": "View Position 복사"
+    },
+    {
+      "key": "Undo.OchibiChansConverterToolSyncBlendShapes",
+      "value": "Ochibi-chans BlendShapes 동기화"
+    },
+    {
+      "key": "Undo.DuplicateApply",
+      "value": "Ochibi-chans (복제 → 적용)"
+    },
+    {
+      "key": "Undo.SetExpressionsReferences",
+      "value": "Expressions 참조 설정"
+    },
+    {
+      "key": "Undo.SetFxPlayableLayer",
+      "value": "FX Playable Layer 설정"
+    },
+    {
+      "key": "Undo.SyncArmatureTransform",
+      "value": "Armature Transform 동기화"
+    },
+    {
+      "key": "Undo.SyncBlendShapes",
+      "value": "BlendShapes 동기화"
+    },
+    {
+      "key": "Undo.SyncRootScale",
+      "value": "루트 스케일 동기화"
+    },
+    {
+      "key": "Version.Ahead",
+      "value": "버전 {0}을(를) 사용 중입니다(최신 {1}보다 앞선 버전)."
+    },
+    {
+      "key": "Version.Available",
+      "value": "현재 버전은 {0}이며 최신 버전 {1}을(를) 사용할 수 있습니다."
+    },
+    {
+      "key": "Version.CheckFailed",
+      "value": "버전 {0}의 최신 버전 확인 실패: {1}"
+    },
+    {
+      "key": "Version.Checking",
+      "value": "버전 {0}의 최신 버전을 확인 중..."
+    },
+    {
+      "key": "Version.ErrorMissingUrl",
+      "value": "최신 버전 URL이 설정되지 않았습니다."
+    },
+    {
+      "key": "Version.ErrorInvalidUrl",
+      "value": "버전 확인 설정이 올바르지 않아 최신 정보를 가져올 수 없습니다."
+    },
+    {
+      "key": "Version.ExtractFailed",
+      "value": "응답에서 버전을 추출할 수 없습니다."
+    },
+    {
+      "key": "Version.NoInfo",
+      "value": "버전 {0}의 최신 버전 정보를 가져올 수 없습니다."
+    },
+    {
+      "key": "Version.Unknown",
+      "value": "버전 {0}의 버전 정보를 가져올 수 없습니다."
+    },
+    {
+      "key": "Version.UpToDate",
+      "value": "현재 버전 {0}은(는) 최신 버전 {1}입니다."
+    },
+    {
+      "key": "Warning.AddMenuPrefabMissing",
+      "value": "[Ochibi-chans] sourceChibiPrefab에서 ...chibichans_Addmenu에 대한 중첩 프리팹 참조를 찾지 못했습니다. 추가 메뉴 연결을 건너뜁니다."
+    },
+    {
+      "key": "Warning.BlendshapeCopyFailed",
+      "value": "[Ochibi-chans] {0}의 SMR Blendshape 복사 실패: {1}"
+    },
+    {
+      "key": "Warning.FaceMeshCacheLoadFailed",
+      "value": "[Ochibi-chans] 얼굴 메시 캐시 로드 실패: {0}"
+    },
+    {
+      "key": "Warning.FaceMeshCacheSaveFailed",
+      "value": "[Ochibi-chans] 얼굴 메시 캐시 저장 실패: {0}"
+    },
+    {
+      "key": "Warning.SerializedBlendshapeCopyFailed",
+      "value": "[Ochibi-chans] {0}의 SMR Serialized Blendshape 복사 실패: {1}"
+    },
+    {
+      "key": "Window.Description",
+      "value": "원본 아바타는 그대로 유지됩니다. 복사본이 생성되어 변환됩니다."
+    },
+    {
+      "key": "Window.TitleWithVersion",
+      "value": "{0} v{1}"
+    }
+  ]
+}

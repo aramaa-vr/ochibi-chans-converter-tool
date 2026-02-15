@@ -1,0 +1,617 @@
+{
+  "language": "zh-Hant",
+  "entries": [
+    {
+      "key": "Button.DiscordHelp",
+      "value": "需要幫助？開啟工具網站（指南/FAQ）→"
+    },
+    {
+      "key": "Button.Execute",
+      "value": "3) 執行（複製 → 轉換）"
+    },
+    {
+      "key": "Dialog.ConversionTitle",
+      "value": "Ochibi-chans"
+    },
+    {
+      "key": "Dialog.InvalidSourcePrefab",
+      "value": "sourceChibiPrefab（轉換來源 Ochibi-chans 預製體）未指定或不是預製體資產。\n\n請從 Project 選擇一個預製體。"
+    },
+    {
+      "key": "Dialog.InvalidSourcePrefabApply",
+      "value": "sourceChibiPrefab（轉換來源 Ochibi-chans 預製體）未指定或不是預製體資產。\n\n請從 Project 選擇一個預製體資產。"
+    },
+    {
+      "key": "Dialog.InvalidTargets",
+      "value": "無法取得 Hierarchy 中的目標 GameObject。\n\n請在執行前於 Hierarchy 選擇一個角色。"
+    },
+    {
+      "key": "Dialog.Ok",
+      "value": "確定"
+    },
+    {
+      "key": "Dialog.SelectSourceAvatar",
+      "value": "請在 Hierarchy 選擇一個原始角色。"
+    },
+    {
+      "key": "Dialog.SelectSourcePrefab",
+      "value": "請在 Project 選擇一個 Ochibi-chans 預製體。"
+    },
+    {
+      "key": "Dialog.TargetsNotFound",
+      "value": "找不到轉換目標。"
+    },
+    {
+      "key": "Dialog.ToolTitle",
+      "value": "Ochibi-chans Converter Tool"
+    },
+    {
+      "key": "Error.DuplicateFailed",
+      "value": "[Ochibi-chans] 複製失敗（相當於 Ctrl+D）。不會執行轉換。"
+    },
+    {
+      "key": "Error.SourcePrefabPathMissing",
+      "value": "[Ochibi-chans] 無法取得 sourceChibiPrefab 的資產路徑。"
+    },
+    {
+      "key": "Help.ExecuteQueued",
+      "value": "已排入執行佇列。請等待處理完成。"
+    },
+    {
+      "key": "Help.MaboneProxy",
+      "value": "啟用後，會在複製後模擬執行 MA Bone Proxy 處理，將物件移動到 Armature 後再調整縮放。"
+    },
+    {
+      "key": "Help.ManualPrefabWarning",
+      "value": "執行前請確認手動選取的預製體與原始角色相符。"
+    },
+    {
+      "key": "Help.NoPrefabCandidates",
+      "value": "找不到相符的 Ochibi-chans 預製體。請手動選擇。"
+    },
+    {
+      "key": "Help.NotPrefabSelected",
+      "value": "選取了非預製體資產。請從 Project 選擇預製體。"
+    },
+    {
+      "key": "Help.SelectPrefabFromProject",
+      "value": "請從 Project 選擇一個 Ochibi-chans 預製體。"
+    },
+    {
+      "key": "Help.SelectSourceAvatar",
+      "value": "請在左側 Hierarchy 點選原始角色。"
+    },
+    {
+      "key": "Help.SourceAvatarAssetInvalid",
+      "value": "不支援 Project 資產。請在 Hierarchy 選擇場景中的角色。"
+    },
+    {
+      "key": "Label.CandidateList",
+      "value": "候選清單（自動偵測）"
+    },
+    {
+      "key": "Language.Label",
+      "value": "Language"
+    },
+    {
+      "key": "Language.OptionEnglish",
+      "value": "English"
+    },
+    {
+      "key": "Language.OptionChineseSimplified",
+      "value": "简体中文"
+    },
+    {
+      "key": "Language.OptionChineseTraditional",
+      "value": "繁體中文"
+    },
+    {
+      "key": "Language.OptionKorean",
+      "value": "한국어"
+    },
+    {
+      "key": "Language.OptionJapanese",
+      "value": "日本語"
+    },
+    {
+      "key": "Log.AddMissingComponents",
+      "value": "在 Armature 下新增缺少的元件：已套用（值已隱藏）"
+    },
+    {
+      "key": "Log.ArmatureExcludedCount",
+      "value": "[MA] 骨骼收集篩選：已排除（非1縮放且基準不存在）={0}"
+    },
+    {
+      "key": "Log.ArmatureExcludedHeader",
+      "value": "[MA] 已排除的 Transform（前幾項）："
+    },
+    {
+      "key": "Log.ArmatureTransformApplied",
+      "value": "Armature Transform 同步：已套用（值已隱藏）"
+    },
+    {
+      "key": "Log.ArmatureTransformUpdated",
+      "value": "Armature Transform 同步：更新數={0}"
+    },
+    {
+      "key": "Log.BaseArmatureMissing",
+      "value": "[MA] 找不到 Base prefab 的 Armature；骨骼收集篩選已停用。"
+    },
+    {
+      "key": "Log.BaseArmaturePathCount",
+      "value": "[MA] 骨骼收集篩選：Base Armature 路徑數={0}"
+    },
+    {
+      "key": "Log.BaseBlendShapeHeader",
+      "value": "=== Base Prefab BlendShape 索引（用於服裝同步） ==="
+    },
+    {
+      "key": "Log.BaseBlendshapeDuplicate",
+      "value": "[Base] 已略過重複：Mesh='{0}', Shape='{1}'（保留第一個值）"
+    },
+    {
+      "key": "Log.BasePrefabRootSummary",
+      "value": "BasePrefabRoot：'{0}'，SMR 數量：{1}"
+    },
+    {
+      "key": "Log.BaseSmrSummary",
+      "value": "[Base] SMR：{0} / Mesh='{1}' / BlendShape 數量={2}"
+    },
+    {
+      "key": "Log.BlendshapeEntry",
+      "value": "  - {0}"
+    },
+    {
+      "key": "Log.BlendshapeNoRenderer",
+      "value": " - 找不到目標 SkinnedMeshRenderer。"
+    },
+    {
+      "key": "Log.BlendshapeRendererDetail",
+      "value": " - {0}：{1} / {2}"
+    },
+    {
+      "key": "Log.BlendshapeRendererZero",
+      "value": " - {0}：0"
+    },
+    {
+      "key": "Log.BlendshapeSyncSummary",
+      "value": "BlendShape 同步：SMR 配對數={0}，BlendShape 名稱數={1}（值已隱藏）"
+    },
+    {
+      "key": "Log.BlendshapeSynced",
+      "value": "  -> 已同步（值已隱藏）：{0}"
+    },
+    {
+      "key": "Log.BlueprintClearApplied",
+      "value": "BlueprintID 清除：已套用（已清除複製體的 ID）"
+    },
+    {
+      "key": "Log.BlueprintClearHeader",
+      "value": "=== BlueprintID 清除（僅複製體） ==="
+    },
+    {
+      "key": "Log.BlueprintClearSkippedEmpty",
+      "value": "BlueprintID 清除：已略過（已為空）"
+    },
+    {
+      "key": "Log.BlueprintClearSkippedMissing",
+      "value": "BlueprintID 清除：已略過（根節點未找到 PipelineManager）"
+    },
+    {
+      "key": "Log.ComponentAdded",
+      "value": " - 已新增：{0} / {1}"
+    },
+    {
+      "key": "Log.CoreHeader",
+      "value": "=== 核心套用（1–4） ==="
+    },
+    {
+      "key": "Log.CostumeApplied",
+      "value": "服裝：{0} / 已套用：{1}"
+    },
+    {
+      "key": "Log.CostumeBlendshapeHeader",
+      "value": "=== MA Mesh Settings 下的 BlendShape 檢查：'{0}' ==="
+    },
+    {
+      "key": "Log.CostumeCount",
+      "value": "服裝數量：{0}"
+    },
+    {
+      "key": "Log.CostumeScaleHeader",
+      "value": "=== 服裝縮放調整（MA Mesh Settings） ==="
+    },
+    {
+      "key": "Log.CostumeSmrCount",
+      "value": "服裝 SMR 數量：{0}"
+    },
+    {
+      "key": "Log.CostumeSmrMeshMissing",
+      "value": "[Costume] SMR：{0} / Mesh=(null) -> 略過"
+    },
+    {
+      "key": "Log.CostumeSmrSummary",
+      "value": "[Costume] SMR：{0} / Mesh='{1}' / BlendShape 數量={2}"
+    },
+    {
+      "key": "Log.DuplicateSuccess",
+      "value": "複製：成功"
+    },
+    {
+      "key": "Log.DuplicateTarget",
+      "value": " - 複製目標：{0}"
+    },
+    {
+      "key": "Log.Error.CostumeScaleFailed",
+      "value": "[ERROR] 服裝縮放調整失敗；處理已中止。"
+    },
+    {
+      "key": "Log.Error.DuplicateFailed",
+      "value": "[ERROR] 複製失敗（相當於 Ctrl+D）。不會執行轉換。"
+    },
+    {
+      "key": "Log.Error.ExceptionOccurred",
+      "value": "[ERROR] 發生例外狀況。請查看 Console 詳情。"
+    },
+    {
+      "key": "Log.ExPrefabAdded",
+      "value": "EX 預製體：已新增 / {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabAddedTo",
+      "value": " - 新增於：{0}"
+    },
+    {
+      "key": "Log.ExPrefabAlreadyExists",
+      "value": "EX 預製體：已存在，未新增 / {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabCreationFailed",
+      "value": "[WARN] 建立 EX 預製體失敗：{0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabHeader",
+      "value": "=== EX 預製體 ==="
+    },
+    {
+      "key": "Log.ExPrefabParent",
+      "value": " - 父物件：{0}"
+    },
+    {
+      "key": "Log.ExPrefabTransformApplied",
+      "value": " - Transform 已套用（值已隱藏）"
+    },
+    {
+      "key": "Log.ExecutionTime",
+      "value": "執行時間：{0}"
+    },
+    {
+      "key": "Log.ExpressionsApply",
+      "value": "Expressions 已套用：Menu={0}，Parameters={1}"
+    },
+    {
+      "key": "Log.ExpressionsApplySkipped",
+      "value": "Expressions 已套用：已略過（無法從來源預製體取得）"
+    },
+    {
+      "key": "Log.FxAfter",
+      "value": "FX（之後）：{0}"
+    },
+    {
+      "key": "Log.FxApply",
+      "value": "FX 已套用：{0}"
+    },
+    {
+      "key": "Log.FxApplySkipped",
+      "value": "FX 已套用：已略過（無法從來源預製體取得）"
+    },
+    {
+      "key": "Log.FxBefore",
+      "value": "FX（之前）：{0}"
+    },
+    {
+      "key": "Log.FxChanged",
+      "value": " - FX：已變更"
+    },
+    {
+      "key": "Log.Header.Main",
+      "value": "=== Ochibi-chans（複製 → 套用）記錄 ==="
+    },
+    {
+      "key": "Log.MaboneProxyCount",
+      "value": "MABoneProxy：數量={0}"
+    },
+    {
+      "key": "Log.MaboneProxyHeader",
+      "value": "=== MABoneProxy 處理（僅複製體） ==="
+    },
+    {
+      "key": "Log.MaboneProxyNone",
+      "value": "MABoneProxy：無"
+    },
+    {
+      "key": "Log.MaboneProxyPrefabUnpacked",
+      "value": " - 預製體已解包：{0}"
+    },
+    {
+      "key": "Log.MaboneProxyProcessed",
+      "value": " - 已處理：{0}"
+    },
+    {
+      "key": "Log.MaboneProxySkipDetail",
+      "value": " - 已略過：{0}（{1}）"
+    },
+    {
+      "key": "Log.MaboneProxySkipped",
+      "value": "因未安裝 Modular Avatar，已略過 MABoneProxy 處理。"
+    },
+    {
+      "key": "Log.MatchArmature",
+      "value": "Armature"
+    },
+    {
+      "key": "Log.MatchContains",
+      "value": "包含"
+    },
+    {
+      "key": "Log.MatchExact",
+      "value": "完全符合"
+    },
+    {
+      "key": "Log.MenuAfter",
+      "value": "選單（之後）：{0}"
+    },
+    {
+      "key": "Log.MenuBefore",
+      "value": "選單（之前）：{0}"
+    },
+    {
+      "key": "Log.MenuChanged",
+      "value": " - 選單：已變更"
+    },
+    {
+      "key": "Log.MissingComponentsAdded",
+      "value": "已新增缺少的元件：數量={0}"
+    },
+    {
+      "key": "Log.ModularAvatarMissing",
+      "value": "[WARN] 未安裝 Modular Avatar，已略過服裝縮放調整。"
+    },
+    {
+      "key": "Log.NoneValue",
+      "value": "（無）"
+    },
+    {
+      "key": "Log.NotFound",
+      "value": "未找到"
+    },
+    {
+      "key": "Log.NullValue",
+      "value": "（null）"
+    },
+    {
+      "key": "Log.ParametersAfter",
+      "value": "參數（之後）：{0}"
+    },
+    {
+      "key": "Log.ParametersBefore",
+      "value": "參數（之前）：{0}"
+    },
+    {
+      "key": "Log.ParametersChanged",
+      "value": " - 參數：已變更"
+    },
+    {
+      "key": "Log.PathEntry",
+      "value": " - {0}"
+    },
+    {
+      "key": "Log.PathEntryEllipsis",
+      "value": " - ..."
+    },
+    {
+      "key": "Log.PrefabExpand",
+      "value": "預製體展開：{0}"
+    },
+    {
+      "key": "Log.QueuedApply",
+      "value": "[Ochibi-chans] 已排入套用：target='{0}'，sourcePrefab='{1}'"
+    },
+    {
+      "key": "Log.RootScaleApplied",
+      "value": "根節點縮放同步：已套用（值已隱藏）"
+    },
+    {
+      "key": "Log.Separator",
+      "value": "------------------------------------------------------------"
+    },
+    {
+      "key": "Log.SourceAvatar",
+      "value": "來源角色：{0}"
+    },
+    {
+      "key": "Log.SourcePrefab",
+      "value": "來源預製體：{0} / {1}"
+    },
+    {
+      "key": "Log.TargetEntry",
+      "value": "目標：{0}"
+    },
+    {
+      "key": "Log.ToolVersion",
+      "value": "{0}：v{1}"
+    },
+    {
+      "key": "Log.UnityVersion",
+      "value": "Unity：{0}"
+    },
+    {
+      "key": "Log.UnknownVersion",
+      "value": "未知"
+    },
+    {
+      "key": "Log.ViewPositionApplied",
+      "value": "ViewPosition 同步：已套用（值已隱藏）"
+    },
+    {
+      "key": "Log.ViewPositionSkipped",
+      "value": "ViewPosition 同步：已略過（無法取得/套用）"
+    },
+    {
+      "key": "Log.VrcSdkVersion",
+      "value": "VRC SDK：{0}"
+    },
+    {
+      "key": "LogWindow.CloseButton",
+      "value": "關閉"
+    },
+    {
+      "key": "LogWindow.CopyButton",
+      "value": "將日誌複製到剪貼簿"
+    },
+    {
+      "key": "LogWindow.NoLogs",
+      "value": "（沒有日誌）"
+    },
+    {
+      "key": "Section.ManualPrefabLabel",
+      "value": "Ochibi-chans 預製體（從 Project 拖放）"
+    },
+    {
+      "key": "Section.SourceAvatarLabel",
+      "value": "1) 來源角色（在 Hierarchy 選取）"
+    },
+    {
+      "key": "Section.TargetPrefabLabel",
+      "value": "2) 目標 Ochibi-chans 預製體（從下拉選單選取）"
+    },
+    {
+      "key": "Toggle.MaboneProxy",
+      "value": "當透過 MA Bone Proxy 設定的頭髮/配件對齊錯位時修正"
+    },
+    {
+      "key": "Toggle.ShowLogs",
+      "value": "顯示日誌"
+    },
+    {
+      "key": "Tool.LogWindowTitle",
+      "value": "Ochibi-chans 日誌"
+    },
+    {
+      "key": "Tool.Name",
+      "value": "Ochibi-chans Converter Tool"
+    },
+    {
+      "key": "Undo.AddExPrefab",
+      "value": "新增 EX 預製體"
+    },
+    {
+      "key": "Undo.AdjustCostumeScales",
+      "value": "調整服裝縮放"
+    },
+    {
+      "key": "Undo.ClearBlueprintId",
+      "value": "清除 BlueprintId"
+    },
+    {
+      "key": "Undo.CopyViewPosition",
+      "value": "複製 View Position"
+    },
+    {
+      "key": "Undo.OchibiChansConverterToolSyncBlendShapes",
+      "value": "Ochibi-chans 同步 BlendShapes"
+    },
+    {
+      "key": "Undo.DuplicateApply",
+      "value": "Ochibi-chans（複製 → 套用）"
+    },
+    {
+      "key": "Undo.SetExpressionsReferences",
+      "value": "設定 Expressions 參考"
+    },
+    {
+      "key": "Undo.SetFxPlayableLayer",
+      "value": "設定 FX Playable Layer"
+    },
+    {
+      "key": "Undo.SyncArmatureTransform",
+      "value": "同步 Armature Transform"
+    },
+    {
+      "key": "Undo.SyncBlendShapes",
+      "value": "同步 BlendShapes"
+    },
+    {
+      "key": "Undo.SyncRootScale",
+      "value": "同步根節點縮放"
+    },
+    {
+      "key": "Version.Ahead",
+      "value": "你正在使用版本 {0}（高於最新 {1}）。"
+    },
+    {
+      "key": "Version.Available",
+      "value": "你目前使用版本 {0}，最新版本 {1} 可用。"
+    },
+    {
+      "key": "Version.CheckFailed",
+      "value": "檢查版本 {0} 的最新版本失敗：{1}"
+    },
+    {
+      "key": "Version.Checking",
+      "value": "正在檢查版本 {0} 的最新版本..."
+    },
+    {
+      "key": "Version.ErrorMissingUrl",
+      "value": "未設定最新版本 URL。"
+    },
+    {
+      "key": "Version.ErrorInvalidUrl",
+      "value": "版本檢查設定無效，無法取得最新資訊。"
+    },
+    {
+      "key": "Version.ExtractFailed",
+      "value": "無法從回應中解析版本。"
+    },
+    {
+      "key": "Version.NoInfo",
+      "value": "無法取得版本 {0} 的最新版本資訊。"
+    },
+    {
+      "key": "Version.Unknown",
+      "value": "無法取得版本 {0} 的版本資訊。"
+    },
+    {
+      "key": "Version.UpToDate",
+      "value": "你使用的版本 {0} 是最新版本 {1}。"
+    },
+    {
+      "key": "Warning.AddMenuPrefabMissing",
+      "value": "[Ochibi-chans] 在 sourceChibiPrefab 中找不到 ...chibichans_Addmenu 的巢狀預製體參考。已跳過附加新增選單。"
+    },
+    {
+      "key": "Warning.BlendshapeCopyFailed",
+      "value": "[Ochibi-chans] {0} 上的 SMR Blendshape 複製失敗：{1}"
+    },
+    {
+      "key": "Warning.FaceMeshCacheLoadFailed",
+      "value": "[Ochibi-chans] 載入臉部網格快取失敗：{0}"
+    },
+    {
+      "key": "Warning.FaceMeshCacheSaveFailed",
+      "value": "[Ochibi-chans] 儲存臉部網格快取失敗：{0}"
+    },
+    {
+      "key": "Warning.SerializedBlendshapeCopyFailed",
+      "value": "[Ochibi-chans] {0} 上的 SMR 序列化 Blendshape 複製失敗：{1}"
+    },
+    {
+      "key": "Window.Description",
+      "value": "原始角色會保持不變。將建立副本並進行轉換。"
+    },
+    {
+      "key": "Window.TitleWithVersion",
+      "value": "{0} v{1}"
+    }
+  ]
+}

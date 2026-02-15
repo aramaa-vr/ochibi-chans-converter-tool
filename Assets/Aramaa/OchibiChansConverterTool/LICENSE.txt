@@ -1,0 +1,23 @@
+利用規約
+
+本プロジェクトは「VN3ライセンス」に基づき提供されます。
+
+本プロジェクトのコンテンツをご利用された時点で、本利用規約に同意したものとみなされますので、ご利用前に必ずご確認ください。
+
+VN3ライセンスの全文は、以下いずれかからご確認ください。
+
+- 配布ZIP内: `Documentation~/LicenseVN3/` ディレクトリ
+- GitHub上（ブラウザ閲覧用）: https://github.com/aramaa-vr/ochibi-chans-converter-tool/tree/master/LicenseVN3
+
+- Documentation~/LicenseVN3/20260215063734vn3license_ja.pdf
+- Documentation~/LicenseVN3/20260215063734vn3license_en.pdf
+- Documentation~/LicenseVN3/20260215063734vn3license_ko.pdf
+- Documentation~/LicenseVN3/20260215063734vn3license_zh.pdf
+
+第三者ライセンス/利用規約の一覧は `Documentation~/THIRD_PARTY_NOTICES.md` を参照してください。
+
+---
+
+Copyright (c) 2026 あらまあ素敵なショップ
+
+上記に明記されたVN3ライセンスの条件に従って、本プロジェクトは提供されます。

@@ -1,0 +1,617 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "key": "Button.DiscordHelp",
+      "value": "Need help? Open the tool website (guide/FAQ) →"
+    },
+    {
+      "key": "Button.Execute",
+      "value": "3) Run (copy → convert)"
+    },
+    {
+      "key": "Dialog.ConversionTitle",
+      "value": "Ochibi-chans"
+    },
+    {
+      "key": "Dialog.InvalidSourcePrefab",
+      "value": "sourceChibiPrefab (the source Ochibi-chans prefab) is missing or not a prefab asset.\n\nPlease select a prefab from the Project."
+    },
+    {
+      "key": "Dialog.InvalidSourcePrefabApply",
+      "value": "sourceChibiPrefab (the source Ochibi-chans prefab) is missing or not a prefab asset.\n\nPlease select a prefab asset from the Project."
+    },
+    {
+      "key": "Dialog.InvalidTargets",
+      "value": "Could not get the target GameObject in the Hierarchy.\n\nSelect one avatar in the Hierarchy before running."
+    },
+    {
+      "key": "Dialog.Ok",
+      "value": "OK"
+    },
+    {
+      "key": "Dialog.SelectSourceAvatar",
+      "value": "Select one original avatar in the Hierarchy."
+    },
+    {
+      "key": "Dialog.SelectSourcePrefab",
+      "value": "Select one Ochibi-chans prefab in the Project."
+    },
+    {
+      "key": "Dialog.TargetsNotFound",
+      "value": "No conversion targets were found."
+    },
+    {
+      "key": "Dialog.ToolTitle",
+      "value": "Ochibi-chans Converter Tool"
+    },
+    {
+      "key": "Error.DuplicateFailed",
+      "value": "[Ochibi-chans] Failed to duplicate (Ctrl+D equivalent). Conversion will not run."
+    },
+    {
+      "key": "Error.SourcePrefabPathMissing",
+      "value": "[Ochibi-chans] Failed to get the asset path for sourceChibiPrefab."
+    },
+    {
+      "key": "Help.ExecuteQueued",
+      "value": "Execution queued. Please wait for the process to complete."
+    },
+    {
+      "key": "Help.MaboneProxy",
+      "value": "When enabled, it pseudo-runs MA Bone Proxy processing after duplication, moves objects under Armature, then adjusts scale."
+    },
+    {
+      "key": "Help.ManualPrefabWarning",
+      "value": "Make sure the manually selected prefab matches the original avatar before running."
+    },
+    {
+      "key": "Help.NoPrefabCandidates",
+      "value": "No matching Ochibi-chans prefabs were found. Please select manually."
+    },
+    {
+      "key": "Help.NotPrefabSelected",
+      "value": "A non-prefab asset is selected. Please choose a prefab from the Project."
+    },
+    {
+      "key": "Help.SelectPrefabFromProject",
+      "value": "Select an Ochibi-chans prefab from the Project."
+    },
+    {
+      "key": "Help.SelectSourceAvatar",
+      "value": "Click the original avatar in the Hierarchy on the left."
+    },
+    {
+      "key": "Help.SourceAvatarAssetInvalid",
+      "value": "Project assets are not supported. Please select a scene avatar in the Hierarchy."
+    },
+    {
+      "key": "Label.CandidateList",
+      "value": "Candidate list (auto-detected)"
+    },
+    {
+      "key": "Language.Label",
+      "value": "Language"
+    },
+    {
+      "key": "Language.OptionEnglish",
+      "value": "English"
+    },
+    {
+      "key": "Language.OptionChineseSimplified",
+      "value": "简体中文"
+    },
+    {
+      "key": "Language.OptionChineseTraditional",
+      "value": "繁體中文"
+    },
+    {
+      "key": "Language.OptionKorean",
+      "value": "한국어"
+    },
+    {
+      "key": "Language.OptionJapanese",
+      "value": "Japanese"
+    },
+    {
+      "key": "Log.AddMissingComponents",
+      "value": "Add missing components under Armature: applied (values hidden)"
+    },
+    {
+      "key": "Log.ArmatureExcludedCount",
+      "value": "[MA] Bone collection filter: excluded (non-1 scale & missing in base)={0}"
+    },
+    {
+      "key": "Log.ArmatureExcludedHeader",
+      "value": "[MA] Excluded Transforms (first few):"
+    },
+    {
+      "key": "Log.ArmatureTransformApplied",
+      "value": "Armature transform sync: applied (values hidden)"
+    },
+    {
+      "key": "Log.ArmatureTransformUpdated",
+      "value": "Armature transform sync: updated={0}"
+    },
+    {
+      "key": "Log.BaseArmatureMissing",
+      "value": "[MA] Base prefab Armature not found; bone collection filter disabled."
+    },
+    {
+      "key": "Log.BaseArmaturePathCount",
+      "value": "[MA] Bone collection filter: Base Armature path count={0}"
+    },
+    {
+      "key": "Log.BaseBlendShapeHeader",
+      "value": "=== Base Prefab BlendShape Index (for costume sync) ==="
+    },
+    {
+      "key": "Log.BaseBlendshapeDuplicate",
+      "value": "[Base] Duplicate skipped: Mesh='{0}', Shape='{1}' (kept first value)"
+    },
+    {
+      "key": "Log.BasePrefabRootSummary",
+      "value": "BasePrefabRoot: '{0}', SMR count: {1}"
+    },
+    {
+      "key": "Log.BaseSmrSummary",
+      "value": "[Base] SMR: {0} / Mesh='{1}' / BlendShape count={2}"
+    },
+    {
+      "key": "Log.BlendshapeEntry",
+      "value": "  - {0}"
+    },
+    {
+      "key": "Log.BlendshapeNoRenderer",
+      "value": " - No target SkinnedMeshRenderer found."
+    },
+    {
+      "key": "Log.BlendshapeRendererDetail",
+      "value": " - {0}: {1} / {2}"
+    },
+    {
+      "key": "Log.BlendshapeRendererZero",
+      "value": " - {0}: 0"
+    },
+    {
+      "key": "Log.BlendshapeSyncSummary",
+      "value": "BlendShape sync: SMR pairs={0}, BlendShape names={1} (values hidden)"
+    },
+    {
+      "key": "Log.BlendshapeSynced",
+      "value": "  -> synced (values hidden): {0}"
+    },
+    {
+      "key": "Log.BlueprintClearApplied",
+      "value": "BlueprintID clear: applied (cleared ID on duplicate)"
+    },
+    {
+      "key": "Log.BlueprintClearHeader",
+      "value": "=== BlueprintID Clear (duplicates only) ==="
+    },
+    {
+      "key": "Log.BlueprintClearSkippedEmpty",
+      "value": "BlueprintID clear: skipped (already empty)"
+    },
+    {
+      "key": "Log.BlueprintClearSkippedMissing",
+      "value": "BlueprintID clear: skipped (PipelineManager not found at root)"
+    },
+    {
+      "key": "Log.ComponentAdded",
+      "value": " - Added: {0} / {1}"
+    },
+    {
+      "key": "Log.CoreHeader",
+      "value": "=== Core Apply (1–4) ==="
+    },
+    {
+      "key": "Log.CostumeApplied",
+      "value": "Costume: {0} / Applied: {1}"
+    },
+    {
+      "key": "Log.CostumeBlendshapeHeader",
+      "value": "=== BlendShape check under MA Mesh Settings: '{0}' ==="
+    },
+    {
+      "key": "Log.CostumeCount",
+      "value": "Costume count: {0}"
+    },
+    {
+      "key": "Log.CostumeScaleHeader",
+      "value": "=== Costume Scale Adjustment (MA Mesh Settings) ==="
+    },
+    {
+      "key": "Log.CostumeSmrCount",
+      "value": "Costume SMR count: {0}"
+    },
+    {
+      "key": "Log.CostumeSmrMeshMissing",
+      "value": "[Costume] SMR: {0} / Mesh=(null) -> skip"
+    },
+    {
+      "key": "Log.CostumeSmrSummary",
+      "value": "[Costume] SMR: {0} / Mesh='{1}' / BlendShape count={2}"
+    },
+    {
+      "key": "Log.DuplicateSuccess",
+      "value": "Duplicate: Success"
+    },
+    {
+      "key": "Log.DuplicateTarget",
+      "value": " - Duplicate target: {0}"
+    },
+    {
+      "key": "Log.Error.CostumeScaleFailed",
+      "value": "[ERROR] Costume scale adjustment failed; processing was aborted."
+    },
+    {
+      "key": "Log.Error.DuplicateFailed",
+      "value": "[ERROR] Failed to duplicate (Ctrl+D equivalent). Conversion will not run."
+    },
+    {
+      "key": "Log.Error.ExceptionOccurred",
+      "value": "[ERROR] An exception occurred. Check the Console for details."
+    },
+    {
+      "key": "Log.ExPrefabAdded",
+      "value": "EX prefab: added / {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabAddedTo",
+      "value": " - Added under: {0}"
+    },
+    {
+      "key": "Log.ExPrefabAlreadyExists",
+      "value": "EX prefab: already exists, not added / {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabCreationFailed",
+      "value": "[WARN] Failed to create EX prefab: {0} / {1}"
+    },
+    {
+      "key": "Log.ExPrefabHeader",
+      "value": "=== EX Prefab ==="
+    },
+    {
+      "key": "Log.ExPrefabParent",
+      "value": " - Parent: {0}"
+    },
+    {
+      "key": "Log.ExPrefabTransformApplied",
+      "value": " - Transform applied (values hidden)"
+    },
+    {
+      "key": "Log.ExecutionTime",
+      "value": "Executed at: {0}"
+    },
+    {
+      "key": "Log.ExpressionsApply",
+      "value": "Expressions applied: Menu={0}, Parameters={1}"
+    },
+    {
+      "key": "Log.ExpressionsApplySkipped",
+      "value": "Expressions applied: skipped (could not be retrieved from source prefab)"
+    },
+    {
+      "key": "Log.FxAfter",
+      "value": "FX (after): {0}"
+    },
+    {
+      "key": "Log.FxApply",
+      "value": "FX applied: {0}"
+    },
+    {
+      "key": "Log.FxApplySkipped",
+      "value": "FX applied: skipped (could not be retrieved from source prefab)"
+    },
+    {
+      "key": "Log.FxBefore",
+      "value": "FX (before): {0}"
+    },
+    {
+      "key": "Log.FxChanged",
+      "value": " - FX: changed"
+    },
+    {
+      "key": "Log.Header.Main",
+      "value": "=== Ochibi-chans (Duplicate → Apply) Log ==="
+    },
+    {
+      "key": "Log.MaboneProxyCount",
+      "value": "MABoneProxy: count={0}"
+    },
+    {
+      "key": "Log.MaboneProxyHeader",
+      "value": "=== MABoneProxy Processing (duplicates only) ==="
+    },
+    {
+      "key": "Log.MaboneProxyNone",
+      "value": "MABoneProxy: none"
+    },
+    {
+      "key": "Log.MaboneProxyPrefabUnpacked",
+      "value": " - Prefab unpacked: {0}"
+    },
+    {
+      "key": "Log.MaboneProxyProcessed",
+      "value": " - Processed: {0}"
+    },
+    {
+      "key": "Log.MaboneProxySkipDetail",
+      "value": " - Skipped: {0} ({1})"
+    },
+    {
+      "key": "Log.MaboneProxySkipped",
+      "value": "MABoneProxy processing was skipped because Modular Avatar is not installed."
+    },
+    {
+      "key": "Log.MatchArmature",
+      "value": "Armature"
+    },
+    {
+      "key": "Log.MatchContains",
+      "value": "Contains"
+    },
+    {
+      "key": "Log.MatchExact",
+      "value": "Exact"
+    },
+    {
+      "key": "Log.MenuAfter",
+      "value": "Menu (after): {0}"
+    },
+    {
+      "key": "Log.MenuBefore",
+      "value": "Menu (before): {0}"
+    },
+    {
+      "key": "Log.MenuChanged",
+      "value": " - Menu: changed"
+    },
+    {
+      "key": "Log.MissingComponentsAdded",
+      "value": "Missing components added: count={0}"
+    },
+    {
+      "key": "Log.ModularAvatarMissing",
+      "value": "[WARN] Modular Avatar is not installed, costume scale adjustment skipped."
+    },
+    {
+      "key": "Log.NoneValue",
+      "value": "(none)"
+    },
+    {
+      "key": "Log.NotFound",
+      "value": "not found"
+    },
+    {
+      "key": "Log.NullValue",
+      "value": "(null)"
+    },
+    {
+      "key": "Log.ParametersAfter",
+      "value": "Parameters (after): {0}"
+    },
+    {
+      "key": "Log.ParametersBefore",
+      "value": "Parameters (before): {0}"
+    },
+    {
+      "key": "Log.ParametersChanged",
+      "value": " - Parameters: changed"
+    },
+    {
+      "key": "Log.PathEntry",
+      "value": " - {0}"
+    },
+    {
+      "key": "Log.PathEntryEllipsis",
+      "value": " - ..."
+    },
+    {
+      "key": "Log.PrefabExpand",
+      "value": "Prefab expanded: {0}"
+    },
+    {
+      "key": "Log.QueuedApply",
+      "value": "[Ochibi-chans] Queued apply: target='{0}', sourcePrefab='{1}'"
+    },
+    {
+      "key": "Log.RootScaleApplied",
+      "value": "Root scale sync: applied (values hidden)"
+    },
+    {
+      "key": "Log.Separator",
+      "value": "------------------------------------------------------------"
+    },
+    {
+      "key": "Log.SourceAvatar",
+      "value": "Source avatar: {0}"
+    },
+    {
+      "key": "Log.SourcePrefab",
+      "value": "Source prefab: {0} / {1}"
+    },
+    {
+      "key": "Log.TargetEntry",
+      "value": "Target: {0}"
+    },
+    {
+      "key": "Log.ToolVersion",
+      "value": "{0}: v{1}"
+    },
+    {
+      "key": "Log.UnityVersion",
+      "value": "Unity: {0}"
+    },
+    {
+      "key": "Log.UnknownVersion",
+      "value": "unknown"
+    },
+    {
+      "key": "Log.ViewPositionApplied",
+      "value": "ViewPosition sync: applied (values hidden)"
+    },
+    {
+      "key": "Log.ViewPositionSkipped",
+      "value": "ViewPosition sync: skipped (could not get/apply)"
+    },
+    {
+      "key": "Log.VrcSdkVersion",
+      "value": "VRC SDK: {0}"
+    },
+    {
+      "key": "LogWindow.CloseButton",
+      "value": "Close"
+    },
+    {
+      "key": "LogWindow.CopyButton",
+      "value": "Copy logs to clipboard"
+    },
+    {
+      "key": "LogWindow.NoLogs",
+      "value": "(No logs)"
+    },
+    {
+      "key": "Section.ManualPrefabLabel",
+      "value": "Ochibi-chans prefab (drag & drop from Project)"
+    },
+    {
+      "key": "Section.SourceAvatarLabel",
+      "value": "1) Source avatar (select in the Hierarchy)"
+    },
+    {
+      "key": "Section.TargetPrefabLabel",
+      "value": "2) Target Ochibi-chans prefab (select from the dropdown below)"
+    },
+    {
+      "key": "Toggle.MaboneProxy",
+      "value": "Align when hair/accessories set via MA Bone Proxy are misaligned"
+    },
+    {
+      "key": "Toggle.ShowLogs",
+      "value": "Show logs"
+    },
+    {
+      "key": "Tool.LogWindowTitle",
+      "value": "Ochibi-chans Log"
+    },
+    {
+      "key": "Tool.Name",
+      "value": "Ochibi-chans Converter Tool"
+    },
+    {
+      "key": "Undo.AddExPrefab",
+      "value": "Add EX Prefab"
+    },
+    {
+      "key": "Undo.AdjustCostumeScales",
+      "value": "Adjust Costume Scales"
+    },
+    {
+      "key": "Undo.ClearBlueprintId",
+      "value": "Clear BlueprintId"
+    },
+    {
+      "key": "Undo.CopyViewPosition",
+      "value": "Copy View Position"
+    },
+    {
+      "key": "Undo.OchibiChansConverterToolSyncBlendShapes",
+      "value": "Ochibi-chans Sync BlendShapes"
+    },
+    {
+      "key": "Undo.DuplicateApply",
+      "value": "Ochibi-chans (Duplicate → Apply)"
+    },
+    {
+      "key": "Undo.SetExpressionsReferences",
+      "value": "Set Expressions References"
+    },
+    {
+      "key": "Undo.SetFxPlayableLayer",
+      "value": "Set FX Playable Layer"
+    },
+    {
+      "key": "Undo.SyncArmatureTransform",
+      "value": "Sync Armature Transform"
+    },
+    {
+      "key": "Undo.SyncBlendShapes",
+      "value": "Sync BlendShapes"
+    },
+    {
+      "key": "Undo.SyncRootScale",
+      "value": "Sync Root Scale"
+    },
+    {
+      "key": "Version.Ahead",
+      "value": "You are using version {0} (ahead of the latest {1})."
+    },
+    {
+      "key": "Version.Available",
+      "value": "You are on version {0}. Latest version {1} is available."
+    },
+    {
+      "key": "Version.CheckFailed",
+      "value": "Failed to check the latest version for {0}: {1}"
+    },
+    {
+      "key": "Version.Checking",
+      "value": "Checking for the latest version of {0}..."
+    },
+    {
+      "key": "Version.ErrorMissingUrl",
+      "value": "Latest version URL is not configured."
+    },
+    {
+      "key": "Version.ErrorInvalidUrl",
+      "value": "Version-check configuration is invalid, so the latest version could not be retrieved."
+    },
+    {
+      "key": "Version.ExtractFailed",
+      "value": "Unable to extract the version from the response."
+    },
+    {
+      "key": "Version.NoInfo",
+      "value": "Could not retrieve the latest version info for {0}."
+    },
+    {
+      "key": "Version.Unknown",
+      "value": "Could not retrieve version information for {0}."
+    },
+    {
+      "key": "Version.UpToDate",
+      "value": "You are on version {0}, which is the latest {1}."
+    },
+    {
+      "key": "Warning.AddMenuPrefabMissing",
+      "value": "[Ochibi-chans] No nested prefab reference to ...chibichans_Addmenu was found in sourceChibiPrefab. Skipping add-menu attachment."
+    },
+    {
+      "key": "Warning.BlendshapeCopyFailed",
+      "value": "[Ochibi-chans] Blendshape copy failed for SMR on {0}: {1}"
+    },
+    {
+      "key": "Warning.FaceMeshCacheLoadFailed",
+      "value": "[Ochibi-chans] Failed to load face mesh cache: {0}"
+    },
+    {
+      "key": "Warning.FaceMeshCacheSaveFailed",
+      "value": "[Ochibi-chans] Failed to save face mesh cache: {0}"
+    },
+    {
+      "key": "Warning.SerializedBlendshapeCopyFailed",
+      "value": "[Ochibi-chans] Serialized blendshape copy failed for SMR on {0}: {1}"
+    },
+    {
+      "key": "Window.Description",
+      "value": "Your original avatar stays intact. A copy will be created and converted."
+    },
+    {
+      "key": "Window.TitleWithVersion",
+      "value": "{0} v{1}"
+    }
+  ]
+}
