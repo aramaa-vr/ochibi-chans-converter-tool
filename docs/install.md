@@ -102,7 +102,7 @@ nav_order: 3
 <details close markdown="1">
 <summary>詳細を表示</summary>
 
-[Booth](https://aramaa.booth.pm/) からダウンロードしたパッケージをUnityに直接インポートする方法です。  
+[Booth](https://aramaa.booth.pm/items/7906711) からダウンロードしたパッケージをUnityに直接インポートする方法です。  
 **VCCが使える環境では方法1を推奨**します。
 
 [あらまあ素敵なショップ unitypackage 導入ガイド](https://aramaa-vr.github.io/vpm-vpai-error-test/)
