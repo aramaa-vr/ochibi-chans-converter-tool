@@ -20,6 +20,7 @@ nav_order: 8
 
 | 変換元（対応アバター） |
 | :--- |
+| [オリジナル3Dモデル「ひきくまりのクマリ」](https://jingo1016.booth.pm/items/7928592) |
 | [VRChat向けオリジナル3Dモデル「ゆうぎり」-YUGIRI-](https://entas.booth.pm/items/6612192) |
 | [オリジナル3Dモデル「ピューマのぷまちゃん」](https://nem3.booth.pm/items/7062407) |
 | [オリジナル3Ｄモデル「愛莉」Ver.1.01](https://booth.pm/ja/items/6082686) |
