@@ -105,22 +105,7 @@ nav_order: 3
 [Booth](https://aramaa.booth.pm/) からダウンロードしたパッケージをUnityに直接インポートする方法です。  
 **VCCが使える環境では方法1を推奨**します。
 
-1. UnityPackageを開く  
-2. Importする  
-3. アップデート設定を行う
-
-![Unityでパッケージを開く画面]({{ "/assets/img/ochibi-chans-converter-tool/pages/install/install-unitypackage.webp" | relative_url }})
-![Unityでインポート内容を確認する画面]({{ "/assets/img/ochibi-chans-converter-tool/pages/install/install-unitypackage-import.webp" | relative_url }})
-
-アップデートできるようにする
-- 一度VCCを終了した後、起動してください。
-- `Settings → Packages → Installed Repositories` で、**aramaa にチェックがある**ことを確認
-
-![VCCのInstalled Repositoriesでaramaaチェックを確認する画面]({{ "/assets/img/ochibi-chans-converter-tool/pages/install/vrcc_repo_opt_q82.webp" | relative_url }})
-
-- `Projects -> 導入したいプロジェクト -> Manage Project -> Selected Repos -> Multiple Repositories -> aramaa` をチェック
-
-![Unityでインポートが完了した画面]({{ "/assets/img/ochibi-chans-converter-tool/pages/install/install-unitypackage-done.webp" | relative_url }})
+[あらまあ素敵なショップ unitypackage 導入ガイド](https://aramaa-vr.github.io/vpm-vpai-error-test/)
 
 </details>
 
