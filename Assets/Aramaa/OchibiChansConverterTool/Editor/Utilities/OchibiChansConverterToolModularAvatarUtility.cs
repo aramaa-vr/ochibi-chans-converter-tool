@@ -339,15 +339,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 // Contains フォールバックを無効化します（Exact / Armature-path 一致のみ許可）。
                 if (costumeArmature == null || !string.Equals(modifier.Name, costumeArmature.name, StringComparison.Ordinal))
                 {
-                    TryApplyScaleToFirstMatch(
+                    TryApplyScaleWithHierarchyAwareContains(
                         temp,
-                        bone => bone.name.Contains(modifier.Name),
+                        modifier,
                         modifier.Scale,
                         costumeBones,
                         logs,
                         costumeRoot,
-                        modifier.Name,
-                        L("Log.MatchContains"),
+                        costumeArmature,
                         ref appliedCount
                     );
                 }
@@ -400,6 +399,133 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             return false;
+        }
+
+        private static bool TryApplyScaleWithHierarchyAwareContains(
+            List<Transform> bones,
+            AvatarBoneScaleModifier modifier,
+            Vector3 scaleModifier,
+            List<Transform> removalTarget,
+            List<string> logs,
+            Transform costumeRoot,
+            Transform costumeArmature,
+            ref int appliedCount
+        )
+        {
+            if (bones == null || modifier == null)
+            {
+                return false;
+            }
+
+            var candidates = new List<(Transform bone, int index)>();
+            for (int i = 0; i < bones.Count; i++)
+            {
+                var bone = bones[i];
+                if (bone == null)
+                {
+                    continue;
+                }
+
+                if (!bone.name.Contains(modifier.Name))
+                {
+                    continue;
+                }
+
+                candidates.Add((bone, i));
+            }
+
+            if (candidates.Count == 0)
+            {
+                return false;
+            }
+
+            // 既存互換: 階層情報が無い場合は従来どおり最初の一致を採用
+            if (string.IsNullOrEmpty(modifier.RelativePath) || costumeArmature == null)
+            {
+                var first = candidates[0].bone;
+                return TryApplyScaleToBone(
+                    first,
+                    scaleModifier,
+                    removalTarget,
+                    logs,
+                    costumeRoot,
+                    modifier.Name,
+                    L("Log.MatchContains"),
+                    ref appliedCount
+                );
+            }
+
+            var srcSegments = modifier.RelativePath.Split('/');
+            Transform bestBone = null;
+            int bestScore = int.MinValue;
+            int bestDepthDelta = int.MaxValue;
+            int bestIndex = int.MaxValue;
+
+            foreach (var c in candidates)
+            {
+                var rel = AnimationUtility.CalculateTransformPath(c.bone, costumeArmature);
+                if (string.IsNullOrEmpty(rel))
+                {
+                    rel = costumeArmature.name;
+                }
+
+                var dstSegments = rel.Split('/');
+
+                // 末尾側（親子構造）一致を優先して誤マッチを減らす
+                int tailMatch = CountTailMatches(srcSegments, dstSegments);
+                int depthDelta = Mathf.Abs(srcSegments.Length - dstSegments.Length);
+
+                if (tailMatch > bestScore ||
+                    (tailMatch == bestScore && depthDelta < bestDepthDelta) ||
+                    (tailMatch == bestScore && depthDelta == bestDepthDelta && c.index < bestIndex))
+                {
+                    bestBone = c.bone;
+                    bestScore = tailMatch;
+                    bestDepthDelta = depthDelta;
+                    bestIndex = c.index;
+                }
+            }
+
+            if (bestBone == null)
+            {
+                return false;
+            }
+
+            return TryApplyScaleToBone(
+                bestBone,
+                scaleModifier,
+                removalTarget,
+                logs,
+                costumeRoot,
+                modifier.Name,
+                L("Log.MatchContains"),
+                ref appliedCount
+            );
+        }
+
+        private static int CountTailMatches(string[] a, string[] b)
+        {
+            if (a == null || b == null)
+            {
+                return 0;
+            }
+
+            int i = a.Length - 1;
+            int j = b.Length - 1;
+            int count = 0;
+            while (i >= 0 && j >= 0)
+            {
+                if (!string.Equals(a[i], b[j], StringComparison.Ordinal))
+                {
+                    break;
+                }
+
+                count++;
+                i--;
+                j--;
+            }
+
+            return count;
         }
 
         private static bool TryApplyScaleToBone(
