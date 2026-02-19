@@ -350,6 +350,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                    Mathf.Abs(s.z - 1f) < ScaleEpsilon;
         }
 
+        private static bool IsNearlySameScale(Vector3 a, Vector3 b)
+        {
+            return Mathf.Abs(a.x - b.x) < ScaleEpsilon &&
+                   Mathf.Abs(a.y - b.y) < ScaleEpsilon &&
+                   Mathf.Abs(a.z - b.z) < ScaleEpsilon;
+        }
+
         private static bool TryApplyScaleToFirstMatch(
             List<Transform> bones,
             Func<Transform, bool> predicate,
@@ -403,6 +410,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             if (bone == null)
             {
                 return false;
+            }
+
+            // 衣装側ボーンがすでに modifier と同じ localScale を持っている場合、
+            // ここで再度乗算すると scale が二重化してしまうため適用済みとして扱います。
+            if (IsNearlySameScale(bone.localScale, scaleModifier))
+            {
+                removalTarget?.Remove(bone);
+                return true;
             }
 
             // ★ここが要点：既存実装どおり “上書き” ではなく “乗算” で補正する
