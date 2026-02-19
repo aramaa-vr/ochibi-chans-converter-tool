@@ -335,17 +335,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 
                 // 3) 互換性維持のため、完全一致＆Armature一致が無い場合のみ Contains を許可
                 // （ただし誤マッチしやすいため、今後は段階的に縮小する前提）
-                TryApplyScaleToFirstMatch(
-                    temp,
-                    bone => bone.name.Contains(modifier.Name),
-                    modifier.Scale,
-                    costumeBones,
-                    logs,
-                    costumeRoot,
-                    modifier.Name,
-                    L("Log.MatchContains"),
-                    ref appliedCount
-                );
+                // 例外: 「Armature」キーは Armature.1 などへの誤マッチ事故が起きやすいため、
+                // Contains フォールバックを無効化します（Exact / Armature-path 一致のみ許可）。
+                if (costumeArmature == null || !string.Equals(modifier.Name, costumeArmature.name, StringComparison.Ordinal))
+                {
+                    TryApplyScaleToFirstMatch(
+                        temp,
+                        bone => bone.name.Contains(modifier.Name),
+                        modifier.Scale,
+                        costumeBones,
+                        logs,
+                        costumeRoot,
+                        modifier.Name,
+                        L("Log.MatchContains"),
+                        ref appliedCount
+                    );
+                }
             }
 
             logs?.Add(F("Log.CostumeApplied", costumeRoot.name, appliedCount));
