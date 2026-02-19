@@ -335,9 +335,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 
                 // 3) 互換性維持のため、完全一致＆Armature一致が無い場合のみ Contains を許可
                 // （ただし誤マッチしやすいため、今後は段階的に縮小する前提）
-                // 例外: 「Armature」キーは Armature.1 などへの誤マッチ事故が起きやすいため、
-                // Contains フォールバックを無効化します（Exact / Armature-path 一致のみ許可）。
-                if (costumeArmature == null || !string.Equals(modifier.Name, costumeArmature.name, StringComparison.Ordinal))
+                // RelativePath が空のキーは「Armature ルート自身」を意味するため、
+                // Armature-path 一致でのみ適用し、Contains フォールバックは行いません。
+                if (!string.IsNullOrEmpty(modifier.RelativePath) &&
+                    (costumeArmature == null || !string.Equals(modifier.Name, costumeArmature.name, StringComparison.Ordinal)))
                 {
                     TryApplyScaleWithHierarchyAwareContains(
                         temp,
