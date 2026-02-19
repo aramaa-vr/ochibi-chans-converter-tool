@@ -418,34 +418,27 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return false;
             }
 
-            var candidates = new List<(Transform bone, int index)>();
-            for (int i = 0; i < bones.Count; i++)
+            // RelativePath が無いキー（Armature ルート等）は Contains しない。
+            // ルート級キーは誤マッチ時の破壊力が大きいため、Exact/Path のみ許可する。
+            if (string.IsNullOrEmpty(modifier.RelativePath))
             {
-                var bone = bones[i];
-                if (bone == null)
-                {
-                    continue;
-                }
-
-                if (!bone.name.Contains(modifier.Name))
-                {
-                    continue;
-                }
-
-                candidates.Add((bone, i));
+                return false;
             }
+
+            var candidates = bones
+                .Where(b => b != null && b.name.Contains(modifier.Name))
+                .ToList();
 
             if (candidates.Count == 0)
             {
                 return false;
             }
 
-            // 既存互換: 階層情報が無い場合は従来どおり最初の一致を採用
-            if (string.IsNullOrEmpty(modifier.RelativePath) || costumeArmature == null)
+            // 候補が1件ならそのまま適用（安全性と互換性のバランス）。
+            if (candidates.Count == 1)
             {
-                var first = candidates[0].bone;
                 return TryApplyScaleToBone(
-                    first,
+                    candidates[0],
                     scaleModifier,
                     removalTarget,
                     logs,
@@ -456,44 +449,50 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 );
             }
 
-            var srcSegments = modifier.RelativePath.Split('/');
-            Transform bestBone = null;
-            int bestScore = int.MinValue;
-            int bestDepthDelta = int.MaxValue;
-            int bestIndex = int.MaxValue;
-
-            foreach (var c in candidates)
+            // 候補が複数ある場合は、階層一致で「明確に優位な1件」があるときだけ適用。
+            // 明確な優位差がない場合は安全のためスキップする。
+            if (costumeArmature == null)
             {
-                var rel = AnimationUtility.CalculateTransformPath(c.bone, costumeArmature);
-                if (string.IsNullOrEmpty(rel))
-                {
-                    rel = costumeArmature.name;
-                }
-
-                var dstSegments = rel.Split('/');
-
-                // 末尾側（親子構造）一致を優先して誤マッチを減らす
-                int tailMatch = CountTailMatches(srcSegments, dstSegments);
-                int depthDelta = Mathf.Abs(srcSegments.Length - dstSegments.Length);
-
-                if (tailMatch > bestScore ||
-                    (tailMatch == bestScore && depthDelta < bestDepthDelta) ||
-                    (tailMatch == bestScore && depthDelta == bestDepthDelta && c.index < bestIndex))
-                {
-                    bestBone = c.bone;
-                    bestScore = tailMatch;
-                    bestDepthDelta = depthDelta;
-                    bestIndex = c.index;
-                }
+                logs?.Add($"[MA] {costumeRoot?.name}: key='{modifier.Name}' contains-ambiguous -> skipped(no armature)");
+                return false;
             }
 
-            if (bestBone == null)
+            var srcSegments = modifier.RelativePath.Split('/');
+            var ranked = candidates
+                .Select((bone, index) =>
+                {
+                    var rel = AnimationUtility.CalculateTransformPath(bone, costumeArmature);
+                    var dstSegments = string.IsNullOrEmpty(rel) ? Array.Empty<string>() : rel.Split('/');
+                    var tailMatch = CountTailMatches(srcSegments, dstSegments);
+                    var depthDelta = Mathf.Abs(srcSegments.Length - dstSegments.Length);
+                    return new CandidateScore
+                    {
+                        Bone = bone,
+                        Index = index,
+                        TailMatch = tailMatch,
+                        DepthDelta = depthDelta,
+                    };
+                })
+                .OrderByDescending(x => x.TailMatch)
+                .ThenBy(x => x.DepthDelta)
+                .ThenBy(x => x.Index)
+                .ToList();
+
+            var best = ranked[0];
+            var second = ranked[1];
+
+            var isClearlyBetter =
+                best.TailMatch > second.TailMatch ||
+                (best.TailMatch == second.TailMatch && best.DepthDelta < second.DepthDelta);
+
+            if (!isClearlyBetter)
             {
+                logs?.Add($"[MA] {costumeRoot?.name}: key='{modifier.Name}' contains-ambiguous -> skipped(tie)");
                 return false;
             }
 
             return TryApplyScaleToBone(
-                bestBone,
+                best.Bone,
                 scaleModifier,
                 removalTarget,
                 logs,
@@ -502,6 +501,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 L("Log.MatchContains"),
                 ref appliedCount
             );
+        }
+
+        private sealed class CandidateScore
+        {
+            public Transform Bone;
+            public int Index;
+            public int TailMatch;
+            public int DepthDelta;
         }
 
         private static int CountTailMatches(string[] a, string[] b)
