@@ -402,6 +402,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             return false;
         }
 
+        /// <summary>
+        /// Contains フォールバックの安全版。
+        ///
+        /// 方針:
+        /// - 0件: 何もしない
+        /// - 1件: そのまま適用（過度な不適用を避ける）
+        /// - 複数件: 階層スコアで比較し、"明確に優位"な候補のみ適用
+        /// - 同点/曖昧: 安全のため適用しない
+        ///
+        /// これにより、旧実装の「最初に見つかった候補へ適用」起因の誤適用を減らします。
+        /// </summary>
         private static bool TryApplyScaleWithHierarchyAwareContains(
             List<Transform> bones,
             AvatarBoneScaleModifier modifier,
@@ -434,7 +445,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return false;
             }
 
-            // 候補が1件ならそのまま適用（安全性と互換性のバランス）。
+            // 候補1件は曖昧性が無いので適用。
+            // ここで厳しすぎる判定を入れると、従来動作していた衣装が不適用になりやすい。
             if (candidates.Count == 1)
             {
                 return TryApplyScaleToBone(
@@ -481,6 +493,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             var best = ranked[0];
             var second = ranked[1];
 
+            // 判定基準（明確に優位か）
+            // - tailMatch が大きい: 元ボーンと末端側の親子構造がより近い
+            // - tailMatch 同点なら depthDelta が小さい方を優先
+            // ※ 完全同点なら安全のため不適用にする（誤適用防止を優先）。
             var isClearlyBetter =
                 best.TailMatch > second.TailMatch ||
                 (best.TailMatch == second.TailMatch && best.DepthDelta < second.DepthDelta);
@@ -503,6 +519,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             );
         }
 
+        // Contains 候補の比較用スコア。
+        // class 化しておくと評価軸の追加/変更時に追いやすい。
         private sealed class CandidateScore
         {
             public Transform Bone;
@@ -511,6 +529,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             public int DepthDelta;
         }
 
+        /// <summary>
+        /// 2つのパス配列の"末尾"から連続一致する要素数を返す。
+        /// 例: [A,B,C,D] と [X,B,C,D] は 3 を返す。
+        /// </summary>
         private static int CountTailMatches(string[] a, string[] b)
         {
             if (a == null || b == null)
