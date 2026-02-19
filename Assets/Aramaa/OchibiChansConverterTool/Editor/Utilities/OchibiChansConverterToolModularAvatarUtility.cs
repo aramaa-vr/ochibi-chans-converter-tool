@@ -184,6 +184,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                     continue;
                 }
 
+                // Armature 名は FBX 小物などで入れ子になりやすく、
+                // ここに混ざると衣装側の Armature.1 へ誤適用されるリスクが高いです。
+                // 「メイン Armature 自体」以外の同名 Transform は除外します。
+                if (!ReferenceEquals(b, avatarArmature) && string.Equals(b.name, avatarArmature.name, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
                 // アクセサリ等の “追加階層” を拾ってしまうと衣装スケールが破綻するため、
                 // Base Prefab の Armature に存在する Transform パスだけを対象にします。
                 if (allowedArmaturePaths != null)
