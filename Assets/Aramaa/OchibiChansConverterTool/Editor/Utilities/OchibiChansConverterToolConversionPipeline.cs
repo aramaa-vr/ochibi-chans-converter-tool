@@ -51,6 +51,30 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private static string F(string key, params object[] args) => OchibiChansConverterToolLocalization.Format(key, args);
 
+        private static void AddStepLog(List<string> logs, string stepNo, string title, params string[] details)
+        {
+            if (logs == null)
+            {
+                return;
+            }
+
+            logs.Add(F("Log.Step.Header", stepNo, title));
+            if (details == null)
+            {
+                return;
+            }
+
+            foreach (var detail in details)
+            {
+                if (string.IsNullOrWhiteSpace(detail))
+                {
+                    continue;
+                }
+
+                logs.Add(F("Log.Step.Detail", detail));
+            }
+        }
+
         // --------------------------------------------------------------------
         // 処理の全体像（初心者向け）
         // --------------------------------------------------------------------
@@ -97,6 +121,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 logs.Add(F("Log.SourceAvatar", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(sourceTarget.transform)));
             }
+
+            logs.Add("");
+            AddStepLog(
+                logs,
+                "Flow",
+                L("Log.Step.Flow.Title"),
+                L("Log.Step.Flow.Detail1"),
+                L("Log.Step.Flow.Detail2"),
+                L("Log.Step.Flow.Detail3"),
+                L("Log.Step.Flow.Detail4")
+            );
 
             logs.Add("");
             // ------------------------------------------------------------
@@ -154,6 +189,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // 複製先を選択しておく（Ctrl+D と同様の体験）
                 Selection.objects = duplicatedTargets;
 
+                AddStepLog(
+                    logs,
+                    "2",
+                    L("Log.Step.2.Title"),
+                    L("Log.Step.2.Detail1")
+                );
                 logs.Add(L("Log.DuplicateSuccess"));
                 foreach (var d in duplicatedTargets.Where(x => x != null))
                 {
@@ -167,6 +208,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 if (applyMaboneProxyProcessing)
                 {
+                    AddStepLog(
+                        logs,
+                        "3",
+                        L("Log.Step.3.Title"),
+                        L("Log.Step.3.Detail1")
+                    );
                     logs.Add(L("Log.MaboneProxyHeader"));
 #if CHIBI_MODULAR_AVATAR
                     foreach (var duplicated in duplicatedTargets.Where(x => x != null))
@@ -184,6 +231,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 4) Blueprint ID クリア
                 // --------------------------------------------------------
+                AddStepLog(
+                    logs,
+                    "4",
+                    L("Log.Step.4.Title"),
+                    L("Log.Step.4.Detail1")
+                );
                 logs.Add(L("Log.BlueprintClearHeader"));
                 foreach (var duplicated in duplicatedTargets.Where(x => x != null))
                 {
@@ -268,6 +321,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             try
             {
                 logs.Add(F("Log.PrefabExpand", basePrefabPath));
+                AddStepLog(
+                    logs,
+                    "5",
+                    L("Log.Step.5.Title"),
+                    L("Log.Step.5.Detail1"),
+                    L("Log.Step.5.Detail2")
+                );
                 logs.Add("");
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 5) 変換元 Prefab 展開（読み取り専用）
@@ -303,6 +363,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     logs.Add(L("Log.Separator"));
                     logs.Add(F("Log.TargetEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstRoot.transform)));
+                    AddStepLog(
+                        logs,
+                        "6",
+                        L("Log.Step.6.Title"),
+                        L("Log.Step.6.Detail1")
+                    );
 
                     // 実行前の参照（FX / Menu / Parameters）を取得してログ用に保持（値は出さない）
                     OchibiChansConverterToolVrcAvatarDescriptorUtility.TryGetFxPlayableLayerControllerFromAvatar(dstRoot, out var fxBefore);
@@ -325,6 +391,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
 
                     // SVG 対応ステップ: 7) VRC Descriptor 同期 + MA 衣装調整
+                    AddStepLog(
+                        logs,
+                        "7",
+                        L("Log.Step.7.Title"),
+                        L("Log.Step.7.Detail1"),
+                        L("Log.Step.7.Detail2")
+                    );
                     if (fxController != null)
                     {
                         logs.Add(F("Log.FxApply", OchibiChansConverterToolConversionLogUtility.FormatAssetRef(fxController)));
@@ -384,6 +457,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
 
                     logs.Add(L("Log.Separator"));
+                    AddStepLog(
+                        logs,
+                        "8",
+                        L("Log.Step.8.Title"),
+                        L("Log.Step.8.Detail1")
+                    );
                     logs.Add("");
                 }
 
@@ -635,6 +714,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs ??= new List<string>();
 
             logs.Add(L("Log.CoreHeader"));
+            logs.Add(L("Log.Step.6.Substep1"));
             logs.Add(L("Log.RootScaleApplied"));
             Undo.RecordObject(dstRoot.transform, L("Undo.SyncRootScale"));
             dstRoot.transform.localScale = srcRoot.transform.localScale;
@@ -643,17 +723,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var srcArmature = OchibiChansConverterToolEditorUtility.FindAvatarMainArmature(srcRoot.transform);
             if (srcArmature == null)
             {
+                logs.Add(L("Log.Step.6.Substep2SkippedSource"));
                 return;
             }
 
             var dstArmature = OchibiChansConverterToolEditorUtility.FindAvatarMainArmature(dstRoot.transform);
             if (dstArmature == null)
             {
+                logs.Add(L("Log.Step.6.Substep2SkippedTarget"));
                 return;
             }
 
+            logs.Add(L("Log.Step.6.Substep2"));
             CopyArmatureTransforms(srcArmature, dstArmature, logs);
+            logs.Add(L("Log.Step.6.Substep3"));
             AddMissingComponentsUnderArmature(srcRoot, dstRoot, srcArmature, dstArmature, logs);
+            logs.Add(L("Log.Step.6.Substep4"));
             OchibiChansConverterToolSkinnedMeshUtility.CopySkinnedMeshRenderersBlendShapesOnlyWithLog(srcRoot, dstRoot, logs);
         }
 

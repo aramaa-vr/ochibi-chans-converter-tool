@@ -462,6 +462,122 @@
       "value": "VRC SDK：{0}"
     },
     {
+      "key": "Log.Step.Header",
+      "value": "[Step {0}] {1}"
+    },
+    {
+      "key": "Log.Step.Detail",
+      "value": "  - {0}"
+    },
+    {
+      "key": "Log.Step.Flow.Title",
+      "value": "この実行で行う変換処理"
+    },
+    {
+      "key": "Log.Step.Flow.Detail1",
+      "value": "選択中アバターをCtrl+D相当で複製し、元アバターは直接編集しません。"
+    },
+    {
+      "key": "Log.Step.Flow.Detail2",
+      "value": "変換元PrefabからVRCAvatarDescriptor情報（FX / Expressions / ViewPosition）を読み取り、複製先へ反映します。"
+    },
+    {
+      "key": "Log.Step.Flow.Detail3",
+      "value": "Armature配下Transform同期・不足Component追加/参照リマップ・BlendShape同期・Ex AddMenu配置を対象ごとに行います。"
+    },
+    {
+      "key": "Log.Step.Flow.Detail4",
+      "value": "数値ログは非表示です（スケール値 / シェイプキー値は表示しません）。"
+    },
+    {
+      "key": "Log.Step.2.Title",
+      "value": "元アバター複製"
+    },
+    {
+      "key": "Log.Step.2.Detail1",
+      "value": "複製先を生成し、以降の変換先として固定します。"
+    },
+    {
+      "key": "Log.Step.3.Title",
+      "value": "MA BoneProxy補正"
+    },
+    {
+      "key": "Log.Step.3.Detail1",
+      "value": "BoneProxyの参照先を複製先アバター階層に合わせて補正します。"
+    },
+    {
+      "key": "Log.Step.4.Title",
+      "value": "Blueprint IDクリア"
+    },
+    {
+      "key": "Log.Step.4.Detail1",
+      "value": "複製先のPipelineManagerに残るBlueprint IDを安全のため空にします。"
+    },
+    {
+      "key": "Log.Step.5.Title",
+      "value": "変換元Prefabの読み取り"
+    },
+    {
+      "key": "Log.Step.5.Detail1",
+      "value": "Prefabを一時展開し、参照情報のみ取得します（元アセットは変更しません）。"
+    },
+    {
+      "key": "Log.Step.5.Detail2",
+      "value": "取得対象: FX Controller / Expressions Menu / Expression Parameters / Ex AddMenu配置情報"
+    },
+    {
+      "key": "Log.Step.6.Title",
+      "value": "対象アバターへの同期適用"
+    },
+    {
+      "key": "Log.Step.6.Detail1",
+      "value": "適用前状態を記録し、Transform / Component / BlendShape / Ex AddMenuを順に反映します。"
+    },
+    {
+      "key": "Log.Step.7.Title",
+      "value": "VRC Descriptor同期 + MA衣装調整"
+    },
+    {
+      "key": "Log.Step.7.Detail1",
+      "value": "FX / Expressions / ViewPosition を変換元に合わせます。"
+    },
+    {
+      "key": "Log.Step.7.Detail2",
+      "value": "Modular Avatar環境では衣装側の整合性調整も実行します。"
+    },
+    {
+      "key": "Log.Step.8.Title",
+      "value": "対象アバター処理完了"
+    },
+    {
+      "key": "Log.Step.8.Detail1",
+      "value": "対象ごとの変換ログはここまでです。"
+    },
+    {
+      "key": "Log.Step.6.Substep1",
+      "value": "  - 6-1. ルートTransform(localScale)を変換元に合わせます（値は非表示）。"
+    },
+    {
+      "key": "Log.Step.6.Substep2SkippedSource",
+      "value": "  - 6-2. Armature同期: スキップ（変換元にArmatureが見つかりません）。"
+    },
+    {
+      "key": "Log.Step.6.Substep2SkippedTarget",
+      "value": "  - 6-2. Armature同期: スキップ（複製先にArmatureが見つかりません）。"
+    },
+    {
+      "key": "Log.Step.6.Substep2",
+      "value": "  - 6-2. Armature配下Transform（位置/回転/スケール）をパス一致で同期します（値は非表示）。"
+    },
+    {
+      "key": "Log.Step.6.Substep3",
+      "value": "  - 6-3. Armature配下で不足しているComponentを追加し、参照先を複製先へリマップします。"
+    },
+    {
+      "key": "Log.Step.6.Substep4",
+      "value": "  - 6-4. SkinnedMeshRendererのBlendShapeを名前一致で同期します（値は非表示）。"
+    },
+    {
       "key": "LogWindow.CloseButton",
       "value": "閉じる"
     },
