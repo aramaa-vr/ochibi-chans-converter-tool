@@ -41,6 +41,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     internal static class OchibiChansConverterToolModularAvatarUtility
     {
         private const float ScaleEpsilon = 0.0001f;
+        private const int MaxLoggedBlendShapeEntriesPerSmr = 80;
 
         private static string L(string key) => OchibiChansConverterToolLocalization.Get(key);
         private static string F(string key, params object[] args) => OchibiChansConverterToolLocalization.Format(key, args);
@@ -68,6 +69,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             var baseArmaturePaths = BuildBaseArmatureTransformPaths(basePrefabRoot, logs);
+            logs?.Add(L("Log.CostumeScaleCriteria"));
 
             var avatarBoneScaleModifiers = BuildAvatarBoneScaleModifiers(dstArmature, baseArmaturePaths, logs);
 
@@ -556,11 +558,16 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 // 「どの BlendShape が存在するか」を全列挙（= 全確認）
                 var toApplyIndices = new List<int>();
                 var toApplyNames = new List<string>();
+                int loggedShapeCount = 0;
 
                 for (int i = 0; i < count; i++)
                 {
                     var shapeName = mesh.GetBlendShapeName(i);
-                    logs?.Add(F("Log.BlendshapeEntry", shapeName));
+                    if (loggedShapeCount < MaxLoggedBlendShapeEntriesPerSmr)
+                    {
+                        logs?.Add(F("Log.BlendshapeEntry", shapeName));
+                        loggedShapeCount++;
+                    }
 
                     if (baseBlendShapeWeights == null)
                     {
@@ -573,6 +580,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                         toApplyIndices.Add(i);
                         toApplyNames.Add(shapeName);
                     }
+                }
+
+                if (count > loggedShapeCount)
+                {
+                    logs?.Add(F("Log.ListEllipsisMore", count - loggedShapeCount));
                 }
 
                 // 同期対象が無ければ、このSMRは確認のみ

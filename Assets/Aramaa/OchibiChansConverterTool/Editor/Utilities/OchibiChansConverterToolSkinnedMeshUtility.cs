@@ -36,6 +36,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// </summary>
     internal static class OchibiChansConverterToolSkinnedMeshUtility
     {
+        private const int MaxLoggedBlendShapeNamesPerRenderer = 80;
         /// <summary>
         /// 変換元（srcRoot）内の SkinnedMeshRenderer を走査し、
         /// 複製先（dstRoot）内の “同パス / 同名” の SkinnedMeshRenderer に対して
@@ -325,8 +326,19 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                     continue;
                 }
 
+                var namesForLog = item.BlendShapeNames;
+                if (item.BlendShapeNames.Count > MaxLoggedBlendShapeNamesPerRenderer)
+                {
+                    namesForLog = item.BlendShapeNames.Take(MaxLoggedBlendShapeNamesPerRenderer).ToList();
+                }
+
                 // ここでは “名前だけ” を表示（値は表示しない）
-                logs.Add(OchibiChansConverterToolLocalization.Format("Log.BlendshapeRendererDetail", item.RendererPath, item.BlendShapeNames.Count, string.Join(", ", item.BlendShapeNames)));
+                logs.Add(OchibiChansConverterToolLocalization.Format("Log.BlendshapeRendererDetail", item.RendererPath, item.BlendShapeNames.Count, string.Join(", ", namesForLog)));
+
+                if (item.BlendShapeNames.Count > namesForLog.Count)
+                {
+                    logs.Add(OchibiChansConverterToolLocalization.Format("Log.ListEllipsisMore", item.BlendShapeNames.Count - namesForLog.Count));
+                }
             }
         }
 

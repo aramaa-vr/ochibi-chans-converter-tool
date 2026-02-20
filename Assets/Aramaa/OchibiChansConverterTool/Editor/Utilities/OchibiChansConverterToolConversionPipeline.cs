@@ -40,6 +40,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OchibiChansConverterToolConversionPipeline
     {
         private const string DuplicatedNameSuffix = " (Ochibi-chans)";
+        private const int MaxLoggedArmaturePaths = 80;
 
         /// <summary>
         /// ローカライズ文字列を取得します。
@@ -756,7 +757,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs.Add(L("Log.ArmatureTransformApplied"));
 
             var srcAll = srcArmature.GetComponentsInChildren<Transform>(true);
+            logs.Add(F("Log.ArmatureTransformScan", srcAll.Length));
             int updated = 0;
+            int missingPathCount = 0;
+            int loggedPathCount = 0;
 
             foreach (var srcT in srcAll)
             {
@@ -771,6 +775,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var dstT = string.IsNullOrEmpty(rel) ? dstArmature : dstArmature.Find(rel);
                 if (dstT == null)
                 {
+                    missingPathCount++;
                     continue;
                 }
 
@@ -783,8 +788,19 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 updated++;
                 // パスだけを出す（値は出さない）
-                logs.Add(F("Log.PathEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT)));
+                if (loggedPathCount < MaxLoggedArmaturePaths)
+                {
+                    logs.Add(F("Log.PathEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT)));
+                    loggedPathCount++;
+                }
             }
+
+            if (updated > loggedPathCount)
+            {
+                logs.Add(F("Log.ListEllipsisMore", updated - loggedPathCount));
+            }
+
+            logs.Add(F("Log.ArmatureTransformPathMissing", missingPathCount));
 
             logs.Add(F("Log.ArmatureTransformUpdated", updated));
             logs.Add("");
@@ -810,7 +826,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs.Add(L("Log.AddMissingComponents"));
 
             var srcAll = srcArmature.GetComponentsInChildren<Transform>(true);
+            logs.Add(F("Log.AddMissingComponentsScan", srcAll.Length));
             int addedCount = 0;
+            int missingPathCount = 0;
+            int alreadySatisfiedCount = 0;
 
             foreach (var srcT in srcAll)
             {
@@ -825,6 +844,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var dstT = string.IsNullOrEmpty(rel) ? dstArmature : dstArmature.Find(rel);
                 if (dstT == null)
                 {
+                    missingPathCount++;
                     continue;
                 }
 
@@ -863,6 +883,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     var dstExisting = dstGO.GetComponents(type);
                     int dstCount = dstExisting != null ? dstExisting.Length : 0;
+                    if (dstCount >= srcList.Count)
+                    {
+                        alreadySatisfiedCount++;
+                    }
 
                     for (int i = 0; i < srcList.Count; i++)
                     {
@@ -904,6 +928,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
                 }
             }
+
+            logs.Add(F("Log.AddMissingComponentsPathMissing", missingPathCount));
+            logs.Add(F("Log.AddMissingComponentsAlreadySatisfied", alreadySatisfiedCount));
 
             logs.Add(F("Log.MissingComponentsAdded", addedCount));
             logs.Add("");

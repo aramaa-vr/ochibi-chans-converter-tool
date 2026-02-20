@@ -130,6 +130,14 @@
       "value": "Armature Transform同期: 実行（値は非表示）"
     },
     {
+      "key": "Log.ArmatureTransformScan",
+      "value": "Armature Transform同期: 変換元Transform数={0}"
+    },
+    {
+      "key": "Log.ArmatureTransformPathMissing",
+      "value": "Armature Transform同期: 複製先に対応パスが見つからずスキップ={0}"
+    },
+    {
       "key": "Log.ArmatureTransformUpdated",
       "value": "Armature Transform同期: 更新数={0}"
     },
@@ -220,6 +228,14 @@
     {
       "key": "Log.CostumeScaleHeader",
       "value": "=== 衣装スケール調整（MA Mesh Settings） ==="
+    },
+    {
+      "key": "Log.CostumeScaleCriteria",
+      "value": "衣装スケール調整の基準: Base Prefab側にも存在する『非1スケールのArmatureボーン』のみをMA衣装へ適用します。"
+    },
+    {
+      "key": "Log.CostumeScaleApplied",
+      "value": "[CostumeScale] 衣装='{0}' / キー='{1}' / 一致方式='{2}' / ボーン='{3}'"
     },
     {
       "key": "Log.CostumeSmrCount",
@@ -374,6 +390,18 @@
       "value": "不足コンポーネント追加: 追加数={0}"
     },
     {
+      "key": "Log.AddMissingComponentsScan",
+      "value": "不足コンポーネント追加: 変換元Transform数={0}"
+    },
+    {
+      "key": "Log.AddMissingComponentsPathMissing",
+      "value": "不足コンポーネント追加: 複製先に対応パスが見つからずスキップ={0}"
+    },
+    {
+      "key": "Log.AddMissingComponentsAlreadySatisfied",
+      "value": "不足コンポーネント追加: 既に同等構成のため追加不要={0}"
+    },
+    {
       "key": "Log.ModularAvatarMissing",
       "value": "[WARN] Modular Avatar が未導入のため衣装スケール調整はスキップしました。"
     },
@@ -408,6 +436,10 @@
     {
       "key": "Log.PathEntryEllipsis",
       "value": " - ..."
+    },
+    {
+      "key": "Log.ListEllipsisMore",
+      "value": " - ...（他 {0} 件）"
     },
     {
       "key": "Log.PrefabExpand",

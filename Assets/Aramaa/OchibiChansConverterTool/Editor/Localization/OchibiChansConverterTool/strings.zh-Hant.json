@@ -578,6 +578,39 @@
       "key": "Log.Step.6.Substep4",
       "value": "  - 6-4. Sync SkinnedMeshRenderer blendshapes by matching names (values hidden)."
     },
+
+    {
+      "key": "Log.ArmatureTransformScan",
+      "value": "Armature transform sync: source transform count={0}"
+    },
+    {
+      "key": "Log.ArmatureTransformPathMissing",
+      "value": "Armature transform sync: skipped due to missing destination path={0}"
+    },
+    {
+      "key": "Log.CostumeScaleCriteria",
+      "value": "Costume scale criteria: only non-1 armature scales that also exist in base prefab are applied to MA Mesh Settings costumes."
+    },
+    {
+      "key": "Log.CostumeScaleApplied",
+      "value": "[CostumeScale] costume='{0}' / key='{1}' / match='{2}' / bone='{3}'"
+    },
+    {
+      "key": "Log.AddMissingComponentsScan",
+      "value": "Missing component add: source transform count={0}"
+    },
+    {
+      "key": "Log.AddMissingComponentsPathMissing",
+      "value": "Missing component add: skipped due to missing destination path={0}"
+    },
+    {
+      "key": "Log.AddMissingComponentsAlreadySatisfied",
+      "value": "Missing component add: already satisfied component groups={0}"
+    },
+    {
+      "key": "Log.ListEllipsisMore",
+      "value": " - ... ({0} more)"
+    },
     {
       "key": "LogWindow.CloseButton",
       "value": "關閉"
