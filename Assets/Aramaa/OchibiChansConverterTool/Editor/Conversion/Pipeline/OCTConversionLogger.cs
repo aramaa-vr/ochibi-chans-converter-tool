@@ -13,9 +13,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
-        private const int MaxLoggedPathEntries = 80;
-        private const int MaxLoggedBlendShapeNamesPerRenderer = 80;
-        private const int MaxLoggedBlendShapeEntriesPerSmr = 80;
+        private const int MaxLoggedPathEntries = 1000;
+        private const int MaxLoggedBlendShapeNamesPerRenderer = 1000;
+        private const int MaxLoggedBlendShapeEntriesPerSmr = 1000;
 
         private readonly List<string> _logs;
 
