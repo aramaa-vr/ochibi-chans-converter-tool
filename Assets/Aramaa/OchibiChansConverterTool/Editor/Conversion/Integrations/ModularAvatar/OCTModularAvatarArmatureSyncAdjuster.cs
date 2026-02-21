@@ -21,30 +21,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return OCTCostumeScaleApplyUtility.AdjustCostumeRoots(costumeRoots, logs, AdjustOneCostume);
         }
 
-        internal static bool HasAnyMergeArmatureMapping(List<Transform> costumeRoots)
+        internal static bool HasMergeArmatureMapping(Transform costumeRoot)
         {
 #if CHIBI_MODULAR_AVATAR
-            if (costumeRoots == null || costumeRoots.Count == 0)
+            if (costumeRoot == null)
             {
                 return false;
             }
 
-            foreach (var costumeRoot in costumeRoots)
-            {
-                if (costumeRoot == null)
-                {
-                    continue;
-                }
-
-                if (BuildMergeArmatureMappings(costumeRoot, null).Count > 0)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return BuildMergeArmatureMappings(costumeRoot, null).Count > 0;
 #else
-            _ = costumeRoots;
+            _ = costumeRoot;
             return false;
 #endif
         }
