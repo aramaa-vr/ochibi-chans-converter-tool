@@ -223,9 +223,38 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var costumeBones = costumeRoot.GetComponentsInChildren<Transform>(true).ToList();
             var costumeArmature = OCTEditorUtility.FindAvatarMainArmature(costumeRoot);
 
+            ApplyScaleModifiers(
+                avatarBoneScaleModifiers,
+                costumeBones,
+                costumeArmature,
+                logs,
+                costumeRoot,
+                ref appliedCount
+            );
+
+            logs?.Add(F("Log.CostumeApplied", costumeRoot.name, appliedCount));
+        }
+
+        private static bool IsNearlyOne(Vector3 s)
+        {
+            return Mathf.Abs(s.x - 1f) < ScaleEpsilon &&
+                   Mathf.Abs(s.y - 1f) < ScaleEpsilon &&
+                   Mathf.Abs(s.z - 1f) < ScaleEpsilon;
+        }
+
+        private static void ApplyScaleModifiers(
+            List<AvatarBoneScaleModifier> avatarBoneScaleModifiers,
+            List<Transform> costumeBones,
+            Transform costumeArmature,
+            List<string> logs,
+            Transform costumeRoot,
+            ref int appliedCount
+        )
+        {
             foreach (var modifier in avatarBoneScaleModifiers)
             {
                 var temp = costumeBones;
+                var modifierKeyForLog = BuildModifierKeyForLog(modifier);
 
                 var matched = TryApplyScaleToFirstMatch(
                     temp,
@@ -234,7 +263,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     costumeBones,
                     logs,
                     costumeRoot,
-                    modifier.Name,
+                    modifierKeyForLog,
                     L("Log.MatchExact"),
                     ref appliedCount
                 );
@@ -261,7 +290,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                             costumeBones,
                             logs,
                             costumeRoot,
-                            modifier.Name,
+                            modifierKeyForLog,
                             L("Log.MatchArmature"),
                             ref appliedCount
                         ))
@@ -277,20 +306,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     costumeBones,
                     logs,
                     costumeRoot,
-                    modifier.Name,
+                    modifierKeyForLog,
                     L("Log.MatchContains"),
                     ref appliedCount
                 );
             }
-
-            logs?.Add(F("Log.CostumeApplied", costumeRoot.name, appliedCount));
         }
 
-        private static bool IsNearlyOne(Vector3 s)
+        private static string BuildModifierKeyForLog(AvatarBoneScaleModifier modifier)
         {
-            return Mathf.Abs(s.x - 1f) < ScaleEpsilon &&
-                   Mathf.Abs(s.y - 1f) < ScaleEpsilon &&
-                   Mathf.Abs(s.z - 1f) < ScaleEpsilon;
+            if (modifier == null)
+            {
+                return L("Log.NullValue");
+            }
+
+            if (string.IsNullOrEmpty(modifier.RelativePath))
+            {
+                return modifier.Name;
+            }
+
+            return $"{modifier.Name} ({modifier.RelativePath})";
         }
 
         /// <summary>
@@ -358,10 +393,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 costumeRoot?.name ?? L("Log.NullValue"),
                 modifierKey,
                 matchLabel,
-                GetTransformPath(bone, costumeRoot));
+                FormatMatchedBoneForLog(bone, costumeRoot));
 
             removalTarget?.Remove(bone);
             return true;
+        }
+
+        private static string FormatMatchedBoneForLog(Transform bone, Transform costumeRoot)
+        {
+            if (bone == null)
+            {
+                return L("Log.NullValue");
+            }
+
+            var path = GetTransformPath(bone, costumeRoot);
+            return $"{bone.name} ({path})";
         }
 
         private static string GetStableTransformPathWithSiblingIndex(Transform target, Transform root)
