@@ -21,6 +21,34 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return OCTCostumeScaleApplyUtility.AdjustCostumeRoots(costumeRoots, logs, AdjustOneCostume);
         }
 
+        internal static bool HasAnyMergeArmatureMapping(List<Transform> costumeRoots)
+        {
+#if CHIBI_MODULAR_AVATAR
+            if (costumeRoots == null || costumeRoots.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var costumeRoot in costumeRoots)
+            {
+                if (costumeRoot == null)
+                {
+                    continue;
+                }
+
+                if (BuildMergeArmatureMappings(costumeRoot, null).Count > 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+#else
+            _ = costumeRoots;
+            return false;
+#endif
+        }
+
         private sealed class MergeArmatureBoneScaleMapping
         {
             public string BaseBoneName;

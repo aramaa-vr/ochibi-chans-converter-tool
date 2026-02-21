@@ -88,9 +88,19 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             var costumeRoots = OCTModularAvatarCostumeDetector.CollectCostumeRoots(dstRoot);
-            if (!OCTModularAvatarArmatureSyncAdjuster.AdjustByMergeArmatureMapping(costumeRoots, logs))
+            if (OCTModularAvatarArmatureSyncAdjuster.HasAnyMergeArmatureMapping(costumeRoots))
             {
-                return false;
+                if (!OCTModularAvatarArmatureSyncAdjuster.AdjustByMergeArmatureMapping(costumeRoots, logs))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (!OCTCostumeScaleAdjuster.AdjustCostumeScales(dstRoot, basePrefabRoot, costumeRoots, logs))
+                {
+                    return false;
+                }
             }
 
             return OCTCostumeBlendShapeAdjuster.AdjustCostumeBlendShapes(
