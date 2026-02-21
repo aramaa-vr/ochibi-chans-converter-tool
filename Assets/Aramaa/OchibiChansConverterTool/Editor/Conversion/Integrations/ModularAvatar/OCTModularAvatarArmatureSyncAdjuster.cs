@@ -29,7 +29,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
-            return BuildMergeArmatureMappings(costumeRoot, null).Count > 0;
+            var mappings = BuildMergeArmatureMappings(costumeRoot, null);
+            foreach (var mapping in mappings)
+            {
+                var outfitBone = mapping?.OutfitBone;
+                if (outfitBone != null && (outfitBone == costumeRoot || outfitBone.IsChildOf(costumeRoot)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
 #else
             _ = costumeRoot;
             return false;
@@ -102,10 +112,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
+                var avatarMainArmature = FindContainingAvatarMainArmature(baseBone);
+                var baseBoneRelativePath = (avatarMainArmature != null)
+                    ? AnimationUtility.CalculateTransformPath(baseBone, avatarMainArmature)
+                    : null;
+
                 result.Add(new MergeArmatureBoneScaleMapping
                 {
                     BaseBoneName = baseBone.name,
-                    BaseBoneRelativePath = AnimationUtility.CalculateTransformPath(baseBone, mergeArmature.transform),
+                    BaseBoneRelativePath = baseBoneRelativePath,
                     BaseScale = baseBone.localScale,
                     OutfitBone = outfitBone
                 });
@@ -113,6 +128,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             return result;
         }
+
+
+        private static Transform FindContainingAvatarMainArmature(Transform target)
+        {
+            for (var current = target; current != null; current = current.parent)
+            {
+                var avatarMainArmature = OCTEditorUtility.FindAvatarMainArmature(current);
+                if (avatarMainArmature != null && (target == avatarMainArmature || target.IsChildOf(avatarMainArmature)))
+                {
+                    return avatarMainArmature;
+                }
+            }
+
+            return null;
+        }
+
 #else
         private static void AdjustOneCostume(Transform costumeRoot, List<string> logs)
         {
