@@ -597,11 +597,11 @@
     },
     {
       "key": "Log.CostumeScaleSkipMergeArmatureMissing",
-      "value": "[CostumeScale] skip: merge armature not found for '{0}'"
+      "value": "[CostumeScale] 略過：找不到「{0}」對應的 merge armature"
     },
     {
       "key": "Log.CostumeScaleSkipBoneMappingEmpty",
-      "value": "[CostumeScale] skip: bone mapping empty for '{0}'"
+      "value": "[CostumeScale] 略過：「{0}」的 bone mapping 為空"
     },
     {
       "key": "Log.AddMissingComponentsScan",
