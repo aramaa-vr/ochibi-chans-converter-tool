@@ -288,7 +288,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (string.Equals(languageCode, LanguageKorean, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(languageCode, "ko", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(languageCode, "ko-KR", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(languageCode, "o-KR", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(languageCode, "ko_KR", StringComparison.OrdinalIgnoreCase))
             {
                 return LanguageKorean;
             }
