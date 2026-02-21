@@ -188,15 +188,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         L("Log.Step.3.Detail1")
                     );
                     logs.Add(L("Log.MaboneProxyHeader"));
-#if CHIBI_MODULAR_AVATAR
-                    foreach (var duplicated in duplicatedTargets.Where(x => x != null))
+                    if (OCTModularAvatarUtility.IsModularAvatarAvailable)
                     {
-                        logs.Add(F("Log.TargetEntry", OCTConversionLogUtility.GetHierarchyPath(duplicated.transform)));
-                        OCTModularAvatarBoneProxyUtility.ProcessBoneProxies(duplicated, logs);
+                        foreach (var duplicated in duplicatedTargets.Where(x => x != null))
+                        {
+                            logs.Add(F("Log.TargetEntry", OCTConversionLogUtility.GetHierarchyPath(duplicated.transform)));
+                            OCTModularAvatarUtility.ProcessBoneProxies(duplicated, logs);
+                        }
                     }
-#else
-                    logs.Add(L("Log.MaboneProxySkipped"));
-#endif
+                    else
+                    {
+                        logs.Add(L("Log.MaboneProxySkipped"));
+                    }
 
                     logs.Add("");
                 }
