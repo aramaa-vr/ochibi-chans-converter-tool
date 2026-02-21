@@ -41,8 +41,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     internal static class OchibiChansConverterToolModularAvatarUtility
     {
         private const float ScaleEpsilon = 0.0001f;
-        private const int MaxLoggedBlendShapeEntriesPerSmr = 80;
-
         private static string L(string key) => OchibiChansConverterToolLocalization.Get(key);
         private static string F(string key, params object[] args) => OchibiChansConverterToolLocalization.Format(key, args);
 
@@ -560,16 +558,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 // 「どの BlendShape が存在するか」を全列挙（= 全確認）
                 var toApplyIndices = new List<int>();
                 var toApplyNames = new List<string>();
-                int loggedShapeCount = 0;
+                var allShapeNames = new List<string>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var shapeName = mesh.GetBlendShapeName(i);
-                    if (loggedShapeCount < MaxLoggedBlendShapeEntriesPerSmr)
-                    {
-                        log.Add("Log.BlendshapeEntry", shapeName);
-                        loggedShapeCount++;
-                    }
+                    allShapeNames.Add(shapeName);
 
                     if (baseBlendShapeWeights == null)
                     {
@@ -584,7 +578,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                     }
                 }
 
-                log.AddListEllipsisIfNeeded(count, loggedShapeCount);
+                log.AddBlendshapeEntries(allShapeNames);
 
                 // 同期対象が無ければ、このSMRは確認のみ
                 if (toApplyIndices.Count == 0)

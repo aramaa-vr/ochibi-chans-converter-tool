@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 {
@@ -9,6 +10,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// </summary>
     internal sealed class OchibiChansConverterToolConversionLogger
     {
+        private const int MaxLoggedPathEntries = 80;
+        private const int MaxLoggedBlendShapeNamesPerRenderer = 80;
+        private const int MaxLoggedBlendShapeEntriesPerSmr = 80;
+
         private readonly List<string> _logs;
 
         public OchibiChansConverterToolConversionLogger(List<string> logs)
@@ -70,7 +75,40 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
         }
 
-        public void AddPathEntriesWithLimit(IEnumerable<string> entries, int maxCount)
+        public void AddPathEntries(IEnumerable<string> entries)
+        {
+            AddPathEntriesWithLimit(entries, MaxLoggedPathEntries);
+        }
+
+        public void AddBlendshapeRendererDetail(string rendererPath, List<string> blendShapeNames)
+        {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
+            if (blendShapeNames == null || blendShapeNames.Count == 0)
+            {
+                Add("Log.BlendshapeRendererZero", rendererPath);
+                return;
+            }
+
+            var namesForLog = blendShapeNames;
+            if (blendShapeNames.Count > MaxLoggedBlendShapeNamesPerRenderer)
+            {
+                namesForLog = blendShapeNames.Take(MaxLoggedBlendShapeNamesPerRenderer).ToList();
+            }
+
+            Add("Log.BlendshapeRendererDetail", rendererPath, blendShapeNames.Count, string.Join(", ", namesForLog));
+            AddListEllipsisIfNeeded(blendShapeNames.Count, namesForLog.Count);
+        }
+
+        public void AddBlendshapeEntries(IEnumerable<string> blendShapeNames)
+        {
+            AddPathEntriesWithLimit(blendShapeNames, MaxLoggedBlendShapeEntriesPerSmr, "Log.BlendshapeEntry");
+        }
+
+        private void AddPathEntriesWithLimit(IEnumerable<string> entries, int maxCount, string key = "Log.PathEntry")
         {
             if (!IsEnabled || entries == null)
             {
@@ -84,7 +122,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 total++;
                 if (logged < maxCount)
                 {
-                    Add("Log.PathEntry", entry);
+                    Add(key, entry);
                     logged++;
                 }
             }

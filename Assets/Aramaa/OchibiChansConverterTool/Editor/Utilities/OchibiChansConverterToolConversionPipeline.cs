@@ -40,8 +40,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OchibiChansConverterToolConversionPipeline
     {
         private const string DuplicatedNameSuffix = " (Ochibi-chans)";
-        private const int MaxLoggedArmaturePaths = 80;
-
         /// <summary>
         /// ローカライズ文字列を取得します。
         /// </summary>
@@ -731,7 +729,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs.Add(F("Log.ArmatureTransformScan", srcAll.Length));
             int updated = 0;
             int missingPathCount = 0;
-            int loggedPathCount = 0;
+            var updatedPaths = new List<string>();
 
             foreach (var srcT in srcAll)
             {
@@ -758,15 +756,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 EditorUtility.SetDirty(dstT);
 
                 updated++;
-                // パスだけを出す（値は出さない）
-                if (loggedPathCount < MaxLoggedArmaturePaths)
-                {
-                    log.Add("Log.PathEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT));
-                    loggedPathCount++;
-                }
+                updatedPaths.Add(OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT));
             }
 
-            log.AddListEllipsisIfNeeded(updated, loggedPathCount);
+            log.AddPathEntries(updatedPaths);
 
             logs.Add(F("Log.ArmatureTransformPathMissing", missingPathCount));
 
