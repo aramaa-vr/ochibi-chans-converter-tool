@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTModularAvatarCostumeDetector.cs
-//
 // ============================================================================
 // 概要
 // ============================================================================
@@ -26,7 +24,7 @@ using UnityEngine;
 using nadena.dev.modular_avatar.core;
 #endif
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// MA Mesh Settings を起点に衣装ルート候補を抽出する責務を持つクラス。

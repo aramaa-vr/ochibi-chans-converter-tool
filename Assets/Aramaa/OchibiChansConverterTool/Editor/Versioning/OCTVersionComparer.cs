@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using System;
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     // -----------------------------------------------------------------------------
     // 概要

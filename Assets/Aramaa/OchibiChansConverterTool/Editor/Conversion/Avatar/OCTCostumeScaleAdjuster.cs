@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Conversion/Avatar/OCTCostumeScaleAdjuster.cs
-//
 // ============================================================================
 // 概要
 // ============================================================================
@@ -28,7 +26,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// 検出済みの衣装ルートに対して、ボーン localScale の補正を適用する責務を持つクラス。

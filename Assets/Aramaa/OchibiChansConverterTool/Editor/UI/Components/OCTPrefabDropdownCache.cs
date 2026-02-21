@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTPrefabDropdownCache.cs
-//
 // ============================================================================
 // 概要
 // ============================================================================
@@ -31,7 +29,7 @@ using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 #endif
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// アバターの顔メッシュ情報を基に、候補となるおちびちゃんズ Prefab の一覧を作るキャッシュです。

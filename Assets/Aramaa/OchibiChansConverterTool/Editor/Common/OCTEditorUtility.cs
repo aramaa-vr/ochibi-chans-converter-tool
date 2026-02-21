@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTEditorUtility.cs
-//
 // ============================================================================
 // 概要
 // ============================================================================
@@ -27,7 +25,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// Editor 拡張で共有する汎用処理（参照変換や階層探索など）を提供します。

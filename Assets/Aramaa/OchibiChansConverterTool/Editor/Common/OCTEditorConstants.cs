@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTEditorConstants.cs
-//
 // =====================================================================
 // 概要
 // =====================================================================
@@ -9,7 +7,7 @@
 //
 // =====================================================================
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// OchibiChansConverterTool の Editor 共有定数をまとめます。

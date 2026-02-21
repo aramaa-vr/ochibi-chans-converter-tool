@@ -3,7 +3,7 @@ using System;
 using System.Globalization;
 using UnityEngine;
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     // latest.json のみを対象にした最新版パーサーです。
     // JsonUtility で読みやすく保守しやすい固定スキーマを採用し、失敗時は null を返します。
