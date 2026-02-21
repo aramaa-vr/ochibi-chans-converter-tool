@@ -35,6 +35,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// </summary>
     internal static class OCTVrcAvatarDescriptorUtility
     {
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
         /// <summary>
         /// VRCAvatarDescriptor から Animator を取得します。
         /// </summary>
@@ -221,7 +224,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            Undo.RecordObject(descriptor, OCTLocalization.Get("Undo.SetFxPlayableLayer"));
+            Undo.RecordObject(descriptor, L("Undo.SetFxPlayableLayer"));
 
             descriptor.customizeAnimationLayers = true;
 
@@ -287,7 +290,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            Undo.RecordObject(descriptor, OCTLocalization.Get("Undo.SetExpressionsReferences"));
+            Undo.RecordObject(descriptor, L("Undo.SetExpressionsReferences"));
 
             if (menu != null)
             {
@@ -327,7 +330,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 
             var viewPos = srcDesc.ViewPosition;
 
-            Undo.RecordObject(dstDesc, OCTLocalization.Get("Undo.CopyViewPosition"));
+            Undo.RecordObject(dstDesc, L("Undo.CopyViewPosition"));
             dstDesc.ViewPosition = viewPos;
 
             PrefabUtility.RecordPrefabInstancePropertyModifications(dstDesc);
@@ -353,22 +356,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             {
                 // ルートに無い場合は「複製対象として想定外」としてスキップします。
                 // （必要なら別途、ルート構成を見直すのが安全です）
-                logs?.Add(OCTLocalization.Get("Log.BlueprintClearSkippedMissing"));
+                logs?.Add(L("Log.BlueprintClearSkippedMissing"));
                 return false;
             }
             if (string.IsNullOrEmpty(pipelineManager.blueprintId))
             {
-                logs?.Add(OCTLocalization.Get("Log.BlueprintClearSkippedEmpty"));
+                logs?.Add(L("Log.BlueprintClearSkippedEmpty"));
                 return false;
             }
 
-            Undo.RecordObject(pipelineManager, OCTLocalization.Get("Undo.ClearBlueprintId"));
+            Undo.RecordObject(pipelineManager, L("Undo.ClearBlueprintId"));
             pipelineManager.blueprintId = string.Empty;
 
             PrefabUtility.RecordPrefabInstancePropertyModifications(pipelineManager);
             EditorUtility.SetDirty(pipelineManager);
 
-            logs?.Add(OCTLocalization.Get("Log.BlueprintClearApplied"));
+            logs?.Add(L("Log.BlueprintClearApplied"));
             return true;
         }
     }
