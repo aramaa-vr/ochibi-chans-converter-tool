@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Windows/OchibiChansConverterToolConversionLogWindow.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Windows/OCTConversionLogWindow.cs
 //
 // ============================================================================
 // 概要
@@ -24,9 +24,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// <summary>
     /// 変換ログを表示・コピーするための専用ウィンドウです。
     /// </summary>
-    internal sealed class OchibiChansConverterToolConversionLogWindow : EditorWindow
+    internal sealed class OCTConversionLogWindow : EditorWindow
     {
-        private static OchibiChansConverterToolConversionLogWindow _opened;
+        private static OCTConversionLogWindow _opened;
 
         private readonly List<string> _logs = new List<string>();
         private string _cachedText = string.Empty;
@@ -41,7 +41,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             if (_opened == null)
             {
-                _opened = CreateInstance<OchibiChansConverterToolConversionLogWindow>();
+                _opened = CreateInstance<OCTConversionLogWindow>();
                 _opened.minSize = DefaultMinSize;
                 _opened.titleContent = new GUIContent(windowTitle);
                 _opened.ShowUtility(); // “補助ウィンドウ”として表示
@@ -71,7 +71,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _logs.AddRange(logs);
             }
 
-            _cachedText = _logs.Count > 0 ? string.Join("\n", _logs) : OchibiChansConverterToolLocalization.Get("LogWindow.NoLogs");
+            _cachedText = _logs.Count > 0 ? string.Join("\n", _logs) : OCTLocalization.Get("LogWindow.NoLogs");
             _scroll = Vector2.zero;
             Repaint();
         }
@@ -82,14 +82,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    if (GUILayout.Button(OchibiChansConverterToolLocalization.Get("LogWindow.CopyButton"), GUILayout.Height(24)))
+                    if (GUILayout.Button(OCTLocalization.Get("LogWindow.CopyButton"), GUILayout.Height(24)))
                     {
                         EditorGUIUtility.systemCopyBuffer = _cachedText ?? string.Empty;
                     }
 
                     GUILayout.FlexibleSpace();
 
-                    if (GUILayout.Button(OchibiChansConverterToolLocalization.Get("LogWindow.CloseButton"), GUILayout.Width(80), GUILayout.Height(24)))
+                    if (GUILayout.Button(OCTLocalization.Get("LogWindow.CloseButton"), GUILayout.Width(80), GUILayout.Height(24)))
                     {
                         Close();
                         GUIUtility.ExitGUI();

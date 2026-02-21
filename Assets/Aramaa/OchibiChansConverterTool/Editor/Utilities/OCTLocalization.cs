@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolLocalization.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTLocalization.cs
 //
 // =====================================================================
 // 概要
@@ -18,7 +18,7 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 {
-    internal static class OchibiChansConverterToolLocalization
+    internal static class OCTLocalization
     {
         private const string EditorPrefsKey = "Aramaa.OchibiChansConverterTool.Language";
         private const string LocalizationSubdirectory = "OchibiChansConverterTool";
@@ -202,7 +202,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         private static string GetLocalizationRootPath()
         {
             var candidates = new List<string>();
-            var packageInfo = PackageInfo.FindForAssembly(typeof(OchibiChansConverterToolLocalization).Assembly);
+            var packageInfo = PackageInfo.FindForAssembly(typeof(OCTLocalization).Assembly);
             if (packageInfo != null && !string.IsNullOrEmpty(packageInfo.resolvedPath))
             {
                 candidates.Add(Path.Combine(

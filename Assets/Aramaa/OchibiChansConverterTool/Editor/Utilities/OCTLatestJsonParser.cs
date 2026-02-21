@@ -7,7 +7,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 {
     // latest.json のみを対象にした最新版パーサーです。
     // JsonUtility で読みやすく保守しやすい固定スキーマを採用し、失敗時は null を返します。
-    internal static class OchibiChansConverterToolLatestJsonParser
+    internal static class OCTLatestJsonParser
     {
         /// <summary>
         /// latest.json から対象パッケージの最新バージョンを抽出します。
@@ -41,7 +41,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return null;
             }
 
-            if (root == null || root.schemaVersion != OchibiChansConverterToolEditorConstants.LatestJsonSchemaVersion
+            if (root == null || root.schemaVersion != OCTEditorConstants.LatestJsonSchemaVersion
                 || root.packages == null || root.packages.Length == 0)
             {
                 return null;
@@ -56,12 +56,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             for (var i = 0; i < root.packages.Length; i++)
             {
                 var entry = root.packages[i];
-                if (entry == null || !string.Equals(entry.id, OchibiChansConverterToolEditorConstants.TargetPackageId, StringComparison.Ordinal))
+                if (entry == null || !string.Equals(entry.id, OCTEditorConstants.TargetPackageId, StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                if (!OchibiChansConverterToolVersionComparer.TryParseStableVersion(entry.version, out var candidate))
+                if (!OCTVersionComparer.TryParseStableVersion(entry.version, out var candidate))
                 {
                     if (TryParseSupportedBetaVersion(entry.version, out var prereleaseCore, out var prereleaseNumber))
                     {
@@ -117,7 +117,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 
             var coreText = versionText.Substring(0, separatorIndex);
             var suffix = versionText.Substring(separatorIndex + separator.Length);
-            if (!OchibiChansConverterToolVersionComparer.TryParseStableVersion(coreText, out coreVersion))
+            if (!OCTVersionComparer.TryParseStableVersion(coreText, out coreVersion))
             {
                 return false;
             }

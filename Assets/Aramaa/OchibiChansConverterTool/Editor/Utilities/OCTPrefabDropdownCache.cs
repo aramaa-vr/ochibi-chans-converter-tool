@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolPrefabDropdownCache.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTPrefabDropdownCache.cs
 //
 // ============================================================================
 // 概要
@@ -36,9 +36,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// アバターの顔メッシュ情報を基に、候補となるおちびちゃんズ Prefab の一覧を作るキャッシュです。
     /// </summary>
-    internal sealed class OchibiChansConverterToolPrefabDropdownCache
+    internal sealed class OCTPrefabDropdownCache
     {
-        private const string BaseFolder = OchibiChansConverterToolEditorConstants.BaseFolder;
+        private const string BaseFolder = OCTEditorConstants.BaseFolder;
 
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
         // 末尾の v7 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
@@ -481,7 +481,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception e)
             {
-                Debug.LogWarning(OchibiChansConverterToolLocalization.Format("Warning.FaceMeshCacheLoadFailed", e.Message));
+                Debug.LogWarning(OCTLocalization.Format("Warning.FaceMeshCacheLoadFailed", e.Message));
             }
         }
 
@@ -519,7 +519,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception e)
             {
-                Debug.LogWarning(OchibiChansConverterToolLocalization.Format("Warning.FaceMeshCacheSaveFailed", e.Message));
+                Debug.LogWarning(OCTLocalization.Format("Warning.FaceMeshCacheSaveFailed", e.Message));
             }
         }
 

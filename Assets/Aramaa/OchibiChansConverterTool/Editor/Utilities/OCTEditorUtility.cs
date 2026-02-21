@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolEditorUtility.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTEditorUtility.cs
 //
 // ============================================================================
 // 概要
@@ -32,7 +32,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// Editor 拡張で共有する汎用処理（参照変換や階層探索など）を提供します。
     /// </summary>
-    internal static class OchibiChansConverterToolEditorUtility
+    internal static class OCTEditorUtility
     {
         // --------------------------------------------------------------------
         // Ctrl+D 相当（Edit/Duplicate）
@@ -117,7 +117,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             Animator animator = null;
-            if (OchibiChansConverterToolVrcAvatarDescriptorUtility.TryGetAnimatorFromAvatar(avatarRoot.gameObject, out var vrcAnimator))
+            if (OCTVrcAvatarDescriptorUtility.TryGetAnimatorFromAvatar(avatarRoot.gameObject, out var vrcAnimator))
             {
                 animator = vrcAnimator;
             }

@@ -12,7 +12,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     //   - ネットワーク通信、ログ出力、ローカライズ文言生成は行いません。
     // - 主要な入出力:
     //   - 入力: "1.2.3" / "1.2.3-beta.1" のような文字列。
-    //   - 出力: OchibiChansConverterToolVersionStatus または Version。
+    //   - 出力: OCTVersionStatus または Version。
     //   - 失敗時: 例外を投げず、Unknown または false を返します。
     // - 想定ユースケース:
     //   - latest.json から取得した最新バージョン文字列と、導入済みバージョン文字列を比較する用途。
@@ -36,7 +36,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// 想定フォーマット: xx.yy.zz / xx.yy.zz-beta.n（n は数字）
     /// 旧形式 xx.yy.zz-beta は後方互換のためにも許可せず、形式不正として扱います。
     /// </summary>
-    internal static class OchibiChansConverterToolVersionComparer
+    internal static class OCTVersionComparer
     {
         /// <summary>
         /// 現在バージョンと最新バージョンの関係を判定します。
@@ -50,8 +50,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         /// null/空白のみは無効入力として扱います。
         /// </param>
         /// <returns>
-        /// 判定結果を表す <see cref="OchibiChansConverterToolVersionStatus"/>。
-        /// 入力不正や解析不能時は <see cref="OchibiChansConverterToolVersionStatus.Unknown"/> を返します。
+        /// 判定結果を表す <see cref="OCTVersionStatus"/>。
+        /// 入力不正や解析不能時は <see cref="OCTVersionStatus.Unknown"/> を返します。
         /// </returns>
         /// <remarks>
         /// 例外は送出せず、結果値で失敗を通知します。
@@ -59,21 +59,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         /// currentVersion が形式不正でも latestVersion を解析できる場合は、
         /// 安全側に倒して UpdateAvailable を返します。
         /// </remarks>
-        public static OchibiChansConverterToolVersionStatus GetVersionStatus(string currentVersion, string latestVersion)
+        public static OCTVersionStatus GetVersionStatus(string currentVersion, string latestVersion)
         {
             if (string.IsNullOrWhiteSpace(currentVersion) || string.IsNullOrWhiteSpace(latestVersion))
             {
-                return OchibiChansConverterToolVersionStatus.Unknown;
+                return OCTVersionStatus.Unknown;
             }
 
             if (!TryParseVersion(latestVersion, out var latest))
             {
-                return OchibiChansConverterToolVersionStatus.Unknown;
+                return OCTVersionStatus.Unknown;
             }
 
             if (!TryParseVersion(currentVersion, out var current))
             {
-                return OchibiChansConverterToolVersionStatus.UpdateAvailable;
+                return OCTVersionStatus.UpdateAvailable;
             }
 
             return CompareVersions(current, latest);
@@ -219,33 +219,33 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             return true;
         }
 
-        private static OchibiChansConverterToolVersionStatus CompareVersions(VersionParts current, VersionParts latest)
+        private static OCTVersionStatus CompareVersions(VersionParts current, VersionParts latest)
         {
             var coreComparison = current.CoreVersion.CompareTo(latest.CoreVersion);
             if (coreComparison != 0)
             {
-                return coreComparison < 0 ? OchibiChansConverterToolVersionStatus.UpdateAvailable : OchibiChansConverterToolVersionStatus.Ahead;
+                return coreComparison < 0 ? OCTVersionStatus.UpdateAvailable : OCTVersionStatus.Ahead;
             }
 
             if (current.IsPreRelease != latest.IsPreRelease)
             {
-                return current.IsPreRelease ? OchibiChansConverterToolVersionStatus.UpdateAvailable : OchibiChansConverterToolVersionStatus.Ahead;
+                return current.IsPreRelease ? OCTVersionStatus.UpdateAvailable : OCTVersionStatus.Ahead;
             }
 
             if (!current.IsPreRelease)
             {
-                return OchibiChansConverterToolVersionStatus.UpToDate;
+                return OCTVersionStatus.UpToDate;
             }
 
             var preReleaseComparison = CompareNumericIdentifiers(current.PreReleaseNumber, latest.PreReleaseNumber);
             if (preReleaseComparison == 0)
             {
-                return OchibiChansConverterToolVersionStatus.UpToDate;
+                return OCTVersionStatus.UpToDate;
             }
 
             return preReleaseComparison < 0
-                ? OchibiChansConverterToolVersionStatus.UpdateAvailable
-                : OchibiChansConverterToolVersionStatus.Ahead;
+                ? OCTVersionStatus.UpdateAvailable
+                : OCTVersionStatus.Ahead;
         }
 
         private static int CompareNumericIdentifiers(string left, string right)

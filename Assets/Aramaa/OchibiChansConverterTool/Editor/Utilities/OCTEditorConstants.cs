@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolEditorConstants.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTEditorConstants.cs
 //
 // =====================================================================
 // 概要
@@ -14,7 +14,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// OchibiChansConverterTool の Editor 共有定数をまとめます。
     /// </summary>
-    internal static class OchibiChansConverterToolEditorConstants
+    internal static class OCTEditorConstants
     {
         public const string ToolVersion = "0.5.4";
         public const string LatestVersionUrl = "https://aramaa-vr.github.io/vpm-repos/latest.json";

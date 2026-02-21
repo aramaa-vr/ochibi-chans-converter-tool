@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolVersionUtility.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTVersionUtility.cs
 
 using System;
 using UnityEngine.Networking;
@@ -15,7 +15,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     //   - JSON パースの詳細実装、バージョン比較の詳細実装は保持しません。
     // - 主要な入出力:
     //   - 入力: latest.json の URL、完了コールバック、現在版/最新版文字列。
-    //   - 出力: OchibiChansConverterToolVersionFetchResult / OchibiChansConverterToolVersionStatus。
+    //   - 出力: OCTVersionFetchResult / OCTVersionStatus。
     //   - エラー処理: 通信・抽出失敗は失敗結果として返し、例外は外に投げません。
     // - 想定ユースケース:
     //   - エディタ UI から非同期で最新版確認を実行し、更新通知表示に利用する。
@@ -27,7 +27,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     // - 完了イベント内で request.Dispose() を finally で必ず実行します。
     //   そのため途中 return があっても解放漏れしません。
     // - onComplete は null 許容です（null 条件演算子で呼び出し）。
-    // - 抽出処理は OchibiChansConverterToolLatestJsonParser へ委譲され、
+    // - 抽出処理は OCTLatestJsonParser へ委譲され、
     //   VCC 配布制約上、外部 JSON 管理ライブラリには依存しません。
     //
     // チーム開発向けルール
@@ -36,7 +36,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     // - ローカライズメッセージキー（Version.*）を変更する場合は呼び出し元表示も確認してください。
     // -----------------------------------------------------------------------------
 
-    internal enum OchibiChansConverterToolVersionStatus
+    internal enum OCTVersionStatus
     {
         Unknown,
         UpToDate,
@@ -47,7 +47,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// バージョンチェック全体のオーケストレーション（通信・結果返却）を担当します。
     /// </summary>
-    internal static class OchibiChansConverterToolVersionUtility
+    internal static class OCTVersionUtility
     {
         /// <summary>
         /// 指定 URL から最新版情報を非同期取得し、完了時に結果を通知します。
@@ -64,17 +64,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         /// 副作用として HTTP 通信を実行します。
         /// 通信失敗・JSON 解析失敗は Failure 結果で返し、例外は送出しません。
         /// </remarks>
-        public static void FetchLatestVersionAsync(string url, Action<OchibiChansConverterToolVersionFetchResult> onComplete)
+        public static void FetchLatestVersionAsync(string url, Action<OCTVersionFetchResult> onComplete)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
-                onComplete?.Invoke(OchibiChansConverterToolVersionFetchResult.Failure(L("Version.ErrorMissingUrl")));
+                onComplete?.Invoke(OCTVersionFetchResult.Failure(L("Version.ErrorMissingUrl")));
                 return;
             }
 
             if (!IsSupportedHttpUrl(url))
             {
-                onComplete?.Invoke(OchibiChansConverterToolVersionFetchResult.Failure(L("Version.ErrorInvalidUrl")));
+                onComplete?.Invoke(OCTVersionFetchResult.Failure(L("Version.ErrorInvalidUrl")));
                 return;
             }
 
@@ -89,18 +89,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 {
                     if (request.result != UnityWebRequest.Result.Success)
                     {
-                        onComplete?.Invoke(OchibiChansConverterToolVersionFetchResult.Failure(request.error));
+                        onComplete?.Invoke(OCTVersionFetchResult.Failure(request.error));
                         return;
                     }
 
-                    var latestVersion = OchibiChansConverterToolLatestJsonParser.ExtractLatestVersion(request.downloadHandler.text);
+                    var latestVersion = OCTLatestJsonParser.ExtractLatestVersion(request.downloadHandler.text);
                     if (string.IsNullOrWhiteSpace(latestVersion))
                     {
-                        onComplete?.Invoke(OchibiChansConverterToolVersionFetchResult.Failure(L("Version.ExtractFailed")));
+                        onComplete?.Invoke(OCTVersionFetchResult.Failure(L("Version.ExtractFailed")));
                         return;
                     }
 
-                    onComplete?.Invoke(OchibiChansConverterToolVersionFetchResult.Success(latestVersion));
+                    onComplete?.Invoke(OCTVersionFetchResult.Success(latestVersion));
                 }
                 finally
                 {
@@ -116,11 +116,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         /// <param name="latestVersion">最新版のバージョン文字列。</param>
         /// <returns>
         /// 判定結果。
-        /// 解析不能時は <see cref="OchibiChansConverterToolVersionStatus.Unknown"/>。
+        /// 解析不能時は <see cref="OCTVersionStatus.Unknown"/>。
         /// </returns>
-        public static OchibiChansConverterToolVersionStatus GetVersionStatus(string currentVersion, string latestVersion)
+        public static OCTVersionStatus GetVersionStatus(string currentVersion, string latestVersion)
         {
-            return OchibiChansConverterToolVersionComparer.GetVersionStatus(currentVersion, latestVersion);
+            return OCTVersionComparer.GetVersionStatus(currentVersion, latestVersion);
         }
 
         private static string AppendCacheBuster(string url)
@@ -140,12 +140,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
         }
 
-        private static string L(string key) => OchibiChansConverterToolLocalization.Get(key);
+        private static string L(string key) => OCTLocalization.Get(key);
     }
 
-    internal readonly struct OchibiChansConverterToolVersionFetchResult
+    internal readonly struct OCTVersionFetchResult
     {
-        private OchibiChansConverterToolVersionFetchResult(string latestVersion, string error)
+        private OCTVersionFetchResult(string latestVersion, string error)
         {
             LatestVersion = latestVersion;
             Error = error;
@@ -160,9 +160,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         /// </summary>
         /// <param name="latestVersion">取得できた最新バージョン文字列。</param>
         /// <returns>成功を表す結果。</returns>
-        public static OchibiChansConverterToolVersionFetchResult Success(string latestVersion)
+        public static OCTVersionFetchResult Success(string latestVersion)
         {
-            return new OchibiChansConverterToolVersionFetchResult(latestVersion, null);
+            return new OCTVersionFetchResult(latestVersion, null);
         }
 
         /// <summary>
@@ -170,9 +170,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         /// </summary>
         /// <param name="error">失敗理由を表すメッセージ。</param>
         /// <returns>失敗を表す結果。</returns>
-        public static OchibiChansConverterToolVersionFetchResult Failure(string error)
+        public static OCTVersionFetchResult Failure(string error)
         {
-            return new OchibiChansConverterToolVersionFetchResult(null, error);
+            return new OCTVersionFetchResult(null, error);
         }
     }
 }
