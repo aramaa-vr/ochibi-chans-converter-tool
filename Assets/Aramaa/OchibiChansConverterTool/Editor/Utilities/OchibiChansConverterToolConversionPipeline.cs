@@ -52,30 +52,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private static string F(string key, params object[] args) => OchibiChansConverterToolLocalization.Format(key, args);
 
-        private static void AddStepLog(List<string> logs, string stepNo, string title, params string[] details)
-        {
-            if (logs == null)
-            {
-                return;
-            }
-
-            logs.Add(F("Log.Step.Header", stepNo, title));
-            if (details == null)
-            {
-                return;
-            }
-
-            foreach (var detail in details)
-            {
-                if (string.IsNullOrWhiteSpace(detail))
-                {
-                    continue;
-                }
-
-                logs.Add(F("Log.Step.Detail", detail));
-            }
-        }
-
         // --------------------------------------------------------------------
         // 処理の全体像（初心者向け）
         // --------------------------------------------------------------------
@@ -109,6 +85,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         )
         {
             logs ??= new List<string>();
+            var log = new OchibiChansConverterToolConversionLogger(logs);
 
             logs.Add(L("Log.Header.Main"));
             logs.Add(F("Log.ToolVersion", L("Tool.Name"), OchibiChansConverterToolEditorConstants.ToolVersion));
@@ -124,8 +101,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             logs.Add("");
-            AddStepLog(
-                logs,
+            log.AddStep(
                 "Flow",
                 L("Log.Step.Flow.Title"),
                 L("Log.Step.Flow.Detail1"),
@@ -190,8 +166,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // 複製先を選択しておく（Ctrl+D と同様の体験）
                 Selection.objects = duplicatedTargets;
 
-                AddStepLog(
-                    logs,
+                log.AddStep(
                     "2",
                     L("Log.Step.2.Title"),
                     L("Log.Step.2.Detail1")
@@ -209,8 +184,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 if (applyMaboneProxyProcessing)
                 {
-                    AddStepLog(
-                        logs,
+                    log.AddStep(
                         "3",
                         L("Log.Step.3.Title"),
                         L("Log.Step.3.Detail1")
@@ -232,8 +206,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 4) Blueprint ID クリア
                 // --------------------------------------------------------
-                AddStepLog(
-                    logs,
+                log.AddStep(
                     "4",
                     L("Log.Step.4.Title"),
                     L("Log.Step.4.Detail1")
@@ -289,6 +262,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static bool ApplyConversionToTargets(GameObject sourceChibiPrefab, GameObject[] targets, List<string> logs)
         {
             logs ??= new List<string>();
+            var log = new OchibiChansConverterToolConversionLogger(logs);
             if (sourceChibiPrefab == null || !EditorUtility.IsPersistent(sourceChibiPrefab))
             {
                 EditorUtility.DisplayDialog(
@@ -322,8 +296,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             try
             {
                 logs.Add(F("Log.PrefabExpand", basePrefabPath));
-                AddStepLog(
-                    logs,
+                log.AddStep(
                     "5",
                     L("Log.Step.5.Title"),
                     L("Log.Step.5.Detail1"),
@@ -364,8 +337,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     logs.Add(L("Log.Separator"));
                     logs.Add(F("Log.TargetEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstRoot.transform)));
-                    AddStepLog(
-                        logs,
+                    log.AddStep(
                         "6",
                         L("Log.Step.6.Title"),
                         L("Log.Step.6.Detail1")
@@ -392,8 +364,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
 
                     // SVG 対応ステップ: 7) VRC Descriptor 同期 + MA 衣装調整
-                    AddStepLog(
-                        logs,
+                    log.AddStep(
                         "7",
                         L("Log.Step.7.Title"),
                         L("Log.Step.7.Detail1"),
@@ -458,8 +429,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
 
                     logs.Add(L("Log.Separator"));
-                    AddStepLog(
-                        logs,
+                    log.AddStep(
                         "8",
                         L("Log.Step.8.Title"),
                         L("Log.Step.8.Detail1")
@@ -754,6 +724,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             logs ??= new List<string>();
+            var log = new OchibiChansConverterToolConversionLogger(logs);
             logs.Add(L("Log.ArmatureTransformApplied"));
 
             var srcAll = srcArmature.GetComponentsInChildren<Transform>(true);
@@ -790,15 +761,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // パスだけを出す（値は出さない）
                 if (loggedPathCount < MaxLoggedArmaturePaths)
                 {
-                    logs.Add(F("Log.PathEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT)));
+                    log.Add("Log.PathEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT));
                     loggedPathCount++;
                 }
             }
 
-            if (updated > loggedPathCount)
-            {
-                logs.Add(F("Log.ListEllipsisMore", updated - loggedPathCount));
-            }
+            log.AddListEllipsisIfNeeded(updated, loggedPathCount);
 
             logs.Add(F("Log.ArmatureTransformPathMissing", missingPathCount));
 
@@ -823,6 +791,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             logs ??= new List<string>();
+            var log = new OchibiChansConverterToolConversionLogger(logs);
             logs.Add(L("Log.AddMissingComponents"));
 
             var srcAll = srcArmature.GetComponentsInChildren<Transform>(true);
@@ -924,7 +893,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         EditorUtility.SetDirty(newComp);
 
                         addedCount++;
-                        logs.Add(F("Log.ComponentAdded", type.Name, OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT)));
+                        log.Add("Log.ComponentAdded", type.Name, OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT));
                     }
                 }
             }
