@@ -209,6 +209,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                     packageInfo.resolvedPath,
                     "Editor",
                     "Localization",
+                    "Tables",
                     LocalizationSubdirectory));
             }
 
@@ -219,6 +220,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 "jp.aramaa.ochibi-chans-converter-tool",
                 "Editor",
                 "Localization",
+                "Tables",
                 LocalizationSubdirectory));
 
             candidates.Add(Path.Combine(
@@ -227,6 +229,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 "OchibiChansConverterTool",
                 "Editor",
                 "Localization",
+                "Tables",
                 LocalizationSubdirectory));
 
             foreach (var candidate in candidates)

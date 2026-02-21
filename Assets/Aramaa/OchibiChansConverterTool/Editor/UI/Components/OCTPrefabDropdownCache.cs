@@ -38,6 +38,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// </summary>
     internal sealed class OCTPrefabDropdownCache
     {
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
         private const string BaseFolder = OCTEditorConstants.BaseFolder;
 
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
@@ -481,7 +484,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception e)
             {
-                Debug.LogWarning(OCTLocalization.Format("Warning.FaceMeshCacheLoadFailed", e.Message));
+                Debug.LogWarning(F("Warning.FaceMeshCacheLoadFailed", e.Message));
             }
         }
 
@@ -519,7 +522,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception e)
             {
-                Debug.LogWarning(OCTLocalization.Format("Warning.FaceMeshCacheSaveFailed", e.Message));
+                Debug.LogWarning(F("Warning.FaceMeshCacheSaveFailed", e.Message));
             }
         }
 

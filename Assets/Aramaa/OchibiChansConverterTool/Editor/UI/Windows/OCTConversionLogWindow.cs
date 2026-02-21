@@ -26,6 +26,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal sealed class OCTConversionLogWindow : EditorWindow
     {
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
         private static OCTConversionLogWindow _opened;
 
         private readonly List<string> _logs = new List<string>();
@@ -71,7 +74,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _logs.AddRange(logs);
             }
 
-            _cachedText = _logs.Count > 0 ? string.Join("\n", _logs) : OCTLocalization.Get("LogWindow.NoLogs");
+            _cachedText = _logs.Count > 0 ? string.Join("\n", _logs) : L("LogWindow.NoLogs");
             _scroll = Vector2.zero;
             Repaint();
         }
@@ -82,14 +85,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    if (GUILayout.Button(OCTLocalization.Get("LogWindow.CopyButton"), GUILayout.Height(24)))
+                    if (GUILayout.Button(L("LogWindow.CopyButton"), GUILayout.Height(24)))
                     {
                         EditorGUIUtility.systemCopyBuffer = _cachedText ?? string.Empty;
                     }
 
                     GUILayout.FlexibleSpace();
 
-                    if (GUILayout.Button(OCTLocalization.Get("LogWindow.CloseButton"), GUILayout.Width(80), GUILayout.Height(24)))
+                    if (GUILayout.Button(L("LogWindow.CloseButton"), GUILayout.Width(80), GUILayout.Height(24)))
                     {
                         Close();
                         GUIUtility.ExitGUI();

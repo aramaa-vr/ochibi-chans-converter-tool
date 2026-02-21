@@ -36,6 +36,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// </summary>
     internal static class OCTSkinnedMeshUtility
     {
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
         /// <summary>
         /// 変換元（srcRoot）内の SkinnedMeshRenderer を走査し、
         /// 複製先（dstRoot）内の “同パス / 同名” の SkinnedMeshRenderer に対して
@@ -213,7 +216,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            Undo.RecordObject(dstSmr, OCTLocalization.Get("Undo.SyncBlendShapes"));
+            Undo.RecordObject(dstSmr, L("Undo.SyncBlendShapes"));
 
             // まずは SerializedObject で m_BlendShapeWeights を直接編集
             try
@@ -261,7 +264,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(OCTLocalization.Format("Warning.SerializedBlendshapeCopyFailed", dstNameForLog, ex.Message));
+                Debug.LogWarning(F("Warning.SerializedBlendshapeCopyFailed", dstNameForLog, ex.Message));
             }
 
             // フォールバック：SetBlendShapeWeight を使う
@@ -289,7 +292,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(OCTLocalization.Format("Warning.BlendshapeCopyFailed", dstNameForLog, ex.Message));
+                Debug.LogWarning(F("Warning.BlendshapeCopyFailed", dstNameForLog, ex.Message));
             }
         }
 
@@ -311,11 +314,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 
             var stats = CollectBlendShapeNameStats(srcRoot, dstRoot);
 
-            logs.Add(OCTLocalization.Format("Log.BlendshapeSyncSummary", stats.RendererPairs, stats.TotalBlendShapeNames));
+            logs.Add(F("Log.BlendshapeSyncSummary", stats.RendererPairs, stats.TotalBlendShapeNames));
 
             if (stats.Items == null || stats.Items.Count == 0)
             {
-                logs.Add(OCTLocalization.Get("Log.BlendshapeNoRenderer"));
+                logs.Add(L("Log.BlendshapeNoRenderer"));
                 return;
             }
 
