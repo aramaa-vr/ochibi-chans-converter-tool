@@ -8,7 +8,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// 変換ログの組み立てを管理するヘルパーです。
     /// 実装ロジック側からログ整形を分離し、ログ仕様の変更を局所化します。
     /// </summary>
-    internal sealed class OchibiChansConverterToolConversionLogger
+    internal sealed class OCTConversionLogger
     {
         private const int MaxLoggedPathEntries = 80;
         private const int MaxLoggedBlendShapeNamesPerRenderer = 80;
@@ -16,7 +16,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 
         private readonly List<string> _logs;
 
-        public OchibiChansConverterToolConversionLogger(List<string> logs)
+        public OCTConversionLogger(List<string> logs)
         {
             _logs = logs;
         }
@@ -41,8 +41,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             _logs.Add(args != null && args.Length > 0
-                ? OchibiChansConverterToolLocalization.Format(key, args)
-                : OchibiChansConverterToolLocalization.Get(key));
+                ? OCTLocalization.Format(key, args)
+                : OCTLocalization.Get(key));
         }
 
         public void Blank()

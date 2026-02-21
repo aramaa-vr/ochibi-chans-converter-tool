@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolModularAvatarUtility.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTModularAvatarUtility.cs
 //
 // ============================================================================
 // 概要
@@ -38,11 +38,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// Modular Avatar の Mesh Settings が付いた衣装に対して、複製先のスケール・BlendShape を同期します。
     /// </summary>
-    internal static class OchibiChansConverterToolModularAvatarUtility
+    internal static class OCTModularAvatarUtility
     {
         private const float ScaleEpsilon = 0.0001f;
-        private static string L(string key) => OchibiChansConverterToolLocalization.Get(key);
-        private static string F(string key, params object[] args) => OchibiChansConverterToolLocalization.Format(key, args);
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         /// <summary>
         /// dstRoot（複製先）配下で “MA Mesh Settings が付いた衣装ルート” を探し、衣装スケール調整を実行します。
@@ -58,10 +58,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return false;
             }
 
-            var log = new OchibiChansConverterToolConversionLogger(logs);
+            var log = new OCTConversionLogger(logs);
 
             // アバター（変換先）側の Armature を基準に “スケール差分のあるボーン一覧” を作る
-            var dstArmature = OchibiChansConverterToolEditorUtility.FindAvatarMainArmature(dstRoot.transform);
+            var dstArmature = OCTEditorUtility.FindAvatarMainArmature(dstRoot.transform);
 
             if (dstArmature == null)
             {
@@ -125,7 +125,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             // Base Prefab 側の Armature を基準に「許可する Transform パス」を作ります。
             // これにより、元アバターの Armature 配下に追加したアクセサリ（眼鏡・ヘッドホン等）の
             // “独自Armature” や “拡大縮小した Transform” が、衣装スケール調整に混入する事故を防げます。
-            var baseArmature = OchibiChansConverterToolEditorUtility.FindAvatarMainArmature(basePrefabRoot.transform);
+            var baseArmature = OCTEditorUtility.FindAvatarMainArmature(basePrefabRoot.transform);
 
             if (baseArmature == null)
             {
@@ -274,7 +274,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             // 衣装配下の Transform 一覧（ボーンも含む）
             // Remove しながら回すため List 化します（既存実装の挙動に合わせる）。
             var costumeBones = costumeRoot.GetComponentsInChildren<Transform>(true).ToList();
-            var costumeArmature = OchibiChansConverterToolEditorUtility.FindAvatarMainArmature(costumeRoot);
+            var costumeArmature = OCTEditorUtility.FindAvatarMainArmature(costumeRoot);
 
             foreach (var modifier in avatarBoneScaleModifiers)
             {
@@ -303,7 +303,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 // 2) Armature 比較（ヒューマノイドの骨構造比較に近い形でパス一致を見る）
                 if (!string.IsNullOrEmpty(modifier.RelativePath) && costumeArmature != null)
                 {
-                    var normalizedPath = OchibiChansConverterToolEditorUtility.NormalizeRelPathFor(costumeArmature, modifier.RelativePath);
+                    var normalizedPath = OCTEditorUtility.NormalizeRelPathFor(costumeArmature, modifier.RelativePath);
                     var candidate = string.IsNullOrEmpty(normalizedPath)
                         ? costumeArmature
                         : costumeArmature.Find(normalizedPath);
@@ -413,7 +413,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             EditorUtility.SetDirty(bone);
             appliedCount++;
 
-            var log = new OchibiChansConverterToolConversionLogger(logs);
+            var log = new OCTConversionLogger(logs);
             log.Add(
                 "Log.CostumeScaleApplied",
                 costumeRoot?.name ?? L("Log.NullValue"),
@@ -524,7 +524,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            var log = new OchibiChansConverterToolConversionLogger(logs);
+            var log = new OCTConversionLogger(logs);
 
             var smrs = costumeRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 

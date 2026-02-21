@@ -1,5 +1,5 @@
 #if UNITY_EDITOR && CHIBI_MODULAR_AVATAR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolModularAvatarBoneProxyUtility.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTModularAvatarBoneProxyUtility.cs
 //
 // ============================================================================
 // 概要
@@ -19,7 +19,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// Modular Avatar の MABoneProxy を複製先へ適用するユーティリティです。
     /// </summary>
-    internal static class OchibiChansConverterToolModularAvatarBoneProxyUtility
+    internal static class OCTModularAvatarBoneProxyUtility
     {
         private enum ValidationResult
         {
@@ -38,11 +38,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             var proxies = avatarRoot.GetComponentsInChildren<ModularAvatarBoneProxy>(true);
             if (proxies == null || proxies.Length == 0)
             {
-                logs?.Add(OchibiChansConverterToolLocalization.Get("Log.MaboneProxyNone"));
+                logs?.Add(OCTLocalization.Get("Log.MaboneProxyNone"));
                 return;
             }
 
-            logs?.Add(OchibiChansConverterToolLocalization.Format("Log.MaboneProxyCount", proxies.Length));
+            logs?.Add(OCTLocalization.Format("Log.MaboneProxyCount", proxies.Length));
 
             var unpackedPrefabRoots = new HashSet<GameObject>();
 
@@ -117,11 +117,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                     proxyTransform.localRotation = Quaternion.identity;
                 }
 
-                logs?.Add(OchibiChansConverterToolLocalization.Format("Log.MaboneProxyProcessed", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(proxyTransform)));
+                logs?.Add(OCTLocalization.Format("Log.MaboneProxyProcessed", OCTConversionLogUtility.GetHierarchyPath(proxyTransform)));
             }
             else
             {
-                logs?.Add(OchibiChansConverterToolLocalization.Format("Log.MaboneProxySkipDetail", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(proxy.transform), validation));
+                logs?.Add(OCTLocalization.Format("Log.MaboneProxySkipDetail", OCTConversionLogUtility.GetHierarchyPath(proxy.transform), validation));
             }
 
             Object.DestroyImmediate(proxy);
@@ -178,7 +178,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            logs?.Add(OchibiChansConverterToolLocalization.Format("Log.MaboneProxyPrefabUnpacked", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(instanceRoot.transform)));
+            logs?.Add(OCTLocalization.Format("Log.MaboneProxyPrefabUnpacked", OCTConversionLogUtility.GetHierarchyPath(instanceRoot.transform)));
             PrefabUtility.UnpackPrefabInstance(instanceRoot, PrefabUnpackMode.Completely, InteractionMode.UserAction);
         }
     }

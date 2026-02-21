@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolVrcAvatarDescriptorUtility.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTVrcAvatarDescriptorUtility.cs
 //
 // ============================================================================
 // 概要
@@ -33,7 +33,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// VRCAvatarDescriptor の設定を安全に読み書きし、変換元 Prefab → 複製先の同期に使うユーティリティです。
     /// </summary>
-    internal static class OchibiChansConverterToolVrcAvatarDescriptorUtility
+    internal static class OCTVrcAvatarDescriptorUtility
     {
         /// <summary>
         /// VRCAvatarDescriptor から Animator を取得します。
@@ -221,7 +221,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            Undo.RecordObject(descriptor, OchibiChansConverterToolLocalization.Get("Undo.SetFxPlayableLayer"));
+            Undo.RecordObject(descriptor, OCTLocalization.Get("Undo.SetFxPlayableLayer"));
 
             descriptor.customizeAnimationLayers = true;
 
@@ -287,7 +287,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            Undo.RecordObject(descriptor, OchibiChansConverterToolLocalization.Get("Undo.SetExpressionsReferences"));
+            Undo.RecordObject(descriptor, OCTLocalization.Get("Undo.SetExpressionsReferences"));
 
             if (menu != null)
             {
@@ -327,7 +327,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 
             var viewPos = srcDesc.ViewPosition;
 
-            Undo.RecordObject(dstDesc, OchibiChansConverterToolLocalization.Get("Undo.CopyViewPosition"));
+            Undo.RecordObject(dstDesc, OCTLocalization.Get("Undo.CopyViewPosition"));
             dstDesc.ViewPosition = viewPos;
 
             PrefabUtility.RecordPrefabInstancePropertyModifications(dstDesc);
@@ -353,22 +353,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             {
                 // ルートに無い場合は「複製対象として想定外」としてスキップします。
                 // （必要なら別途、ルート構成を見直すのが安全です）
-                logs?.Add(OchibiChansConverterToolLocalization.Get("Log.BlueprintClearSkippedMissing"));
+                logs?.Add(OCTLocalization.Get("Log.BlueprintClearSkippedMissing"));
                 return false;
             }
             if (string.IsNullOrEmpty(pipelineManager.blueprintId))
             {
-                logs?.Add(OchibiChansConverterToolLocalization.Get("Log.BlueprintClearSkippedEmpty"));
+                logs?.Add(OCTLocalization.Get("Log.BlueprintClearSkippedEmpty"));
                 return false;
             }
 
-            Undo.RecordObject(pipelineManager, OchibiChansConverterToolLocalization.Get("Undo.ClearBlueprintId"));
+            Undo.RecordObject(pipelineManager, OCTLocalization.Get("Undo.ClearBlueprintId"));
             pipelineManager.blueprintId = string.Empty;
 
             PrefabUtility.RecordPrefabInstancePropertyModifications(pipelineManager);
             EditorUtility.SetDirty(pipelineManager);
 
-            logs?.Add(OchibiChansConverterToolLocalization.Get("Log.BlueprintClearApplied"));
+            logs?.Add(OCTLocalization.Get("Log.BlueprintClearApplied"));
             return true;
         }
     }

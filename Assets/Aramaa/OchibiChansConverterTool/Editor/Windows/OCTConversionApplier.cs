@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Windows/OchibiChansConverterToolConversionApplier.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Windows/OCTConversionApplier.cs
 //
 // ============================================================================
 // 概要
@@ -39,15 +39,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// <summary>
     /// 選択中アバターを Ctrl+D 相当で複製し、変換元 Prefab の設定を複製先に同期するエディターツールです。
     /// </summary>
-    public static class OchibiChansConverterToolConversionApplier
+    public static class OCTConversionApplier
     {
-        private const string ToolVersion = OchibiChansConverterToolEditorConstants.ToolVersion;
-        private const string LatestVersionUrl = OchibiChansConverterToolEditorConstants.LatestVersionUrl;
-        private const string ToolWebsiteUrl = OchibiChansConverterToolEditorConstants.ToolWebsiteUrl;
-        private const string ToolsMenuPath = OchibiChansConverterToolEditorConstants.ToolsMenuPath;
-        private const string GameObjectMenuPath = OchibiChansConverterToolEditorConstants.GameObjectMenuPath;
-        private static string L(string key) => OchibiChansConverterToolLocalization.Get(key);
-        private static string F(string key, params object[] args) => OchibiChansConverterToolLocalization.Format(key, args);
+        private const string ToolVersion = OCTEditorConstants.ToolVersion;
+        private const string LatestVersionUrl = OCTEditorConstants.LatestVersionUrl;
+        private const string ToolWebsiteUrl = OCTEditorConstants.ToolWebsiteUrl;
+        private const string ToolsMenuPath = OCTEditorConstants.ToolsMenuPath;
+        private const string GameObjectMenuPath = OCTEditorConstants.GameObjectMenuPath;
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
         private static string ToolWindowTitle => L("Tool.Name");
         private static string LogWindowTitle => L("Tool.LogWindowTitle");
 
@@ -69,11 +69,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var selected = Selection.activeGameObject;
             if (selected != null && !EditorUtility.IsPersistent(selected) && selected.scene.IsValid() && selected.scene.isLoaded)
             {
-                OchibiChansConverterToolConversionSourcePrefabWindow.Show(selected);
+                OCTConversionSourcePrefabWindow.Show(selected);
                 return;
             }
 
-            OchibiChansConverterToolConversionSourcePrefabWindow.Show(null);
+            OCTConversionSourcePrefabWindow.Show(null);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             // GameObject メニューは “選択オブジェクト” を対象として起動する。
             var selected = Selection.activeGameObject;
-            OchibiChansConverterToolConversionSourcePrefabWindow.Show(selected);
+            OCTConversionSourcePrefabWindow.Show(selected);
         }
 
         /// <summary>
@@ -121,10 +121,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// - Ochibichans_Addmenu は sourceChibiPrefab の内部にある想定のため、
         ///   Prefab 内のネストされた Prefab インスタンスから該当アセットを探索して追加します。
         /// </summary>
-        private sealed class OchibiChansConverterToolConversionSourcePrefabWindow : EditorWindow
+        private sealed class OCTConversionSourcePrefabWindow : EditorWindow
         {
-            private static string L(string key) => OchibiChansConverterToolLocalization.Get(key);
-            private static string F(string key, params object[] args) => OchibiChansConverterToolLocalization.Format(key, args);
+            private static string L(string key) => OCTLocalization.Get(key);
+            private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
             // ------------------------------------------------------------
             // 見た目（ウィンドウサイズ）
@@ -133,7 +133,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private static readonly Vector2 WindowMinSize = new Vector2(430, 620);
 
             // 二重起動防止：既に開いているウィンドウがあればそれを使う
-            private static OchibiChansConverterToolConversionSourcePrefabWindow _opened;
+            private static OCTConversionSourcePrefabWindow _opened;
 
             // 二重実行防止：ボタン連打で複数回の delayCall が積まれるのを防ぐ
             private bool _applyQueued;
@@ -145,7 +145,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private bool _versionCheckInProgress;
             private string _latestVersion;
             private string _versionError;
-            private OchibiChansConverterToolVersionStatus _versionStatus = OchibiChansConverterToolVersionStatus.Unknown;
+            private OCTVersionStatus _versionStatus = OCTVersionStatus.Unknown;
 
             private GUIStyle _descriptionStyle;
             private GUIStyle _cardStyle;
@@ -161,7 +161,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             // 変換元（おちびちゃんズ側）Prefab アセット（Project 上の Prefab）
             private GameObject _sourcePrefabAsset;
-            private readonly OchibiChansConverterToolPrefabDropdownCache _prefabDropdownCache = new OchibiChansConverterToolPrefabDropdownCache();
+            private readonly OCTPrefabDropdownCache _prefabDropdownCache = new OCTPrefabDropdownCache();
 
             /// <summary>
             /// 変換ウィンドウを表示します（既に開いていればフォーカスするだけ）。
@@ -184,7 +184,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 // なければ作成
                 var titleWithVersion = F("Window.TitleWithVersion", ToolWindowTitle, ToolVersion);
-                var w = GetWindow<OchibiChansConverterToolConversionSourcePrefabWindow>(utility: true, title: titleWithVersion, focus: true);
+                var w = GetWindow<OCTConversionSourcePrefabWindow>(utility: true, title: titleWithVersion, focus: true);
                 _opened = w;
 
                 w.minSize = WindowMinSize;
@@ -210,7 +210,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _opened = null;
                 }
 
-                OchibiChansConverterToolPrefabDropdownCache.SaveCacheToDisk();
+                OCTPrefabDropdownCache.SaveCacheToDisk();
             }
 
             private void OnEnable()
@@ -220,7 +220,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _versionCheckInProgress = false;
                 _latestVersion = null;
                 _versionError = null;
-                _versionStatus = OchibiChansConverterToolVersionStatus.Unknown;
+                _versionStatus = OCTVersionStatus.Unknown;
                 _cachedProSkin = EditorGUIUtility.isProSkin;
                 ClearCachedStyles();
             }
@@ -406,17 +406,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     EditorGUILayout.PrefixLabel(L("Language.Label"));
 
-                    var displayNames = OchibiChansConverterToolLocalization.GetLanguageDisplayNames() ?? Array.Empty<string>();
+                    var displayNames = OCTLocalization.GetLanguageDisplayNames() ?? Array.Empty<string>();
                     if (displayNames.Length == 0)
                     {
                         return;
                     }
 
-                    var currentIndex = Mathf.Clamp(OchibiChansConverterToolLocalization.GetLanguageIndex(), 0, displayNames.Length - 1);
+                    var currentIndex = Mathf.Clamp(OCTLocalization.GetLanguageIndex(), 0, displayNames.Length - 1);
                     var nextIndex = EditorGUILayout.Popup(currentIndex, displayNames);
                     if (nextIndex != currentIndex)
                     {
-                        OchibiChansConverterToolLocalization.SetLanguage(OchibiChansConverterToolLocalization.GetLanguageCodeFromIndex(nextIndex));
+                        OCTLocalization.SetLanguage(OCTLocalization.GetLanguageCodeFromIndex(nextIndex));
                         Repaint();
                     }
                 }
@@ -434,16 +434,16 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (string.IsNullOrWhiteSpace(LatestVersionUrl))
                 {
                     _versionError = L("Version.ErrorMissingUrl");
-                    _versionStatus = OchibiChansConverterToolVersionStatus.Unknown;
+                    _versionStatus = OCTVersionStatus.Unknown;
                     return;
                 }
 
                 _versionCheckInProgress = true;
                 _versionError = null;
                 _latestVersion = null;
-                _versionStatus = OchibiChansConverterToolVersionStatus.Unknown;
+                _versionStatus = OCTVersionStatus.Unknown;
 
-                OchibiChansConverterToolVersionUtility.FetchLatestVersionAsync(LatestVersionUrl, result =>
+                OCTVersionUtility.FetchLatestVersionAsync(LatestVersionUrl, result =>
                 {
                     EditorApplication.delayCall += () =>
                     {
@@ -457,7 +457,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         if (!result.Succeeded)
                         {
                             _versionError = string.IsNullOrWhiteSpace(result.Error) ? L("Version.Unknown") : result.Error;
-                            _versionStatus = OchibiChansConverterToolVersionStatus.Unknown;
+                            _versionStatus = OCTVersionStatus.Unknown;
                             Repaint();
                             return;
                         }
@@ -465,13 +465,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         if (string.IsNullOrWhiteSpace(result.LatestVersion))
                         {
                             _versionError = L("Version.ExtractFailed");
-                            _versionStatus = OchibiChansConverterToolVersionStatus.Unknown;
+                            _versionStatus = OCTVersionStatus.Unknown;
                             Repaint();
                             return;
                         }
 
                         _latestVersion = result.LatestVersion;
-                        _versionStatus = OchibiChansConverterToolVersionUtility.GetVersionStatus(ToolVersion, _latestVersion);
+                        _versionStatus = OCTVersionUtility.GetVersionStatus(ToolVersion, _latestVersion);
                         Repaint();
                     };
                 });
@@ -499,13 +499,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 switch (_versionStatus)
                 {
-                    case OchibiChansConverterToolVersionStatus.UpdateAvailable:
+                    case OCTVersionStatus.UpdateAvailable:
                         color = SelectStatusColor(new Color(1f, 0.65f, 0.2f), new Color(0.8f, 0.45f, 0.1f));
                         return F("Version.Available", ToolVersion, _latestVersion);
-                    case OchibiChansConverterToolVersionStatus.Ahead:
+                    case OCTVersionStatus.Ahead:
                         color = SelectStatusColor(new Color(0.4f, 0.75f, 1f), new Color(0.15f, 0.5f, 0.8f));
                         return F("Version.Ahead", ToolVersion, _latestVersion);
-                    case OchibiChansConverterToolVersionStatus.UpToDate:
+                    case OCTVersionStatus.UpToDate:
                         color = SelectStatusColor(new Color(0.35f, 0.8f, 0.4f), new Color(0.15f, 0.55f, 0.2f));
                         return F("Version.UpToDate", ToolVersion, _latestVersion);
                     default:
@@ -528,10 +528,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 switch (_versionStatus)
                 {
-                    case OchibiChansConverterToolVersionStatus.UpdateAvailable:
+                    case OCTVersionStatus.UpdateAvailable:
                         return MessageType.Warning;
-                    case OchibiChansConverterToolVersionStatus.UpToDate:
-                    case OchibiChansConverterToolVersionStatus.Ahead:
+                    case OCTVersionStatus.UpToDate:
+                    case OCTVersionStatus.Ahead:
                         return MessageType.None;
                     default:
                         return MessageType.None;
@@ -771,7 +771,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     try
                     {
-                        var applySucceeded = OchibiChansConverterToolConversionPipeline.DuplicateThenApply(
+                        var applySucceeded = OCTConversionPipeline.DuplicateThenApply(
                             capturedSourcePrefab,
                             capturedTarget,
                             capturedApplyMaboneProxyProcessing,
@@ -799,7 +799,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         if (_showLogs)
                         {
                             // ログウィンドウを表示（メインウィンドウ内には表示しない）
-                            OchibiChansConverterToolConversionLogWindow.ShowLogs(LogWindowTitle, logs);
+                            OCTConversionLogWindow.ShowLogs(LogWindowTitle, logs);
                         }
 
                         if (_isWindowActive && _opened == this)

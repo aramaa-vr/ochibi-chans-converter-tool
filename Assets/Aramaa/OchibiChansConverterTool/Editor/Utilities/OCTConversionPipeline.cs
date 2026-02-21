@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolConversionPipeline.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTConversionPipeline.cs
 //
 // ============================================================================
 // 概要
@@ -37,18 +37,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// <summary>
     /// おちびちゃんズ変換の複製・同期処理をまとめた変換パイプラインです。
     /// </summary>
-    internal static class OchibiChansConverterToolConversionPipeline
+    internal static class OCTConversionPipeline
     {
         private const string DuplicatedNameSuffix = " (Ochibi-chans)";
         /// <summary>
         /// ローカライズ文字列を取得します。
         /// </summary>
-        private static string L(string key) => OchibiChansConverterToolLocalization.Get(key);
+        private static string L(string key) => OCTLocalization.Get(key);
 
         /// <summary>
         /// ローカライズ文字列をフォーマットして取得します。
         /// </summary>
-        private static string F(string key, params object[] args) => OchibiChansConverterToolLocalization.Format(key, args);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         // --------------------------------------------------------------------
         // 処理の全体像（初心者向け）
@@ -83,10 +83,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         )
         {
             logs ??= new List<string>();
-            var log = new OchibiChansConverterToolConversionLogger(logs);
+            var log = new OCTConversionLogger(logs);
 
             logs.Add(L("Log.Header.Main"));
-            logs.Add(F("Log.ToolVersion", L("Tool.Name"), OchibiChansConverterToolEditorConstants.ToolVersion));
+            logs.Add(F("Log.ToolVersion", L("Tool.Name"), OCTEditorConstants.ToolVersion));
             logs.Add(F("Log.UnityVersion", Application.unityVersion));
             logs.Add(F("Log.VrcSdkVersion", GetVrcSdkVersionInfo()));
             logs.Add(F("Log.ExecutionTime", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
@@ -95,7 +95,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs.Add(F("Log.SourcePrefab", sourceChibiPrefab?.name ?? L("Log.NullValue"), AssetDatabase.GetAssetPath(sourceChibiPrefab)));
             if (sourceTarget != null)
             {
-                logs.Add(F("Log.SourceAvatar", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(sourceTarget.transform)));
+                logs.Add(F("Log.SourceAvatar", OCTConversionLogUtility.GetHierarchyPath(sourceTarget.transform)));
             }
 
             logs.Add("");
@@ -172,7 +172,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 logs.Add(L("Log.DuplicateSuccess"));
                 foreach (var d in duplicatedTargets.Where(x => x != null))
                 {
-                    logs.Add(F("Log.DuplicateTarget", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(d.transform)));
+                    logs.Add(F("Log.DuplicateTarget", OCTConversionLogUtility.GetHierarchyPath(d.transform)));
                 }
 
                 logs.Add("");
@@ -191,8 +191,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 #if CHIBI_MODULAR_AVATAR
                     foreach (var duplicated in duplicatedTargets.Where(x => x != null))
                     {
-                        logs.Add(F("Log.TargetEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(duplicated.transform)));
-                        OchibiChansConverterToolModularAvatarBoneProxyUtility.ProcessBoneProxies(duplicated, logs);
+                        logs.Add(F("Log.TargetEntry", OCTConversionLogUtility.GetHierarchyPath(duplicated.transform)));
+                        OCTModularAvatarBoneProxyUtility.ProcessBoneProxies(duplicated, logs);
                     }
 #else
                     logs.Add(L("Log.MaboneProxySkipped"));
@@ -212,7 +212,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 logs.Add(L("Log.BlueprintClearHeader"));
                 foreach (var duplicated in duplicatedTargets.Where(x => x != null))
                 {
-                    OchibiChansConverterToolVrcAvatarDescriptorUtility.ClearPipelineBlueprintId(duplicated, logs);
+                    OCTVrcAvatarDescriptorUtility.ClearPipelineBlueprintId(duplicated, logs);
                 }
                 logs.Add("");
 
@@ -260,7 +260,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static bool ApplyConversionToTargets(GameObject sourceChibiPrefab, GameObject[] targets, List<string> logs)
         {
             logs ??= new List<string>();
-            var log = new OchibiChansConverterToolConversionLogger(logs);
+            var log = new OCTConversionLogger(logs);
             if (sourceChibiPrefab == null || !EditorUtility.IsPersistent(sourceChibiPrefab))
             {
                 EditorUtility.DisplayDialog(
@@ -309,12 +309,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // 変換に必要な参照を sourceChibiPrefab の VRCAvatarDescriptor から抽出
                 // --------------------------------------------------------
-                OchibiChansConverterToolVrcAvatarDescriptorUtility.TryGetFxPlayableLayerControllerFromBasePrefab(
+                OCTVrcAvatarDescriptorUtility.TryGetFxPlayableLayerControllerFromBasePrefab(
                     basePrefabRoot,
                     out var fxController
                 );
 
-                OchibiChansConverterToolVrcAvatarDescriptorUtility.TryGetExpressionsMenuAndParametersFromBasePrefab(
+                OCTVrcAvatarDescriptorUtility.TryGetExpressionsMenuAndParametersFromBasePrefab(
                     basePrefabRoot,
                     out var expressionsMenu,
                     out var expressionParameters
@@ -334,7 +334,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
 
                     logs.Add(L("Log.Separator"));
-                    logs.Add(F("Log.TargetEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstRoot.transform)));
+                    logs.Add(F("Log.TargetEntry", OCTConversionLogUtility.GetHierarchyPath(dstRoot.transform)));
                     log.AddStep(
                         "6",
                         L("Log.Step.6.Title"),
@@ -342,12 +342,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     );
 
                     // 実行前の参照（FX / Menu / Parameters）を取得してログ用に保持（値は出さない）
-                    OchibiChansConverterToolVrcAvatarDescriptorUtility.TryGetFxPlayableLayerControllerFromAvatar(dstRoot, out var fxBefore);
-                    OchibiChansConverterToolVrcAvatarDescriptorUtility.TryGetExpressionsMenuAndParametersFromAvatar(dstRoot, out var menuBefore, out var paramsBefore);
+                    OCTVrcAvatarDescriptorUtility.TryGetFxPlayableLayerControllerFromAvatar(dstRoot, out var fxBefore);
+                    OCTVrcAvatarDescriptorUtility.TryGetExpressionsMenuAndParametersFromAvatar(dstRoot, out var menuBefore, out var paramsBefore);
 
-                    logs.Add(F("Log.FxBefore", OchibiChansConverterToolConversionLogUtility.FormatAssetRef(fxBefore)));
-                    logs.Add(F("Log.MenuBefore", OchibiChansConverterToolConversionLogUtility.FormatAssetRef(menuBefore)));
-                    logs.Add(F("Log.ParametersBefore", OchibiChansConverterToolConversionLogUtility.FormatAssetRef(paramsBefore)));
+                    logs.Add(F("Log.FxBefore", OCTConversionLogUtility.FormatAssetRef(fxBefore)));
+                    logs.Add(F("Log.MenuBefore", OCTConversionLogUtility.FormatAssetRef(menuBefore)));
+                    logs.Add(F("Log.ParametersBefore", OCTConversionLogUtility.FormatAssetRef(paramsBefore)));
                     logs.Add("");
 
                     // SVG 対応ステップ: 6) 複製先へ同期適用（コア処理）
@@ -370,8 +370,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     );
                     if (fxController != null)
                     {
-                        logs.Add(F("Log.FxApply", OchibiChansConverterToolConversionLogUtility.FormatAssetRef(fxController)));
-                        OchibiChansConverterToolVrcAvatarDescriptorUtility.SetFxPlayableLayerController(dstRoot, fxController);
+                        logs.Add(F("Log.FxApply", OCTConversionLogUtility.FormatAssetRef(fxController)));
+                        OCTVrcAvatarDescriptorUtility.SetFxPlayableLayerController(dstRoot, fxController);
                     }
                     else
                     {
@@ -380,8 +380,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     if (expressionsMenu != null || expressionParameters != null)
                     {
-                        logs.Add(F("Log.ExpressionsApply", OchibiChansConverterToolConversionLogUtility.FormatAssetRef(expressionsMenu), OchibiChansConverterToolConversionLogUtility.FormatAssetRef(expressionParameters)));
-                        OchibiChansConverterToolVrcAvatarDescriptorUtility.SetExpressionsMenuAndParameters(dstRoot, expressionsMenu, expressionParameters);
+                        logs.Add(F("Log.ExpressionsApply", OCTConversionLogUtility.FormatAssetRef(expressionsMenu), OCTConversionLogUtility.FormatAssetRef(expressionParameters)));
+                        OCTVrcAvatarDescriptorUtility.SetExpressionsMenuAndParameters(dstRoot, expressionsMenu, expressionParameters);
                     }
                     else
                     {
@@ -390,25 +390,25 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     // ViewPosition も sourceChibiPrefab と同じ値へ同期
                     {
-                        var viewOk = OchibiChansConverterToolVrcAvatarDescriptorUtility.TryCopyViewPositionFromBasePrefab(dstRoot, basePrefabRoot);
+                        var viewOk = OCTVrcAvatarDescriptorUtility.TryCopyViewPositionFromBasePrefab(dstRoot, basePrefabRoot);
                         logs.Add(viewOk ? L("Log.ViewPositionApplied") : L("Log.ViewPositionSkipped"));
                     }
 
                     // MA 衣装スケール調整（Modular Avatar がある環境のみ実行）
-                    if (!OchibiChansConverterToolModularAvatarUtility.AdjustCostumeScalesForModularAvatarMeshSettings(dstRoot, basePrefabRoot, logs))
+                    if (!OCTModularAvatarUtility.AdjustCostumeScalesForModularAvatarMeshSettings(dstRoot, basePrefabRoot, logs))
                     {
                         logs.Add(L("Log.Error.CostumeScaleFailed"));
                         return false;
                     }
 
                     // 実行後の参照（FX / Menu / Parameters）
-                    OchibiChansConverterToolVrcAvatarDescriptorUtility.TryGetFxPlayableLayerControllerFromAvatar(dstRoot, out var fxAfter);
-                    OchibiChansConverterToolVrcAvatarDescriptorUtility.TryGetExpressionsMenuAndParametersFromAvatar(dstRoot, out var menuAfter, out var paramsAfter);
+                    OCTVrcAvatarDescriptorUtility.TryGetFxPlayableLayerControllerFromAvatar(dstRoot, out var fxAfter);
+                    OCTVrcAvatarDescriptorUtility.TryGetExpressionsMenuAndParametersFromAvatar(dstRoot, out var menuAfter, out var paramsAfter);
 
                     logs.Add("");
-                    logs.Add(F("Log.FxAfter", OchibiChansConverterToolConversionLogUtility.FormatAssetRef(fxAfter)));
-                    logs.Add(F("Log.MenuAfter", OchibiChansConverterToolConversionLogUtility.FormatAssetRef(menuAfter)));
-                    logs.Add(F("Log.ParametersAfter", OchibiChansConverterToolConversionLogUtility.FormatAssetRef(paramsAfter)));
+                    logs.Add(F("Log.FxAfter", OCTConversionLogUtility.FormatAssetRef(fxAfter)));
+                    logs.Add(F("Log.MenuAfter", OCTConversionLogUtility.FormatAssetRef(menuAfter)));
+                    logs.Add(F("Log.ParametersAfter", OCTConversionLogUtility.FormatAssetRef(paramsAfter)));
 
                     // 差分が分かるように補足（値は出さない）
                     if (!ReferenceEquals(fxBefore, fxAfter))
@@ -503,7 +503,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             // ------------------------------------------------------------
 
             // 期待するファイル名（拡張子まで一致）
-            const string targetFileName = OchibiChansConverterToolEditorConstants.AddMenuPrefabFileName;
+            const string targetFileName = OCTEditorConstants.AddMenuPrefabFileName;
 
             // ------------------------------------------------------------
             // まずは “Prefabアセットパス” から確実に特定します。
@@ -598,7 +598,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                if (go.name.IndexOf(OchibiChansConverterToolEditorConstants.AddMenuNameKeyword, StringComparison.OrdinalIgnoreCase) < 0)
+                if (go.name.IndexOf(OCTEditorConstants.AddMenuNameKeyword, StringComparison.OrdinalIgnoreCase) < 0)
                 {
                     continue;
                 }
@@ -689,14 +689,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             dstRoot.transform.localScale = srcRoot.transform.localScale;
             EditorUtility.SetDirty(dstRoot.transform);
 
-            var srcArmature = OchibiChansConverterToolEditorUtility.FindAvatarMainArmature(srcRoot.transform);
+            var srcArmature = OCTEditorUtility.FindAvatarMainArmature(srcRoot.transform);
             if (srcArmature == null)
             {
                 logs.Add(L("Log.Step.6.Substep2SkippedSource"));
                 return;
             }
 
-            var dstArmature = OchibiChansConverterToolEditorUtility.FindAvatarMainArmature(dstRoot.transform);
+            var dstArmature = OCTEditorUtility.FindAvatarMainArmature(dstRoot.transform);
             if (dstArmature == null)
             {
                 logs.Add(L("Log.Step.6.Substep2SkippedTarget"));
@@ -708,7 +708,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs.Add(L("Log.Step.6.Substep3"));
             AddMissingComponentsUnderArmature(srcRoot, dstRoot, srcArmature, dstArmature, logs);
             logs.Add(L("Log.Step.6.Substep4"));
-            OchibiChansConverterToolSkinnedMeshUtility.CopySkinnedMeshRenderersBlendShapesOnlyWithLog(srcRoot, dstRoot, logs);
+            OCTSkinnedMeshUtility.CopySkinnedMeshRenderersBlendShapesOnlyWithLog(srcRoot, dstRoot, logs);
         }
 
         /// <summary>
@@ -722,7 +722,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             logs ??= new List<string>();
-            var log = new OchibiChansConverterToolConversionLogger(logs);
+            var log = new OCTConversionLogger(logs);
             logs.Add(L("Log.ArmatureTransformApplied"));
 
             var srcAll = srcArmature.GetComponentsInChildren<Transform>(true);
@@ -739,7 +739,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 string rel = AnimationUtility.CalculateTransformPath(srcT, srcArmature);
-                rel = OchibiChansConverterToolEditorUtility.NormalizeRelPathFor(dstArmature, rel);
+                rel = OCTEditorUtility.NormalizeRelPathFor(dstArmature, rel);
 
                 var dstT = string.IsNullOrEmpty(rel) ? dstArmature : dstArmature.Find(rel);
                 if (dstT == null)
@@ -756,7 +756,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 EditorUtility.SetDirty(dstT);
 
                 updated++;
-                updatedPaths.Add(OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT));
+                updatedPaths.Add(OCTConversionLogUtility.GetHierarchyPath(dstT));
             }
 
             log.AddPathEntries(updatedPaths);
@@ -784,7 +784,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             logs ??= new List<string>();
-            var log = new OchibiChansConverterToolConversionLogger(logs);
+            var log = new OCTConversionLogger(logs);
             logs.Add(L("Log.AddMissingComponents"));
 
             var srcAll = srcArmature.GetComponentsInChildren<Transform>(true);
@@ -801,7 +801,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 string rel = AnimationUtility.CalculateTransformPath(srcT, srcArmature);
-                rel = OchibiChansConverterToolEditorUtility.NormalizeRelPathFor(dstArmature, rel);
+                rel = OCTEditorUtility.NormalizeRelPathFor(dstArmature, rel);
 
                 var dstT = string.IsNullOrEmpty(rel) ? dstArmature : dstArmature.Find(rel);
                 if (dstT == null)
@@ -882,11 +882,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                             // コピーに失敗した場合は、追加だけ残して処理続行
                         }
 
-                        OchibiChansConverterToolEditorUtility.RemapObjectReferencesInObject(newComp, srcRoot, dstRoot);
+                        OCTEditorUtility.RemapObjectReferencesInObject(newComp, srcRoot, dstRoot);
                         EditorUtility.SetDirty(newComp);
 
                         addedCount++;
-                        log.Add("Log.ComponentAdded", type.Name, OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT));
+                        log.Add("Log.ComponentAdded", type.Name, OCTConversionLogUtility.GetHierarchyPath(dstT));
                     }
                 }
             }
@@ -958,8 +958,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             EditorUtility.SetDirty(instanceObj);
 
             logs.Add(F("Log.ExPrefabAdded", placement.PrefabAsset.name, prefabPath));
-            logs.Add(F("Log.ExPrefabParent", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(parentTransform)));
-            logs.Add(F("Log.ExPrefabAddedTo", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(instanceObj.transform)));
+            logs.Add(F("Log.ExPrefabParent", OCTConversionLogUtility.GetHierarchyPath(parentTransform)));
+            logs.Add(F("Log.ExPrefabAddedTo", OCTConversionLogUtility.GetHierarchyPath(instanceObj.transform)));
             logs.Add(L("Log.ExPrefabTransformApplied"));
 
             return true;
@@ -1029,7 +1029,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return false;
         }
 
-        // ログ用ユーティリティは OchibiChansConverterToolConversionLogUtility に切り出し
+        // ログ用ユーティリティは OCTConversionLogUtility に切り出し
     }
 }
 #endif

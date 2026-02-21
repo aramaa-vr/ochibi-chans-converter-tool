@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolSkinnedMeshUtility.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTSkinnedMeshUtility.cs
 //
 // ============================================================================
 // 概要
@@ -34,7 +34,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// SkinnedMeshRenderer の BlendShape ウェイトのみを、変換元 → 複製先へ安全に同期するユーティリティです。
     /// </summary>
-    internal static class OchibiChansConverterToolSkinnedMeshUtility
+    internal static class OCTSkinnedMeshUtility
     {
         /// <summary>
         /// 変換元（srcRoot）内の SkinnedMeshRenderer を走査し、
@@ -213,7 +213,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            Undo.RecordObject(dstSmr, OchibiChansConverterToolLocalization.Get("Undo.SyncBlendShapes"));
+            Undo.RecordObject(dstSmr, OCTLocalization.Get("Undo.SyncBlendShapes"));
 
             // まずは SerializedObject で m_BlendShapeWeights を直接編集
             try
@@ -261,7 +261,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(OchibiChansConverterToolLocalization.Format("Warning.SerializedBlendshapeCopyFailed", dstNameForLog, ex.Message));
+                Debug.LogWarning(OCTLocalization.Format("Warning.SerializedBlendshapeCopyFailed", dstNameForLog, ex.Message));
             }
 
             // フォールバック：SetBlendShapeWeight を使う
@@ -289,7 +289,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(OchibiChansConverterToolLocalization.Format("Warning.BlendshapeCopyFailed", dstNameForLog, ex.Message));
+                Debug.LogWarning(OCTLocalization.Format("Warning.BlendshapeCopyFailed", dstNameForLog, ex.Message));
             }
         }
 
@@ -307,15 +307,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            var log = new OchibiChansConverterToolConversionLogger(logs);
+            var log = new OCTConversionLogger(logs);
 
             var stats = CollectBlendShapeNameStats(srcRoot, dstRoot);
 
-            logs.Add(OchibiChansConverterToolLocalization.Format("Log.BlendshapeSyncSummary", stats.RendererPairs, stats.TotalBlendShapeNames));
+            logs.Add(OCTLocalization.Format("Log.BlendshapeSyncSummary", stats.RendererPairs, stats.TotalBlendShapeNames));
 
             if (stats.Items == null || stats.Items.Count == 0)
             {
-                logs.Add(OchibiChansConverterToolLocalization.Get("Log.BlendshapeNoRenderer"));
+                logs.Add(OCTLocalization.Get("Log.BlendshapeNoRenderer"));
                 return;
             }
 
