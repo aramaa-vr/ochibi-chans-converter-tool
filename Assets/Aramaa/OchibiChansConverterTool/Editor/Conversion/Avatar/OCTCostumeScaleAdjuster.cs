@@ -34,6 +34,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OCTCostumeScaleAdjuster
     {
         private const float ScaleEpsilon = 0.0001f;
+        private const int MaxLoggedExcludedArmaturePaths = 1000;
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
@@ -157,7 +158,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     if (!allowedArmaturePaths.Contains(path))
                     {
                         excludedCount++;
-                        if (excludedPaths.Count < 30)
+                        if (excludedPaths.Count < MaxLoggedExcludedArmaturePaths)
                         {
                             excludedPaths.Add(readablePath);
                         }
