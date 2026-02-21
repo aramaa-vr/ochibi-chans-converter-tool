@@ -59,28 +59,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             var baseArmaturePaths = BuildBaseArmatureTransformPaths(basePrefabRoot, logs);
-            new OCTConversionLogger(logs).Add("Log.CostumeScaleCriteria");
-
             var avatarBoneScaleModifiers = BuildAvatarBoneScaleModifiers(dstArmature, baseArmaturePaths, logs);
             if (avatarBoneScaleModifiers.Count == 0)
             {
                 return true;
             }
 
-            if (costumeRoots == null || costumeRoots.Count == 0)
-            {
-                return true;
-            }
-
-            logs?.Add(L("Log.CostumeScaleHeader"));
-            logs?.Add(F("Log.CostumeCount", costumeRoots.Count));
-
-            foreach (var costumeRoot in costumeRoots)
-            {
-                AdjustOneCostume(costumeRoot, avatarBoneScaleModifiers, logs);
-            }
-
-            return true;
+            return OCTCostumeScaleApplyUtility.AdjustCostumeRoots(
+                costumeRoots,
+                logs,
+                (costumeRoot, sharedLogs) => AdjustOneCostume(costumeRoot, avatarBoneScaleModifiers, sharedLogs)
+            );
         }
 
         private sealed class AvatarBoneScaleModifier
@@ -207,19 +196,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             List<string> logs
         )
         {
-            if (costumeRoot == null)
-            {
-                return;
-            }
-
-            Undo.RegisterFullObjectHierarchyUndo(costumeRoot.gameObject, L("Undo.AdjustCostumeScales"));
             if (avatarBoneScaleModifiers == null || avatarBoneScaleModifiers.Count == 0)
             {
                 return;
             }
 
+            if (!OCTCostumeScaleApplyUtility.TryPrepareCostume(
+                    costumeRoot,
+                    L("Undo.AdjustCostumeScales"),
+                    out var costumeBones
+                ))
+            {
+                return;
+            }
+
             int appliedCount = 0;
-            var costumeBones = costumeRoot.GetComponentsInChildren<Transform>(true).ToList();
             var costumeArmature = OCTEditorUtility.FindAvatarMainArmature(costumeRoot);
 
             ApplyScaleModifiers(
@@ -231,7 +222,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 ref appliedCount
             );
 
-            logs?.Add(F("Log.CostumeApplied", costumeRoot.name, appliedCount));
+            OCTCostumeScaleApplyUtility.LogCostumeApplied(logs, costumeRoot, appliedCount);
         }
 
         private static void ApplyScaleModifiers(

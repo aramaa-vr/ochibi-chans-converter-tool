@@ -1,7 +1,5 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
 using UnityEngine;
 #if CHIBI_MODULAR_AVATAR
 using nadena.dev.modular_avatar.core;
@@ -15,26 +13,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OCTModularAvatarArmatureSyncAdjuster
     {
         private static string L(string key) => OCTLocalization.Get(key);
-        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         internal static bool AdjustByMergeArmatureMapping(List<Transform> costumeRoots, List<string> logs)
         {
-            new OCTConversionLogger(logs).Add("Log.CostumeScaleCriteria");
-
-            if (costumeRoots == null || costumeRoots.Count == 0)
-            {
-                return true;
-            }
-
-            logs?.Add(L("Log.CostumeScaleHeader"));
-            logs?.Add(F("Log.CostumeCount", costumeRoots.Count));
-
-            foreach (var costumeRoot in costumeRoots)
-            {
-                AdjustOneCostume(costumeRoot, logs);
-            }
-
-            return true;
+            return OCTCostumeScaleApplyUtility.AdjustCostumeRoots(costumeRoots, logs, AdjustOneCostume);
         }
 
         private sealed class MergeArmatureBoneScaleMapping
@@ -47,26 +29,27 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 #if CHIBI_MODULAR_AVATAR
         private static void AdjustOneCostume(Transform costumeRoot, List<string> logs)
         {
-            if (costumeRoot == null)
+            if (!OCTCostumeScaleApplyUtility.TryPrepareCostume(
+                    costumeRoot,
+                    L("Undo.AdjustCostumeScales"),
+                    out var costumeBones
+                ))
             {
                 return;
             }
-
-            Undo.RegisterFullObjectHierarchyUndo(costumeRoot.gameObject, L("Undo.AdjustCostumeScales"));
 
             var mergeArmatureMappings = BuildMergeArmatureMappings(costumeRoot, logs);
             if (mergeArmatureMappings.Count == 0)
             {
-                logs?.Add(F("Log.CostumeApplied", costumeRoot.name, 0));
+                OCTCostumeScaleApplyUtility.LogCostumeApplied(logs, costumeRoot, 0);
                 return;
             }
 
             var appliedCount = 0;
-            var costumeBones = costumeRoot.GetComponentsInChildren<Transform>(true).ToList();
 
             ApplyMergeArmatureScaleMappings(mergeArmatureMappings, costumeBones, logs, costumeRoot, ref appliedCount);
 
-            logs?.Add(F("Log.CostumeApplied", costumeRoot.name, appliedCount));
+            OCTCostumeScaleApplyUtility.LogCostumeApplied(logs, costumeRoot, appliedCount);
         }
 
         private static List<MergeArmatureBoneScaleMapping> BuildMergeArmatureMappings(Transform costumeRoot, List<string> logs)

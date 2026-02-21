@@ -1,5 +1,7 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,6 +14,53 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     {
         private const float ScaleEpsilon = 0.0001f;
         private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
+        internal static bool AdjustCostumeRoots(
+            List<Transform> costumeRoots,
+            List<string> logs,
+            Action<Transform, List<string>> adjustOneCostume
+        )
+        {
+            new OCTConversionLogger(logs).Add("Log.CostumeScaleCriteria");
+
+            if (costumeRoots == null || costumeRoots.Count == 0)
+            {
+                return true;
+            }
+
+            logs?.Add(L("Log.CostumeScaleHeader"));
+            logs?.Add(F("Log.CostumeCount", costumeRoots.Count));
+
+            foreach (var costumeRoot in costumeRoots)
+            {
+                adjustOneCostume?.Invoke(costumeRoot, logs);
+            }
+
+            return true;
+        }
+
+        internal static bool TryPrepareCostume(
+            Transform costumeRoot,
+            string undoLabel,
+            out List<Transform> costumeBones
+        )
+        {
+            costumeBones = null;
+            if (costumeRoot == null)
+            {
+                return false;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(costumeRoot.gameObject, undoLabel);
+            costumeBones = costumeRoot.GetComponentsInChildren<Transform>(true).ToList();
+            return true;
+        }
+
+        internal static void LogCostumeApplied(List<string> logs, Transform costumeRoot, int appliedCount)
+        {
+            logs?.Add(F("Log.CostumeApplied", costumeRoot?.name ?? L("Log.NullValue"), appliedCount));
+        }
 
         internal static bool IsNearlyOne(Vector3 scale)
         {
