@@ -48,8 +48,8 @@
   <g filter="url(#shadow)">
     <rect x="120" y="510" width="960" height="170" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
     <text x="150" y="552" class="head">2) 元アバター複製（Ctrl+D 相当）</text>
-    <text x="150" y="582" class="text">DuplicateLikeCtrlD で複製し、重複接尾辞を避けた命名を適用。</text>
-    <text x="150" y="612" class="mono">DuplicateLikeCtrlD.Duplicate() / BuildDuplicateNameWithSuffix()</text>
+    <text x="150" y="582" class="text">OCTDuplicateLikeCtrlD で複製し、重複接尾辞を避けた命名を適用。</text>
+    <text x="150" y="612" class="mono">OCTDuplicateLikeCtrlD.Duplicate() / BuildDuplicateNameWithSuffix()</text>
     <text x="150" y="640" class="text">出力: duplicatedTargets（以降は常に複製先を処理対象にする）</text>
     <text x="150" y="666" class="note">失敗時: Error.DuplicateFailed を記録して false return</text>
   </g>
@@ -61,7 +61,7 @@
     <rect x="120" y="730" width="960" height="130" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
     <text x="150" y="772" class="head">3) （任意）MA BoneProxy 補正</text>
     <text x="150" y="802" class="text">applyMaboneProxyProcessing=true かつ CHIBI_MODULAR_AVATAR 定義時のみ実行。</text>
-    <text x="150" y="830" class="mono">OchibiChansConverterToolModularAvatarBoneProxyUtility.ProcessBoneProxies()</text>
+    <text x="150" y="830" class="mono">OCTModularAvatarBoneProxyUtility.ProcessBoneProxies()</text>
   </g>
 
   <line x1="600" y1="860" x2="600" y2="900" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
@@ -136,7 +136,7 @@
   <rect x="120" y="2260" width="960" height="170" rx="12" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
   <text x="150" y="2294" class="phase" fill="#991b1b">主な中断条件（DuplicateThenApply の false return）</text>
   <text x="150" y="2324" class="text" fill="#991b1b">・入力検証 NG（sourceChibiPrefab / sourceTarget）</text>
-  <text x="150" y="2354" class="text" fill="#991b1b">・DuplicateLikeCtrlD 失敗（duplicatedTargets 取得不可）</text>
+  <text x="150" y="2354" class="text" fill="#991b1b">・OCTDuplicateLikeCtrlD 失敗（duplicatedTargets 取得不可）</text>
   <text x="150" y="2382" class="text" fill="#991b1b">・MA 衣装スケール調整失敗（AdjustCostumeScales... が false）</text>
   <text x="150" y="2410" class="note" fill="#991b1b">※中断時も Undo グループは finally で適切に後処理される</text>
 </svg>

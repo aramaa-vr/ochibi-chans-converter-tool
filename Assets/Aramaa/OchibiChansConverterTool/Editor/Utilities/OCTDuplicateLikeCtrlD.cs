@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/DuplicateLikeCtrlD.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTDuplicateLikeCtrlD.cs
 //
 // ============================================================================
 // 概要
@@ -34,7 +34,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// Edit/Duplicate と同じ挙動で Scene 上の GameObject を複製します。
     /// </summary>
-    internal static class DuplicateLikeCtrlD
+    internal static class OCTDuplicateLikeCtrlD
     {
         private const string UnityDuplicateMenuPath = "Edit/Duplicate";
 
@@ -150,7 +150,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                         }
                         catch (Exception ex)
                         {
-                            Debug.LogWarning($"[DuplicateLikeCtrlD] renameRule failed for '{createdObject.name}'. Keep original name.\n{ex}");
+                            Debug.LogWarning($"[OCTDuplicateLikeCtrlD] renameRule failed for '{createdObject.name}'. Keep original name.\n{ex}");
                         }
                     }
                 }
