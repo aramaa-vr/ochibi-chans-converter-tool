@@ -144,7 +144,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 2) 元アバター複製（Ctrl+D 相当）
                 // --------------------------------------------------------
-                var duplicatedTargets = DuplicateLikeCtrlD.Duplicate(
+                var duplicatedTargets = OCTDuplicateLikeCtrlD.Duplicate(
                     new[] { sourceTarget },
                     restorePreviousSelection: false,
                     renameRule: duplicated => GameObjectUtility.GetUniqueNameForSibling(
