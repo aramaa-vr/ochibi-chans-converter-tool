@@ -105,7 +105,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                paths.Add(GetStableTransformPathWithSiblingIndex(t, baseArmature));
+                paths.Add(OCTCostumeScaleApplyUtility.GetStableTransformPathWithSiblingIndex(t, baseArmature));
             }
 
             logs?.Add(F("Log.BaseArmaturePathCount", paths.Count));
@@ -141,7 +141,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 if (allowedArmaturePaths != null)
                 {
-                    var path = GetStableTransformPathWithSiblingIndex(b, avatarArmature);
+                    var path = OCTCostumeScaleApplyUtility.GetStableTransformPathWithSiblingIndex(b, avatarArmature);
                     var readablePath = GetTransformPath(b, avatarArmature);
                     if (!allowedArmaturePaths.Contains(path))
                     {
@@ -331,63 +331,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return false;
-        }
-
-        private static string GetStableTransformPathWithSiblingIndex(Transform target, Transform root)
-        {
-            if (target == null)
-            {
-                return L("Log.NullValue");
-            }
-
-            if (root == null)
-            {
-                return target.name;
-            }
-
-            var segments = new List<string>();
-            var current = target;
-
-            while (current != null)
-            {
-                if (current == root)
-                {
-                    segments.Add(root.name);
-                    break;
-                }
-
-                var parent = current.parent;
-                if (parent == null)
-                {
-                    segments.Add(current.name);
-                    break;
-                }
-
-                int ordinal = 0;
-                int sameNameCount = 0;
-
-                for (int i = 0; i < parent.childCount; i++)
-                {
-                    var child = parent.GetChild(i);
-                    if (child == null || !string.Equals(child.name, current.name, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    if (child == current)
-                    {
-                        ordinal = sameNameCount;
-                    }
-
-                    sameNameCount++;
-                }
-
-                segments.Add(sameNameCount > 1 ? $"{current.name}#{ordinal}" : current.name);
-                current = parent;
-            }
-
-            segments.Reverse();
-            return string.Join("/", segments);
         }
 
         private static string GetTransformPath(Transform target, Transform root)
