@@ -14,7 +14,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal static class OCTModularAvatarArmatureSyncAdjuster
     {
-        private const float ScaleEpsilon = 0.0001f;
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
@@ -97,7 +96,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                if (IsNearlyOne(baseBone.localScale))
+                if (OCTCostumeScaleApplyUtility.IsNearlyOne(baseBone.localScale))
                 {
                     continue;
                 }
@@ -120,13 +119,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 #endif
 
-        private static bool IsNearlyOne(Vector3 s)
-        {
-            return Mathf.Abs(s.x - 1f) < ScaleEpsilon &&
-                   Mathf.Abs(s.y - 1f) < ScaleEpsilon &&
-                   Mathf.Abs(s.z - 1f) < ScaleEpsilon;
-        }
-
         private static void ApplyMergeArmatureScaleMappings(
             List<MergeArmatureBoneScaleMapping> mergeArmatureMappings,
             List<Transform> costumeBones,
@@ -137,7 +129,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             foreach (var mapping in mergeArmatureMappings)
             {
-                if (mapping?.OutfitBone == null || IsNearlyOne(mapping.BaseScale))
+                if (mapping?.OutfitBone == null || OCTCostumeScaleApplyUtility.IsNearlyOne(mapping.BaseScale))
                 {
                     continue;
                 }
@@ -147,7 +139,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                TryApplyScaleToBone(
+                OCTCostumeScaleApplyUtility.TryApplyScaleToBone(
                     mapping.OutfitBone,
                     mapping.BaseScale,
                     costumeBones,
@@ -160,63 +152,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
-        private static bool TryApplyScaleToBone(
-            Transform bone,
-            Vector3 scaleModifier,
-            List<Transform> removalTarget,
-            List<string> logs,
-            Transform costumeRoot,
-            string modifierKey,
-            string matchLabel,
-            ref int appliedCount
-        )
-        {
-            if (bone == null)
-            {
-                return false;
-            }
-
-            bone.localScale = Vector3.Scale(bone.localScale, scaleModifier);
-            EditorUtility.SetDirty(bone);
-            appliedCount++;
-
-            new OCTConversionLogger(logs).Add(
-                "Log.CostumeScaleApplied",
-                costumeRoot?.name ?? L("Log.NullValue"),
-                modifierKey,
-                matchLabel,
-                FormatMatchedBoneForLog(bone, costumeRoot));
-
-            removalTarget?.Remove(bone);
-            return true;
-        }
-
-        private static string FormatMatchedBoneForLog(Transform bone, Transform costumeRoot)
-        {
-            if (bone == null)
-            {
-                return L("Log.NullValue");
-            }
-
-            var path = GetTransformPath(bone, costumeRoot);
-            return $"{bone.name} ({path})";
-        }
-
-        private static string GetTransformPath(Transform target, Transform root)
-        {
-            if (target == null)
-            {
-                return L("Log.NullValue");
-            }
-
-            if (root == null)
-            {
-                return target.name;
-            }
-
-            var rel = AnimationUtility.CalculateTransformPath(target, root);
-            return string.IsNullOrEmpty(rel) ? root.name : root.name + "/" + rel;
-        }
     }
 }
 #endif
