@@ -596,6 +596,14 @@
       "value": "[CostumeScale] costume='{0}' / key='{1}' / match='{2}' / bone='{3}'"
     },
     {
+      "key": "Log.CostumeScaleSkipMergeArmatureMissing",
+      "value": "[CostumeScale] skip: merge armature not found for '{0}'"
+    },
+    {
+      "key": "Log.CostumeScaleSkipBoneMappingEmpty",
+      "value": "[CostumeScale] skip: bone mapping empty for '{0}'"
+    },
+    {
       "key": "Log.AddMissingComponentsScan",
       "value": "Missing component add: source transform count={0}"
     },

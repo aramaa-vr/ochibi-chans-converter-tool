@@ -14,6 +14,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OCTModularAvatarArmatureSyncAdjuster
     {
         private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         internal static bool AdjustByMergeArmatureMapping(List<Transform> costumeRoots, List<string> logs)
         {
@@ -61,14 +62,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var mergeArmature = costumeRoot.GetComponentInParent<ModularAvatarMergeArmature>(true);
             if (mergeArmature == null)
             {
-                logs?.Add($"[CostumeScale] skip: merge armature not found for '{costumeRoot.name}'");
+                logs?.Add(F("Log.CostumeScaleSkipMergeArmatureMissing", costumeRoot.name));
                 return result;
             }
 
             var mapping = mergeArmature.GetBonesMapping();
             if (mapping == null || mapping.Count == 0)
             {
-                logs?.Add($"[CostumeScale] skip: bone mapping empty for '{costumeRoot.name}'");
+                logs?.Add(F("Log.CostumeScaleSkipBoneMappingEmpty", costumeRoot.name));
                 return result;
             }
 
