@@ -366,6 +366,10 @@
       "value": "Armature"
     },
     {
+      "key": "Log.MatchModularAvatar",
+      "value": "Modular Avatar"
+    },
+    {
       "key": "Log.MatchContains",
       "value": "Contains"
     },
