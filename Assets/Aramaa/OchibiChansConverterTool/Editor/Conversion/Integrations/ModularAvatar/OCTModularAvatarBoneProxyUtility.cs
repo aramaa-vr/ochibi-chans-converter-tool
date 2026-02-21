@@ -21,6 +21,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// </summary>
     internal static class OCTModularAvatarBoneProxyUtility
     {
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
         private enum ValidationResult
         {
             Ok,
@@ -38,11 +41,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             var proxies = avatarRoot.GetComponentsInChildren<ModularAvatarBoneProxy>(true);
             if (proxies == null || proxies.Length == 0)
             {
-                logs?.Add(OCTLocalization.Get("Log.MaboneProxyNone"));
+                logs?.Add(L("Log.MaboneProxyNone"));
                 return;
             }
 
-            logs?.Add(OCTLocalization.Format("Log.MaboneProxyCount", proxies.Length));
+            logs?.Add(F("Log.MaboneProxyCount", proxies.Length));
 
             var unpackedPrefabRoots = new HashSet<GameObject>();
 
@@ -117,11 +120,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                     proxyTransform.localRotation = Quaternion.identity;
                 }
 
-                logs?.Add(OCTLocalization.Format("Log.MaboneProxyProcessed", OCTConversionLogUtility.GetHierarchyPath(proxyTransform)));
+                logs?.Add(F("Log.MaboneProxyProcessed", OCTConversionLogFormatter.GetHierarchyPath(proxyTransform)));
             }
             else
             {
-                logs?.Add(OCTLocalization.Format("Log.MaboneProxySkipDetail", OCTConversionLogUtility.GetHierarchyPath(proxy.transform), validation));
+                logs?.Add(F("Log.MaboneProxySkipDetail", OCTConversionLogFormatter.GetHierarchyPath(proxy.transform), validation));
             }
 
             Object.DestroyImmediate(proxy);
@@ -178,7 +181,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            logs?.Add(OCTLocalization.Format("Log.MaboneProxyPrefabUnpacked", OCTConversionLogUtility.GetHierarchyPath(instanceRoot.transform)));
+            logs?.Add(F("Log.MaboneProxyPrefabUnpacked", OCTConversionLogFormatter.GetHierarchyPath(instanceRoot.transform)));
             PrefabUtility.UnpackPrefabInstance(instanceRoot, PrefabUnpackMode.Completely, InteractionMode.UserAction);
         }
     }

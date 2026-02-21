@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTConversionLogUtility.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTConversionLogFormatter.cs
 //
 // ============================================================================
 // 概要
@@ -30,8 +30,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// 変換ログのフォーマットを共通化するユーティリティです。
     /// </summary>
-    internal static class OCTConversionLogUtility
+    internal static class OCTConversionLogFormatter
     {
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
         /// <summary>
         /// Transform の階層パスを "Root/Child/..." 形式で返します。
         /// </summary>
@@ -39,7 +42,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         {
             if (t == null)
             {
-                return OCTLocalization.Get("Log.NullValue");
+                return L("Log.NullValue");
             }
 
             var names = new List<string>(32);
@@ -61,7 +64,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         {
             if (obj == null)
             {
-                return OCTLocalization.Get("Log.NoneValue");
+                return L("Log.NoneValue");
             }
 
             string path = AssetDatabase.GetAssetPath(obj);

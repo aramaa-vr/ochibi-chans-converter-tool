@@ -10,6 +10,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// </summary>
     internal sealed class OCTConversionLogger
     {
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
         private const int MaxLoggedPathEntries = 80;
         private const int MaxLoggedBlendShapeNamesPerRenderer = 80;
         private const int MaxLoggedBlendShapeEntriesPerSmr = 80;
@@ -41,8 +44,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             _logs.Add(args != null && args.Length > 0
-                ? OCTLocalization.Format(key, args)
-                : OCTLocalization.Get(key));
+                ? F(key, args)
+                : L(key));
         }
 
         public void Blank()
