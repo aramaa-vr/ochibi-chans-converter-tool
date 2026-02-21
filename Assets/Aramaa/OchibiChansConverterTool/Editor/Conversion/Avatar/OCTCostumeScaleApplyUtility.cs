@@ -62,6 +62,79 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs?.Add(F("Log.CostumeApplied", costumeRoot?.name ?? L("Log.NullValue"), appliedCount));
         }
 
+        internal static string BuildModifierKeyForLog(string boneName, string relativePath)
+        {
+            if (string.IsNullOrEmpty(boneName))
+            {
+                return L("Log.NullValue");
+            }
+
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return boneName;
+            }
+
+            return $"{boneName} ({relativePath})";
+        }
+
+
+        internal static string GetStableTransformPathWithSiblingIndex(Transform target, Transform root)
+        {
+            if (target == null)
+            {
+                return L("Log.NullValue");
+            }
+
+            if (root == null)
+            {
+                return target.name;
+            }
+
+            var segments = new List<string>();
+            var current = target;
+
+            while (current != null)
+            {
+                if (current == root)
+                {
+                    segments.Add(root.name);
+                    break;
+                }
+
+                var parent = current.parent;
+                if (parent == null)
+                {
+                    segments.Add(current.name);
+                    break;
+                }
+
+                int ordinal = 0;
+                int sameNameCount = 0;
+
+                for (int i = 0; i < parent.childCount; i++)
+                {
+                    var child = parent.GetChild(i);
+                    if (child == null || !string.Equals(child.name, current.name, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    if (child == current)
+                    {
+                        ordinal = sameNameCount;
+                    }
+
+                    sameNameCount++;
+                }
+
+                segments.Add(sameNameCount > 1 ? $"{current.name}#{ordinal}" : current.name);
+                current = parent;
+            }
+
+            segments.Reverse();
+            return string.Join("/", segments);
+        }
+
         internal static bool IsNearlyOne(Vector3 scale)
         {
             return Mathf.Abs(scale.x - 1f) < ScaleEpsilon &&
@@ -111,7 +184,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return $"{bone.name} ({path})";
         }
 
-        private static string GetTransformPath(Transform target, Transform root)
+        internal static string GetTransformPath(Transform target, Transform root)
         {
             if (target == null)
             {

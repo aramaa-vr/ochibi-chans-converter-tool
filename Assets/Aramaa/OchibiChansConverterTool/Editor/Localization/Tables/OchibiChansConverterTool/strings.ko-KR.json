@@ -596,6 +596,14 @@
       "value": "[CostumeScale] costume='{0}' / key='{1}' / match='{2}' / bone='{3}'"
     },
     {
+      "key": "Log.CostumeScaleSkipMergeArmatureMissing",
+      "value": "[CostumeScale] 건너뜀: '{0}'에 대해 merge armature를 찾지 못했습니다"
+    },
+    {
+      "key": "Log.CostumeScaleSkipBoneMappingEmpty",
+      "value": "[CostumeScale] 건너뜀: '{0}'의 bone mapping이 비어 있습니다"
+    },
+    {
       "key": "Log.AddMissingComponentsScan",
       "value": "Missing component add: source transform count={0}"
     },
