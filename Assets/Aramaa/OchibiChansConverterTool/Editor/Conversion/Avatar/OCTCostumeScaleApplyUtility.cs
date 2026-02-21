@@ -184,7 +184,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return $"{bone.name} ({path})";
         }
 
-        private static string GetTransformPath(Transform target, Transform root)
+        internal static string GetTransformPath(Transform target, Transform root)
         {
             if (target == null)
             {

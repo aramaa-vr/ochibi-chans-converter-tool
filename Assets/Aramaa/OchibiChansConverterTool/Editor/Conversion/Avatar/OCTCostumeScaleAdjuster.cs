@@ -142,7 +142,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (allowedArmaturePaths != null)
                 {
                     var path = OCTCostumeScaleApplyUtility.GetStableTransformPathWithSiblingIndex(b, avatarArmature);
-                    var readablePath = GetTransformPath(b, avatarArmature);
+                    var readablePath = OCTCostumeScaleApplyUtility.GetTransformPath(b, avatarArmature);
                     if (!allowedArmaturePaths.Contains(path))
                     {
                         excludedCount++;
@@ -333,21 +333,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return false;
         }
 
-        private static string GetTransformPath(Transform target, Transform root)
-        {
-            if (target == null)
-            {
-                return L("Log.NullValue");
-            }
-
-            if (root == null)
-            {
-                return target.name;
-            }
-
-            var rel = AnimationUtility.CalculateTransformPath(target, root);
-            return string.IsNullOrEmpty(rel) ? root.name : root.name + "/" + rel;
-        }
     }
 }
 #endif
