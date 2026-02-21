@@ -41,8 +41,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             _logs.Add(args != null && args.Length > 0
-                ? OCTLocalization.Format(key, args)
-                : OCTLocalization.Get(key));
+                ? OCTLocalizationService.Format(key, args)
+                : OCTLocalizationService.Get(key));
         }
 
         public void Blank()

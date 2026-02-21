@@ -35,7 +35,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// </summary>
     internal static class OCTModularAvatarUtility
     {
-        private static string L(string key) => OCTLocalization.Get(key);
+        private static string L(string key) => OCTLocalizationService.Get(key);
 
         internal static bool IsModularAvatarAvailable
         {

@@ -140,7 +140,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
         }
 
-        private static string L(string key) => OCTLocalization.Get(key);
+        private static string L(string key) => OCTLocalizationService.Get(key);
     }
 
     internal readonly struct OCTVersionFetchResult

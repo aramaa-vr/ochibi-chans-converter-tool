@@ -35,8 +35,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     internal static class OCTCostumeScaleAdjuster
     {
         private const float ScaleEpsilon = 0.0001f;
-        private static string L(string key) => OCTLocalization.Get(key);
-        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+        private static string L(string key) => OCTLocalizationService.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalizationService.Format(key, args);
 
         internal static bool AdjustCostumeScales(
             GameObject dstRoot,

@@ -213,7 +213,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            Undo.RecordObject(dstSmr, OCTLocalization.Get("Undo.SyncBlendShapes"));
+            Undo.RecordObject(dstSmr, OCTLocalizationService.Get("Undo.SyncBlendShapes"));
 
             // まずは SerializedObject で m_BlendShapeWeights を直接編集
             try
@@ -261,7 +261,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(OCTLocalization.Format("Warning.SerializedBlendshapeCopyFailed", dstNameForLog, ex.Message));
+                Debug.LogWarning(OCTLocalizationService.Format("Warning.SerializedBlendshapeCopyFailed", dstNameForLog, ex.Message));
             }
 
             // フォールバック：SetBlendShapeWeight を使う
@@ -289,7 +289,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(OCTLocalization.Format("Warning.BlendshapeCopyFailed", dstNameForLog, ex.Message));
+                Debug.LogWarning(OCTLocalizationService.Format("Warning.BlendshapeCopyFailed", dstNameForLog, ex.Message));
             }
         }
 
@@ -311,11 +311,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 
             var stats = CollectBlendShapeNameStats(srcRoot, dstRoot);
 
-            logs.Add(OCTLocalization.Format("Log.BlendshapeSyncSummary", stats.RendererPairs, stats.TotalBlendShapeNames));
+            logs.Add(OCTLocalizationService.Format("Log.BlendshapeSyncSummary", stats.RendererPairs, stats.TotalBlendShapeNames));
 
             if (stats.Items == null || stats.Items.Count == 0)
             {
-                logs.Add(OCTLocalization.Get("Log.BlendshapeNoRenderer"));
+                logs.Add(OCTLocalizationService.Get("Log.BlendshapeNoRenderer"));
                 return;
             }
 

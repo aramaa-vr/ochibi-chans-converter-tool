@@ -481,7 +481,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception e)
             {
-                Debug.LogWarning(OCTLocalization.Format("Warning.FaceMeshCacheLoadFailed", e.Message));
+                Debug.LogWarning(OCTLocalizationService.Format("Warning.FaceMeshCacheLoadFailed", e.Message));
             }
         }
 
@@ -519,7 +519,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
             catch (Exception e)
             {
-                Debug.LogWarning(OCTLocalization.Format("Warning.FaceMeshCacheSaveFailed", e.Message));
+                Debug.LogWarning(OCTLocalizationService.Format("Warning.FaceMeshCacheSaveFailed", e.Message));
             }
         }
 

@@ -46,8 +46,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private const string ToolWebsiteUrl = OCTEditorConstants.ToolWebsiteUrl;
         private const string ToolsMenuPath = OCTEditorConstants.ToolsMenuPath;
         private const string GameObjectMenuPath = OCTEditorConstants.GameObjectMenuPath;
-        private static string L(string key) => OCTLocalization.Get(key);
-        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+        private static string L(string key) => OCTLocalizationService.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalizationService.Format(key, args);
         private static string ToolWindowTitle => L("Tool.Name");
         private static string LogWindowTitle => L("Tool.LogWindowTitle");
 
@@ -123,8 +123,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private sealed class OCTConversionSourcePrefabWindow : EditorWindow
         {
-            private static string L(string key) => OCTLocalization.Get(key);
-            private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+            private static string L(string key) => OCTLocalizationService.Get(key);
+            private static string F(string key, params object[] args) => OCTLocalizationService.Format(key, args);
 
             // ------------------------------------------------------------
             // 見た目（ウィンドウサイズ）
@@ -406,17 +406,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     EditorGUILayout.PrefixLabel(L("Language.Label"));
 
-                    var displayNames = OCTLocalization.GetLanguageDisplayNames() ?? Array.Empty<string>();
+                    var displayNames = OCTLocalizationService.GetLanguageDisplayNames() ?? Array.Empty<string>();
                     if (displayNames.Length == 0)
                     {
                         return;
                     }
 
-                    var currentIndex = Mathf.Clamp(OCTLocalization.GetLanguageIndex(), 0, displayNames.Length - 1);
+                    var currentIndex = Mathf.Clamp(OCTLocalizationService.GetLanguageIndex(), 0, displayNames.Length - 1);
                     var nextIndex = EditorGUILayout.Popup(currentIndex, displayNames);
                     if (nextIndex != currentIndex)
                     {
-                        OCTLocalization.SetLanguage(OCTLocalization.GetLanguageCodeFromIndex(nextIndex));
+                        OCTLocalizationService.SetLanguage(OCTLocalizationService.GetLanguageCodeFromIndex(nextIndex));
                         Repaint();
                     }
                 }

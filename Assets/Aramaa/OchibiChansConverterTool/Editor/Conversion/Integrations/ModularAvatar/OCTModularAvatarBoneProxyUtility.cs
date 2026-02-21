@@ -38,11 +38,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             var proxies = avatarRoot.GetComponentsInChildren<ModularAvatarBoneProxy>(true);
             if (proxies == null || proxies.Length == 0)
             {
-                logs?.Add(OCTLocalization.Get("Log.MaboneProxyNone"));
+                logs?.Add(OCTLocalizationService.Get("Log.MaboneProxyNone"));
                 return;
             }
 
-            logs?.Add(OCTLocalization.Format("Log.MaboneProxyCount", proxies.Length));
+            logs?.Add(OCTLocalizationService.Format("Log.MaboneProxyCount", proxies.Length));
 
             var unpackedPrefabRoots = new HashSet<GameObject>();
 
@@ -117,11 +117,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                     proxyTransform.localRotation = Quaternion.identity;
                 }
 
-                logs?.Add(OCTLocalization.Format("Log.MaboneProxyProcessed", OCTConversionLogUtility.GetHierarchyPath(proxyTransform)));
+                logs?.Add(OCTLocalizationService.Format("Log.MaboneProxyProcessed", OCTConversionLogFormatter.GetHierarchyPath(proxyTransform)));
             }
             else
             {
-                logs?.Add(OCTLocalization.Format("Log.MaboneProxySkipDetail", OCTConversionLogUtility.GetHierarchyPath(proxy.transform), validation));
+                logs?.Add(OCTLocalizationService.Format("Log.MaboneProxySkipDetail", OCTConversionLogFormatter.GetHierarchyPath(proxy.transform), validation));
             }
 
             Object.DestroyImmediate(proxy);
@@ -178,7 +178,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
-            logs?.Add(OCTLocalization.Format("Log.MaboneProxyPrefabUnpacked", OCTConversionLogUtility.GetHierarchyPath(instanceRoot.transform)));
+            logs?.Add(OCTLocalizationService.Format("Log.MaboneProxyPrefabUnpacked", OCTConversionLogFormatter.GetHierarchyPath(instanceRoot.transform)));
             PrefabUtility.UnpackPrefabInstance(instanceRoot, PrefabUnpackMode.Completely, InteractionMode.UserAction);
         }
     }

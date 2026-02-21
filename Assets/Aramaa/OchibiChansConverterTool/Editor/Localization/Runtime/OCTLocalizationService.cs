@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTLocalization.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTLocalizationService.cs
 //
 // =====================================================================
 // 概要
@@ -18,7 +18,7 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 {
-    internal static class OCTLocalization
+    internal static class OCTLocalizationService
     {
         private const string EditorPrefsKey = "Aramaa.OchibiChansConverterTool.Language";
         private const string LocalizationSubdirectory = "OchibiChansConverterTool";
@@ -202,13 +202,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         private static string GetLocalizationRootPath()
         {
             var candidates = new List<string>();
-            var packageInfo = PackageInfo.FindForAssembly(typeof(OCTLocalization).Assembly);
+            var packageInfo = PackageInfo.FindForAssembly(typeof(OCTLocalizationService).Assembly);
             if (packageInfo != null && !string.IsNullOrEmpty(packageInfo.resolvedPath))
             {
                 candidates.Add(Path.Combine(
                     packageInfo.resolvedPath,
                     "Editor",
                     "Localization",
+                    "Tables",
                     LocalizationSubdirectory));
             }
 
@@ -219,6 +220,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 "jp.aramaa.ochibi-chans-converter-tool",
                 "Editor",
                 "Localization",
+                "Tables",
                 LocalizationSubdirectory));
 
             candidates.Add(Path.Combine(
@@ -227,6 +229,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 "OchibiChansConverterTool",
                 "Editor",
                 "Localization",
+                "Tables",
                 LocalizationSubdirectory));
 
             foreach (var candidate in candidates)
