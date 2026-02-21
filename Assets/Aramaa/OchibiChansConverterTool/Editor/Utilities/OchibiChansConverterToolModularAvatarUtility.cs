@@ -41,7 +41,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     internal static class OchibiChansConverterToolModularAvatarUtility
     {
         private const float ScaleEpsilon = 0.0001f;
-
         private static string L(string key) => OchibiChansConverterToolLocalization.Get(key);
         private static string F(string key, params object[] args) => OchibiChansConverterToolLocalization.Format(key, args);
 
@@ -59,6 +58,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return false;
             }
 
+            var log = new OchibiChansConverterToolConversionLogger(logs);
+
             // アバター（変換先）側の Armature を基準に “スケール差分のあるボーン一覧” を作る
             var dstArmature = OchibiChansConverterToolEditorUtility.FindAvatarMainArmature(dstRoot.transform);
 
@@ -68,6 +69,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             var baseArmaturePaths = BuildBaseArmatureTransformPaths(basePrefabRoot, logs);
+            log.Add("Log.CostumeScaleCriteria");
 
             var avatarBoneScaleModifiers = BuildAvatarBoneScaleModifiers(dstArmature, baseArmaturePaths, logs);
 
@@ -411,15 +413,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             EditorUtility.SetDirty(bone);
             appliedCount++;
 
-            if (logs != null)
-            {
-                logs.Add(F(
-                    "Log.CostumeScaleApplied",
-                    costumeRoot?.name ?? L("Log.NullValue"),
-                    modifierKey,
-                    matchLabel,
-                    GetTransformPath(bone, costumeRoot)));
-            }
+            var log = new OchibiChansConverterToolConversionLogger(logs);
+            log.Add(
+                "Log.CostumeScaleApplied",
+                costumeRoot?.name ?? L("Log.NullValue"),
+                modifierKey,
+                matchLabel,
+                GetTransformPath(bone, costumeRoot));
 
             // 1キーにつき 1ボーンだけ補正して次へ（既存挙動）
             removalTarget?.Remove(bone);
@@ -524,6 +524,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
+            var log = new OchibiChansConverterToolConversionLogger(logs);
+
             var smrs = costumeRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 
             logs?.Add(F("Log.CostumeBlendshapeHeader", GetTransformPath(costumeRoot, costumeRoot)));
@@ -556,11 +558,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 // 「どの BlendShape が存在するか」を全列挙（= 全確認）
                 var toApplyIndices = new List<int>();
                 var toApplyNames = new List<string>();
+                var allShapeNames = new List<string>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var shapeName = mesh.GetBlendShapeName(i);
-                    logs?.Add(F("Log.BlendshapeEntry", shapeName));
+                    allShapeNames.Add(shapeName);
 
                     if (baseBlendShapeWeights == null)
                     {
@@ -574,6 +577,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                         toApplyNames.Add(shapeName);
                     }
                 }
+
+                log.AddBlendshapeEntries(allShapeNames);
 
                 // 同期対象が無ければ、このSMRは確認のみ
                 if (toApplyIndices.Count == 0)

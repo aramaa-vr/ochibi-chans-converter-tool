@@ -461,6 +461,156 @@
       "key": "Log.VrcSdkVersion",
       "value": "VRC SDK：{0}"
     },
+
+    {
+      "key": "Log.Step.Header",
+      "value": "[Step {0}] {1}"
+    },
+    {
+      "key": "Log.Step.Detail",
+      "value": "  - {0}"
+    },
+    {
+      "key": "Log.Step.Flow.Title",
+      "value": "Conversion actions in this run"
+    },
+    {
+      "key": "Log.Step.Flow.Detail1",
+      "value": "Duplicate the selected avatar using Ctrl+D-equivalent behavior. The original avatar is not edited directly."
+    },
+    {
+      "key": "Log.Step.Flow.Detail2",
+      "value": "Read descriptor references from source prefab (FX / Expressions / ViewPosition) and apply to duplicated target."
+    },
+    {
+      "key": "Log.Step.Flow.Detail3",
+      "value": "Apply armature transform sync, missing component add/remap, blendshape sync, and Ex AddMenu placement per target."
+    },
+    {
+      "key": "Log.Step.Flow.Detail4",
+      "value": "Numeric values are hidden in logs (scale values / shape key values are not displayed)."
+    },
+    {
+      "key": "Log.Step.2.Title",
+      "value": "Duplicate source avatar"
+    },
+    {
+      "key": "Log.Step.2.Detail1",
+      "value": "Create duplicated target(s) and lock them as the conversion destination."
+    },
+    {
+      "key": "Log.Step.3.Title",
+      "value": "MA BoneProxy adjustment"
+    },
+    {
+      "key": "Log.Step.3.Detail1",
+      "value": "Rewire BoneProxy references so they point to duplicated avatar hierarchy."
+    },
+    {
+      "key": "Log.Step.4.Title",
+      "value": "Blueprint ID clear"
+    },
+    {
+      "key": "Log.Step.4.Detail1",
+      "value": "Clear PipelineManager Blueprint ID on duplicated target for safety."
+    },
+    {
+      "key": "Log.Step.5.Title",
+      "value": "Read source prefab"
+    },
+    {
+      "key": "Log.Step.5.Detail1",
+      "value": "Temporarily open prefab contents and read references only (source asset is not modified)."
+    },
+    {
+      "key": "Log.Step.5.Detail2",
+      "value": "Read targets: FX Controller / Expressions Menu / Expression Parameters / Ex AddMenu placement."
+    },
+    {
+      "key": "Log.Step.6.Title",
+      "value": "Apply synchronization to target avatar"
+    },
+    {
+      "key": "Log.Step.6.Detail1",
+      "value": "Capture pre-state then apply Transform/Component/BlendShape/Ex AddMenu in order."
+    },
+    {
+      "key": "Log.Step.7.Title",
+      "value": "VRC descriptor sync + MA costume adjustment"
+    },
+    {
+      "key": "Log.Step.7.Detail1",
+      "value": "Apply FX / Expressions / ViewPosition to match the source prefab."
+    },
+    {
+      "key": "Log.Step.7.Detail2",
+      "value": "When Modular Avatar is available, run costume consistency adjustments."
+    },
+    {
+      "key": "Log.Step.8.Title",
+      "value": "Target processing complete"
+    },
+    {
+      "key": "Log.Step.8.Detail1",
+      "value": "Per-target conversion log ends here."
+    },
+    {
+      "key": "Log.Step.6.Substep1",
+      "value": "  - 6-1. Sync root Transform (localScale) to source (value hidden)."
+    },
+    {
+      "key": "Log.Step.6.Substep2SkippedSource",
+      "value": "  - 6-2. Armature sync skipped (source armature not found)."
+    },
+    {
+      "key": "Log.Step.6.Substep2SkippedTarget",
+      "value": "  - 6-2. Armature sync skipped (duplicated target armature not found)."
+    },
+    {
+      "key": "Log.Step.6.Substep2",
+      "value": "  - 6-2. Sync armature child transforms (position/rotation/scale) by matching hierarchy path (values hidden)."
+    },
+    {
+      "key": "Log.Step.6.Substep3",
+      "value": "  - 6-3. Add missing components under armature and remap object references to duplicated hierarchy."
+    },
+    {
+      "key": "Log.Step.6.Substep4",
+      "value": "  - 6-4. Sync SkinnedMeshRenderer blendshapes by matching names (values hidden)."
+    },
+
+    {
+      "key": "Log.ArmatureTransformScan",
+      "value": "Armature transform sync: source transform count={0}"
+    },
+    {
+      "key": "Log.ArmatureTransformPathMissing",
+      "value": "Armature transform sync: skipped due to missing destination path={0}"
+    },
+    {
+      "key": "Log.CostumeScaleCriteria",
+      "value": "Costume scale criteria: only non-1 armature scales that also exist in base prefab are applied to MA Mesh Settings costumes."
+    },
+    {
+      "key": "Log.CostumeScaleApplied",
+      "value": "[CostumeScale] costume='{0}' / key='{1}' / match='{2}' / bone='{3}'"
+    },
+    {
+      "key": "Log.AddMissingComponentsScan",
+      "value": "Missing component add: source transform count={0}"
+    },
+    {
+      "key": "Log.AddMissingComponentsPathMissing",
+      "value": "Missing component add: skipped due to missing destination path={0}"
+    },
+    {
+      "key": "Log.AddMissingComponentsAlreadySatisfied",
+      "value": "Missing component add: already satisfied component groups={0}"
+    },
+    {
+      "key": "Log.ListEllipsisMore",
+      "value": " - ... ({0} more)"
+    },
     {
       "key": "LogWindow.CloseButton",
       "value": "关闭"

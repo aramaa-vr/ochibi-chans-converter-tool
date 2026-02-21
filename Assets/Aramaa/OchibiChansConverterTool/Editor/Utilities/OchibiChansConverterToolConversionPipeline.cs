@@ -40,7 +40,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OchibiChansConverterToolConversionPipeline
     {
         private const string DuplicatedNameSuffix = " (Ochibi-chans)";
-
         /// <summary>
         /// ローカライズ文字列を取得します。
         /// </summary>
@@ -84,6 +83,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         )
         {
             logs ??= new List<string>();
+            var log = new OchibiChansConverterToolConversionLogger(logs);
 
             logs.Add(L("Log.Header.Main"));
             logs.Add(F("Log.ToolVersion", L("Tool.Name"), OchibiChansConverterToolEditorConstants.ToolVersion));
@@ -97,6 +97,16 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 logs.Add(F("Log.SourceAvatar", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(sourceTarget.transform)));
             }
+
+            logs.Add("");
+            log.AddStep(
+                "Flow",
+                L("Log.Step.Flow.Title"),
+                L("Log.Step.Flow.Detail1"),
+                L("Log.Step.Flow.Detail2"),
+                L("Log.Step.Flow.Detail3"),
+                L("Log.Step.Flow.Detail4")
+            );
 
             logs.Add("");
             // ------------------------------------------------------------
@@ -154,6 +164,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // 複製先を選択しておく（Ctrl+D と同様の体験）
                 Selection.objects = duplicatedTargets;
 
+                log.AddStep(
+                    "2",
+                    L("Log.Step.2.Title"),
+                    L("Log.Step.2.Detail1")
+                );
                 logs.Add(L("Log.DuplicateSuccess"));
                 foreach (var d in duplicatedTargets.Where(x => x != null))
                 {
@@ -167,6 +182,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 if (applyMaboneProxyProcessing)
                 {
+                    log.AddStep(
+                        "3",
+                        L("Log.Step.3.Title"),
+                        L("Log.Step.3.Detail1")
+                    );
                     logs.Add(L("Log.MaboneProxyHeader"));
 #if CHIBI_MODULAR_AVATAR
                     foreach (var duplicated in duplicatedTargets.Where(x => x != null))
@@ -184,6 +204,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 4) Blueprint ID クリア
                 // --------------------------------------------------------
+                log.AddStep(
+                    "4",
+                    L("Log.Step.4.Title"),
+                    L("Log.Step.4.Detail1")
+                );
                 logs.Add(L("Log.BlueprintClearHeader"));
                 foreach (var duplicated in duplicatedTargets.Where(x => x != null))
                 {
@@ -235,6 +260,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static bool ApplyConversionToTargets(GameObject sourceChibiPrefab, GameObject[] targets, List<string> logs)
         {
             logs ??= new List<string>();
+            var log = new OchibiChansConverterToolConversionLogger(logs);
             if (sourceChibiPrefab == null || !EditorUtility.IsPersistent(sourceChibiPrefab))
             {
                 EditorUtility.DisplayDialog(
@@ -268,6 +294,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             try
             {
                 logs.Add(F("Log.PrefabExpand", basePrefabPath));
+                log.AddStep(
+                    "5",
+                    L("Log.Step.5.Title"),
+                    L("Log.Step.5.Detail1"),
+                    L("Log.Step.5.Detail2")
+                );
                 logs.Add("");
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 5) 変換元 Prefab 展開（読み取り専用）
@@ -303,6 +335,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     logs.Add(L("Log.Separator"));
                     logs.Add(F("Log.TargetEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstRoot.transform)));
+                    log.AddStep(
+                        "6",
+                        L("Log.Step.6.Title"),
+                        L("Log.Step.6.Detail1")
+                    );
 
                     // 実行前の参照（FX / Menu / Parameters）を取得してログ用に保持（値は出さない）
                     OchibiChansConverterToolVrcAvatarDescriptorUtility.TryGetFxPlayableLayerControllerFromAvatar(dstRoot, out var fxBefore);
@@ -325,6 +362,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
 
                     // SVG 対応ステップ: 7) VRC Descriptor 同期 + MA 衣装調整
+                    log.AddStep(
+                        "7",
+                        L("Log.Step.7.Title"),
+                        L("Log.Step.7.Detail1"),
+                        L("Log.Step.7.Detail2")
+                    );
                     if (fxController != null)
                     {
                         logs.Add(F("Log.FxApply", OchibiChansConverterToolConversionLogUtility.FormatAssetRef(fxController)));
@@ -384,6 +427,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
 
                     logs.Add(L("Log.Separator"));
+                    log.AddStep(
+                        "8",
+                        L("Log.Step.8.Title"),
+                        L("Log.Step.8.Detail1")
+                    );
                     logs.Add("");
                 }
 
@@ -635,6 +683,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs ??= new List<string>();
 
             logs.Add(L("Log.CoreHeader"));
+            logs.Add(L("Log.Step.6.Substep1"));
             logs.Add(L("Log.RootScaleApplied"));
             Undo.RecordObject(dstRoot.transform, L("Undo.SyncRootScale"));
             dstRoot.transform.localScale = srcRoot.transform.localScale;
@@ -643,17 +692,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var srcArmature = OchibiChansConverterToolEditorUtility.FindAvatarMainArmature(srcRoot.transform);
             if (srcArmature == null)
             {
+                logs.Add(L("Log.Step.6.Substep2SkippedSource"));
                 return;
             }
 
             var dstArmature = OchibiChansConverterToolEditorUtility.FindAvatarMainArmature(dstRoot.transform);
             if (dstArmature == null)
             {
+                logs.Add(L("Log.Step.6.Substep2SkippedTarget"));
                 return;
             }
 
+            logs.Add(L("Log.Step.6.Substep2"));
             CopyArmatureTransforms(srcArmature, dstArmature, logs);
+            logs.Add(L("Log.Step.6.Substep3"));
             AddMissingComponentsUnderArmature(srcRoot, dstRoot, srcArmature, dstArmature, logs);
+            logs.Add(L("Log.Step.6.Substep4"));
             OchibiChansConverterToolSkinnedMeshUtility.CopySkinnedMeshRenderersBlendShapesOnlyWithLog(srcRoot, dstRoot, logs);
         }
 
@@ -668,10 +722,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             logs ??= new List<string>();
+            var log = new OchibiChansConverterToolConversionLogger(logs);
             logs.Add(L("Log.ArmatureTransformApplied"));
 
             var srcAll = srcArmature.GetComponentsInChildren<Transform>(true);
+            logs.Add(F("Log.ArmatureTransformScan", srcAll.Length));
             int updated = 0;
+            int missingPathCount = 0;
+            var updatedPaths = new List<string>();
 
             foreach (var srcT in srcAll)
             {
@@ -686,6 +744,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var dstT = string.IsNullOrEmpty(rel) ? dstArmature : dstArmature.Find(rel);
                 if (dstT == null)
                 {
+                    missingPathCount++;
                     continue;
                 }
 
@@ -697,9 +756,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 EditorUtility.SetDirty(dstT);
 
                 updated++;
-                // パスだけを出す（値は出さない）
-                logs.Add(F("Log.PathEntry", OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT)));
+                updatedPaths.Add(OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT));
             }
+
+            log.AddPathEntries(updatedPaths);
+
+            logs.Add(F("Log.ArmatureTransformPathMissing", missingPathCount));
 
             logs.Add(F("Log.ArmatureTransformUpdated", updated));
             logs.Add("");
@@ -722,10 +784,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             logs ??= new List<string>();
+            var log = new OchibiChansConverterToolConversionLogger(logs);
             logs.Add(L("Log.AddMissingComponents"));
 
             var srcAll = srcArmature.GetComponentsInChildren<Transform>(true);
+            logs.Add(F("Log.AddMissingComponentsScan", srcAll.Length));
             int addedCount = 0;
+            int missingPathCount = 0;
+            int alreadySatisfiedCount = 0;
 
             foreach (var srcT in srcAll)
             {
@@ -740,6 +806,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var dstT = string.IsNullOrEmpty(rel) ? dstArmature : dstArmature.Find(rel);
                 if (dstT == null)
                 {
+                    missingPathCount++;
                     continue;
                 }
 
@@ -778,6 +845,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     var dstExisting = dstGO.GetComponents(type);
                     int dstCount = dstExisting != null ? dstExisting.Length : 0;
+                    if (dstCount >= srcList.Count)
+                    {
+                        alreadySatisfiedCount++;
+                    }
 
                     for (int i = 0; i < srcList.Count; i++)
                     {
@@ -815,10 +886,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         EditorUtility.SetDirty(newComp);
 
                         addedCount++;
-                        logs.Add(F("Log.ComponentAdded", type.Name, OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT)));
+                        log.Add("Log.ComponentAdded", type.Name, OchibiChansConverterToolConversionLogUtility.GetHierarchyPath(dstT));
                     }
                 }
             }
+
+            logs.Add(F("Log.AddMissingComponentsPathMissing", missingPathCount));
+            logs.Add(F("Log.AddMissingComponentsAlreadySatisfied", alreadySatisfiedCount));
 
             logs.Add(F("Log.MissingComponentsAdded", addedCount));
             logs.Add("");

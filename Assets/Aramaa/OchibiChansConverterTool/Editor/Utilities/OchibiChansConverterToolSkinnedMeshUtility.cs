@@ -307,6 +307,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return;
             }
 
+            var log = new OchibiChansConverterToolConversionLogger(logs);
+
             var stats = CollectBlendShapeNameStats(srcRoot, dstRoot);
 
             logs.Add(OchibiChansConverterToolLocalization.Format("Log.BlendshapeSyncSummary", stats.RendererPairs, stats.TotalBlendShapeNames));
@@ -319,14 +321,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 
             foreach (var item in stats.Items)
             {
-                if (item.BlendShapeNames == null || item.BlendShapeNames.Count == 0)
-                {
-                    logs.Add(OchibiChansConverterToolLocalization.Format("Log.BlendshapeRendererZero", item.RendererPath));
-                    continue;
-                }
-
                 // ここでは “名前だけ” を表示（値は表示しない）
-                logs.Add(OchibiChansConverterToolLocalization.Format("Log.BlendshapeRendererDetail", item.RendererPath, item.BlendShapeNames.Count, string.Join(", ", item.BlendShapeNames)));
+                log.AddBlendshapeRendererDetail(item.RendererPath, item.BlendShapeNames);
             }
         }
 
