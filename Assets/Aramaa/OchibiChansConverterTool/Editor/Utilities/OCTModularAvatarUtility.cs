@@ -67,7 +67,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             var costumeRoots = OCTModularAvatarCostumeDetector.CollectCostumeRoots(dstRoot);
-            return OCTModularAvatarCostumeScaleAdjuster.AdjustCostumeScales(
+            return OCTCostumeScaleAdjuster.AdjustCostumeScales(
                 dstRoot,
                 basePrefabRoot,
                 costumeRoots,

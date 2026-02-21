@@ -10,7 +10,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
     /// <summary>
     /// 検出済みの衣装ルートに対してスケール補正と BlendShape 同期を適用する責務を持つクラス。
     /// </summary>
-    internal static class OCTModularAvatarCostumeScaleAdjuster
+    internal static class OCTCostumeScaleAdjuster
     {
         private const float ScaleEpsilon = 0.0001f;
         private static string L(string key) => OCTLocalization.Get(key);
