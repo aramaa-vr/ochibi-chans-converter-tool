@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Windows/OCTConversionApplier.cs
-//
 // ============================================================================
 // 概要
 // ============================================================================
@@ -29,7 +27,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Aramaa.OchibiChansConverterTool.Editor.Utilities;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;

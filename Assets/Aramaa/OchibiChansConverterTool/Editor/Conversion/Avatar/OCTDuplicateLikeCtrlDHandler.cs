@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTDuplicateLikeCtrlDHandler.cs
-//
 // ============================================================================
 // 概要
 // ============================================================================
@@ -29,7 +27,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// Edit/Duplicate と同じ挙動で Scene 上の GameObject を複製します。

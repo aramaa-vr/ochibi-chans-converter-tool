@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTVrcAvatarDescriptorUtility.cs
-//
 // ============================================================================
 // 概要
 // ============================================================================
@@ -28,7 +26,7 @@ using VRC.Core;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// VRCAvatarDescriptor の設定を安全に読み書きし、変換元 Prefab → 複製先の同期に使うユーティリティです。

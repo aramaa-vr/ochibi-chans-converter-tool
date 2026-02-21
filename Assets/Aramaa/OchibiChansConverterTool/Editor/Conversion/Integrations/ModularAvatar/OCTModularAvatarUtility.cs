@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTModularAvatarUtility.cs
-//
 // ============================================================================
 // 概要
 // ============================================================================
@@ -28,7 +26,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// Modular Avatar 関連処理のエントリポイント。

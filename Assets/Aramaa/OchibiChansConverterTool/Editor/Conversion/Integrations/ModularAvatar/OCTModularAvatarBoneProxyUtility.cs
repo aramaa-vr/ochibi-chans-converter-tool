@@ -1,5 +1,4 @@
 #if UNITY_EDITOR && CHIBI_MODULAR_AVATAR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTModularAvatarBoneProxyUtility.cs
 //
 // ============================================================================
 // 概要
@@ -14,7 +13,7 @@ using nadena.dev.modular_avatar.core;
 using UnityEditor;
 using UnityEngine;
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// Modular Avatar の MABoneProxy を複製先へ適用するユーティリティです。

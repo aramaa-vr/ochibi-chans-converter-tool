@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTLocalization.cs
-//
 // =====================================================================
 // 概要
 // =====================================================================
@@ -16,7 +14,7 @@ using UnityEditor;
 using UnityEngine;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     internal static class OCTLocalization
     {

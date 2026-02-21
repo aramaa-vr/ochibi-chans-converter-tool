@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTSkinnedMeshUtility.cs
-//
 // ============================================================================
 // 概要
 // ============================================================================
@@ -29,7 +27,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
+namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// SkinnedMeshRenderer の BlendShape ウェイトのみを、変換元 → 複製先へ安全に同期するユーティリティです。

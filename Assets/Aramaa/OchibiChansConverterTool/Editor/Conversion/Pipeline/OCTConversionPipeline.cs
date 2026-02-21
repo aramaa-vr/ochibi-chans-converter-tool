@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTConversionPipeline.cs
-//
 // ============================================================================
 // 概要
 // ============================================================================
@@ -25,7 +23,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Aramaa.OchibiChansConverterTool.Editor.Utilities;
 using UnityEditor;
 using UnityEngine;
 #if VRC_SDK_VRCSDK3
