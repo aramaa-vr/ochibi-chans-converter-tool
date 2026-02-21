@@ -14,16 +14,19 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OCTModularAvatarArmatureSyncAdjuster
     {
         private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         internal static bool AdjustByMergeArmatureMapping(List<Transform> costumeRoots, List<string> logs)
         {
+            new OCTConversionLogger(logs).Add("Log.CostumeScaleCriteria");
+
             if (costumeRoots == null || costumeRoots.Count == 0)
             {
                 return true;
             }
 
             logs?.Add(L("Log.CostumeScaleHeader"));
-            logs?.Add(OCTLocalization.Format("Log.CostumeCount", costumeRoots.Count));
+            logs?.Add(F("Log.CostumeCount", costumeRoots.Count));
 
             foreach (var costumeRoot in costumeRoots)
             {
@@ -74,9 +77,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 EditorUtility.SetDirty(outfitBone);
                 appliedCount++;
+
+                var baseRoot = mergeArmature.mergeTargetObject != null ? mergeArmature.mergeTargetObject.transform : null;
+                var modifierKey = BuildModifierKeyForLog(baseBone, baseRoot);
+                new OCTConversionLogger(logs).Add(
+                    "Log.CostumeScaleApplied",
+                    costumeRoot.name,
+                    modifierKey,
+                    L("Log.MatchArmature"),
+                    FormatMatchedBoneForLog(outfitBone, costumeRoot));
             }
 
-            logs?.Add(OCTLocalization.Format("Log.CostumeApplied", costumeRoot.name, appliedCount));
+            logs?.Add(F("Log.CostumeApplied", costumeRoot.name, appliedCount));
         }
 #else
         private static void SyncOneCostume(Transform costumeRoot, List<string> logs)
@@ -85,6 +97,49 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             _ = logs;
         }
 #endif
+
+        private static string BuildModifierKeyForLog(Transform baseBone, Transform baseRoot)
+        {
+            if (baseBone == null)
+            {
+                return L("Log.NullValue");
+            }
+
+            var relativePath = AnimationUtility.CalculateTransformPath(baseBone, baseRoot);
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return baseBone.name;
+            }
+
+            return $"{baseBone.name} ({relativePath})";
+        }
+
+        private static string FormatMatchedBoneForLog(Transform bone, Transform costumeRoot)
+        {
+            if (bone == null)
+            {
+                return L("Log.NullValue");
+            }
+
+            var path = GetTransformPath(bone, costumeRoot);
+            return $"{bone.name} ({path})";
+        }
+
+        private static string GetTransformPath(Transform target, Transform root)
+        {
+            if (target == null)
+            {
+                return L("Log.NullValue");
+            }
+
+            if (root == null)
+            {
+                return target.name;
+            }
+
+            var rel = AnimationUtility.CalculateTransformPath(target, root);
+            return string.IsNullOrEmpty(rel) ? root.name : root.name + "/" + rel;
+        }
     }
 }
 #endif
