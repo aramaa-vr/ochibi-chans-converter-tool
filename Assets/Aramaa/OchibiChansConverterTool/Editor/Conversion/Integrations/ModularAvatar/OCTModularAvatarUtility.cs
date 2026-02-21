@@ -12,6 +12,7 @@
 // - 実処理は以下へ分離されています。
 //   - MA依存: OCTModularAvatarBoneProxyUtility / OCTModularAvatarCostumeDetector
 //   - MA非依存: OCTCostumeScaleAdjuster / OCTCostumeBlendShapeAdjuster
+//   - MA依存(新): OCTModularAvatarArmatureSyncAdjuster
 // - MA未導入時に落とさない（安全スキップ）ことを最優先にしています。
 // - 処理順は「衣装スケール補正 -> BlendShape 同期」の順で固定です。
 //
@@ -87,12 +88,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             var costumeRoots = OCTModularAvatarCostumeDetector.CollectCostumeRoots(dstRoot);
-            if (!OCTCostumeScaleAdjuster.AdjustCostumeScales(
-                dstRoot,
-                basePrefabRoot,
-                costumeRoots,
-                logs
-            ))
+            if (!OCTModularAvatarArmatureSyncAdjuster.AdjustByMergeArmatureMapping(costumeRoots, logs))
             {
                 return false;
             }
