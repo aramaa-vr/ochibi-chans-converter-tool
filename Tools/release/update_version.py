@@ -7,7 +7,7 @@ Usage:
   Tools/release/update_version.py <version> --dry-run
 
 Updates:
-  - Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolEditorConstants.cs (ToolVersion)
+  - Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTEditorConstants.cs (ToolVersion)
   - Assets/Aramaa/OchibiChansConverterTool/package.json (version, url)
 """
 
@@ -28,7 +28,10 @@ def find_repo_root(start: Path) -> Path:
 
 
 ROOT = find_repo_root(Path(__file__).resolve())
-CS_CONSTANTS = ROOT / "Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolEditorConstants.cs"
+CS_CONSTANTS_CANDIDATES = [
+    ROOT / "Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTEditorConstants.cs",
+    ROOT / "Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolEditorConstants.cs",
+]
 PACKAGE_JSON = ROOT / "Assets/Aramaa/OchibiChansConverterTool/package.json"
 SEMVER_PATTERN = re.compile(
     r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
@@ -41,6 +44,15 @@ SEMVER_PATTERN = re.compile(
 def ensure_file_exists(path: Path) -> None:
     if not path.exists():
         raise FileNotFoundError(f"Required file not found: {path}")
+
+
+def resolve_first_existing_path(paths: list[Path], label: str) -> Path:
+    for path in paths:
+        if path.exists():
+            return path
+
+    joined = "\n  - ".join(str(path) for path in paths)
+    raise FileNotFoundError(f"Required {label} file not found. Checked:\n  - {joined}")
 
 
 def read_text(path: Path) -> str:
@@ -62,17 +74,17 @@ def parse_version(version: str) -> str:
 
 
 def update_csharp_constants(version: str, dry_run: bool) -> None:
-    ensure_file_exists(CS_CONSTANTS)
-    content = read_text(CS_CONSTANTS)
+    cs_constants = resolve_first_existing_path(CS_CONSTANTS_CANDIDATES, "C# constants")
+    content = read_text(cs_constants)
     new_content, count = re.subn(
         r'(public const string ToolVersion = ")([^"]+)(";)',
         rf"\g<1>{version}\g<3>",
         content,
     )
     if count != 1:
-        raise ValueError(f"ToolVersion not updated (matches: {count}) in {CS_CONSTANTS}")
+        raise ValueError(f"ToolVersion not updated (matches: {count}) in {cs_constants}")
     if not dry_run:
-        write_text(CS_CONSTANTS, new_content)
+        write_text(cs_constants, new_content)
 
 
 def update_package_json(version: str, dry_run: bool) -> None:
