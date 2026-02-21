@@ -188,17 +188,20 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         L("Log.Step.3.Detail1")
                     );
                     logs.Add(L("Log.MaboneProxyHeader"));
-                    if (OCTModularAvatarUtility.IsModularAvatarAvailable)
+
+                    // MA依存処理の実行可否は Utility の公開状態を参照してここで1回だけ判定します。
+                    // ※ ProcessBoneProxies 側では重複判定しない（責務重複を避ける）。
+                    if (!OCTModularAvatarUtility.IsModularAvatarAvailable)
+                    {
+                        logs.Add(L("Log.MaboneProxySkipped"));
+                    }
+                    else
                     {
                         foreach (var duplicated in duplicatedTargets.Where(x => x != null))
                         {
                             logs.Add(F("Log.TargetEntry", OCTConversionLogUtility.GetHierarchyPath(duplicated.transform)));
                             OCTModularAvatarUtility.ProcessBoneProxies(duplicated, logs);
                         }
-                    }
-                    else
-                    {
-                        logs.Add(L("Log.MaboneProxySkipped"));
                     }
 
                     logs.Add("");

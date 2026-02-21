@@ -1,4 +1,29 @@
 #if UNITY_EDITOR
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTModularAvatarUtility.cs
+//
+// ============================================================================
+// 概要
+// ============================================================================
+// - Modular Avatar 依存処理の「入口」を1箇所に集約するユーティリティです。
+// - CHIBI_MODULAR_AVATAR の有無判定と、各専用クラスへの委譲を担当します。
+//
+// ============================================================================
+// 重要メモ（初心者向け）
+// ============================================================================
+// - このクラスは「依存有無の判断」と「処理の振り分け」だけを担当します。
+// - 実処理は以下へ分離されています。
+//   - MA依存: OCTModularAvatarBoneProxyUtility / OCTModularAvatarCostumeDetector
+//   - MA非依存: OCTCostumeScaleAdjuster
+// - MA未導入時に落とさない（安全スキップ）ことを最優先にしています。
+//
+// ============================================================================
+// チーム開発向けルール
+// ============================================================================
+// - MA依存の #if 分岐は可能な限りこのクラスへ集約する。
+// - 呼び出し元（Pipeline）には、業務フローのみを残し、実装詳細を漏らさない。
+// - MA未導入時のログ文言（スキップ/不足）は既存キーを使って互換維持する。
+// ============================================================================
+
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,18 +50,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         }
 
         /// <summary>
-        /// MABoneProxy を処理します。Modular Avatar 未導入時はスキップログのみ残します。
+        /// MABoneProxy を処理します。
+        /// MAの有無チェックと「スキップログ」は呼び出し側でまとめて扱う想定です。
         /// </summary>
         public static void ProcessBoneProxies(GameObject avatarRoot, List<string> logs = null)
         {
             if (avatarRoot == null)
             {
-                return;
-            }
-
-            if (!IsModularAvatarAvailable)
-            {
-                logs?.Add(L("Log.MaboneProxySkipped"));
                 return;
             }
 
