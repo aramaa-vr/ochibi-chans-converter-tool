@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -39,12 +38,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return true;
         }
 
-        private sealed class AvatarBoneScaleModifier
+        private sealed class MergeArmatureBoneScaleMapping
         {
-            public string Name;
-            public Vector3 Scale;
-            public string RelativePath;
-            public Transform PreferredBone;
+            public string BaseBoneName;
+            public Vector3 BaseScale;
+            public Transform OutfitBone;
         }
 
 #if CHIBI_MODULAR_AVATAR
@@ -57,8 +55,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             Undo.RegisterFullObjectHierarchyUndo(costumeRoot.gameObject, L("Undo.AdjustCostumeScales"));
 
-            var avatarBoneScaleModifiers = BuildAvatarBoneScaleModifiers(costumeRoot, logs);
-            if (avatarBoneScaleModifiers.Count == 0)
+            var mergeArmatureMappings = BuildMergeArmatureMappings(costumeRoot, logs);
+            if (mergeArmatureMappings.Count == 0)
             {
                 logs?.Add(F("Log.CostumeApplied", costumeRoot.name, 0));
                 return;
@@ -66,23 +64,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             var appliedCount = 0;
             var costumeBones = costumeRoot.GetComponentsInChildren<Transform>(true).ToList();
-            var costumeArmature = OCTEditorUtility.FindAvatarMainArmature(costumeRoot);
 
-            ApplyScaleModifiers(
-                avatarBoneScaleModifiers,
-                costumeBones,
-                costumeArmature,
-                logs,
-                costumeRoot,
-                ref appliedCount
-            );
+            ApplyMergeArmatureScaleMappings(mergeArmatureMappings, costumeBones, logs, costumeRoot, ref appliedCount);
 
             logs?.Add(F("Log.CostumeApplied", costumeRoot.name, appliedCount));
         }
 
-        private static List<AvatarBoneScaleModifier> BuildAvatarBoneScaleModifiers(Transform costumeRoot, List<string> logs)
+        private static List<MergeArmatureBoneScaleMapping> BuildMergeArmatureMappings(Transform costumeRoot, List<string> logs)
         {
-            var result = new List<AvatarBoneScaleModifier>();
+            var result = new List<MergeArmatureBoneScaleMapping>();
 
             var mergeArmature = costumeRoot.GetComponentInParent<ModularAvatarMergeArmature>(true);
             if (mergeArmature == null)
@@ -98,7 +88,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return result;
             }
 
-            var baseRoot = mergeArmature.mergeTargetObject != null ? mergeArmature.mergeTargetObject.transform : null;
             foreach (var pair in mapping)
             {
                 var baseBone = pair.Item1;
@@ -113,12 +102,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                result.Add(new AvatarBoneScaleModifier
+                result.Add(new MergeArmatureBoneScaleMapping
                 {
-                    Name = baseBone.name,
-                    Scale = baseBone.localScale,
-                    RelativePath = AnimationUtility.CalculateTransformPath(baseBone, baseRoot),
-                    PreferredBone = outfitBone
+                    BaseBoneName = baseBone.name,
+                    BaseScale = baseBone.localScale,
+                    OutfitBone = outfitBone
                 });
             }
 
@@ -139,140 +127,37 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                    Mathf.Abs(s.z - 1f) < ScaleEpsilon;
         }
 
-        private static void ApplyScaleModifiers(
-            List<AvatarBoneScaleModifier> avatarBoneScaleModifiers,
+        private static void ApplyMergeArmatureScaleMappings(
+            List<MergeArmatureBoneScaleMapping> mergeArmatureMappings,
             List<Transform> costumeBones,
-            Transform costumeArmature,
             List<string> logs,
             Transform costumeRoot,
             ref int appliedCount
         )
         {
-            foreach (var modifier in avatarBoneScaleModifiers)
+            foreach (var mapping in mergeArmatureMappings)
             {
-                var temp = costumeBones;
-                var modifierKeyForLog = BuildModifierKeyForLog(modifier);
-
-                var matched = TryApplyScaleToFirstMatch(
-                    temp,
-                    bone => string.Equals(bone.name, modifier.Name, StringComparison.Ordinal),
-                    modifier.Scale,
-                    costumeBones,
-                    logs,
-                    costumeRoot,
-                    modifierKeyForLog,
-                    L("Log.MatchExact"),
-                    ref appliedCount
-                );
-
-                if (matched)
+                if (mapping?.OutfitBone == null || IsNearlyOne(mapping.BaseScale))
                 {
                     continue;
                 }
 
-                matched = TryApplyScaleToBone(
-                    modifier.PreferredBone,
-                    modifier.Scale,
+                if (!costumeBones.Contains(mapping.OutfitBone))
+                {
+                    continue;
+                }
+
+                TryApplyScaleToBone(
+                    mapping.OutfitBone,
+                    mapping.BaseScale,
                     costumeBones,
                     logs,
                     costumeRoot,
-                    modifierKeyForLog,
+                    mapping.BaseBoneName,
                     L("Log.MatchArmature"),
                     ref appliedCount
                 );
-
-                if (matched)
-                {
-                    continue;
-                }
-
-                if (!string.IsNullOrEmpty(modifier.RelativePath) && costumeArmature != null)
-                {
-                    var normalizedPath = OCTEditorUtility.NormalizeRelPathFor(costumeArmature, modifier.RelativePath);
-                    var candidate = string.IsNullOrEmpty(normalizedPath)
-                        ? costumeArmature
-                        : costumeArmature.Find(normalizedPath);
-                    if (candidate != null && !costumeBones.Contains(candidate))
-                    {
-                        candidate = null;
-                    }
-
-                    if (TryApplyScaleToBone(
-                            candidate,
-                            modifier.Scale,
-                            costumeBones,
-                            logs,
-                            costumeRoot,
-                            modifierKeyForLog,
-                            L("Log.MatchArmature"),
-                            ref appliedCount
-                        ))
-                    {
-                        continue;
-                    }
-                }
-
-                TryApplyScaleToFirstMatch(
-                    temp,
-                    bone => bone.name.Contains(modifier.Name),
-                    modifier.Scale,
-                    costumeBones,
-                    logs,
-                    costumeRoot,
-                    modifierKeyForLog,
-                    L("Log.MatchContains"),
-                    ref appliedCount
-                );
             }
-        }
-
-        private static string BuildModifierKeyForLog(AvatarBoneScaleModifier modifier)
-        {
-            if (modifier == null)
-            {
-                return L("Log.NullValue");
-            }
-
-            if (string.IsNullOrEmpty(modifier.RelativePath))
-            {
-                return modifier.Name;
-            }
-
-            return $"{modifier.Name} ({modifier.RelativePath})";
-        }
-
-        private static bool TryApplyScaleToFirstMatch(
-            IEnumerable<Transform> bones,
-            Func<Transform, bool> predicate,
-            Vector3 scaleModifier,
-            List<Transform> removalTarget,
-            List<string> logs,
-            Transform costumeRoot,
-            string modifierKey,
-            string matchLabel,
-            ref int appliedCount
-        )
-        {
-            foreach (var bone in bones)
-            {
-                if (bone == null || !predicate(bone))
-                {
-                    continue;
-                }
-
-                return TryApplyScaleToBone(
-                    bone,
-                    scaleModifier,
-                    removalTarget,
-                    logs,
-                    costumeRoot,
-                    modifierKey,
-                    matchLabel,
-                    ref appliedCount
-                );
-            }
-
-            return false;
         }
 
         private static bool TryApplyScaleToBone(
