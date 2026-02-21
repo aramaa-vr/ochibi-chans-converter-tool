@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 #if CHIBI_MODULAR_AVATAR
 using nadena.dev.modular_avatar.core;
@@ -22,6 +23,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private sealed class MergeArmatureBoneScaleMapping
         {
             public string BaseBoneName;
+            public string BaseBoneRelativePath;
             public Vector3 BaseScale;
             public Transform OutfitBone;
         }
@@ -87,6 +89,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 result.Add(new MergeArmatureBoneScaleMapping
                 {
                     BaseBoneName = baseBone.name,
+                    BaseBoneRelativePath = AnimationUtility.CalculateTransformPath(baseBone, mergeArmature.transform),
                     BaseScale = baseBone.localScale,
                     OutfitBone = outfitBone
                 });
@@ -130,7 +133,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     costumeBones,
                     logs,
                     costumeRoot,
-                    mapping.BaseBoneName,
+                    OCTCostumeScaleApplyUtility.BuildModifierKeyForLog(mapping.BaseBoneName, mapping.BaseBoneRelativePath),
                     L("Log.MatchArmature"),
                     ref appliedCount
                 );

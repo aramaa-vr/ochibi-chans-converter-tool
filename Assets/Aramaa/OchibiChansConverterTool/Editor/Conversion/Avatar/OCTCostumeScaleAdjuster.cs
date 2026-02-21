@@ -237,7 +237,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             foreach (var modifier in avatarBoneScaleModifiers)
             {
                 var temp = costumeBones;
-                var modifierKeyForLog = BuildModifierKeyForLog(modifier);
+                var modifierKeyForLog = OCTCostumeScaleApplyUtility.BuildModifierKeyForLog(modifier?.Name, modifier?.RelativePath);
 
                 var matched = TryApplyScaleToFirstMatch(
                     temp,
@@ -294,21 +294,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     ref appliedCount
                 );
             }
-        }
-
-        private static string BuildModifierKeyForLog(AvatarBoneScaleModifier modifier)
-        {
-            if (modifier == null)
-            {
-                return L("Log.NullValue");
-            }
-
-            if (string.IsNullOrEmpty(modifier.RelativePath))
-            {
-                return modifier.Name;
-            }
-
-            return $"{modifier.Name} ({modifier.RelativePath})";
         }
 
         /// <summary>

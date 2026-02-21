@@ -62,6 +62,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs?.Add(F("Log.CostumeApplied", costumeRoot?.name ?? L("Log.NullValue"), appliedCount));
         }
 
+        internal static string BuildModifierKeyForLog(string boneName, string relativePath)
+        {
+            if (string.IsNullOrEmpty(boneName))
+            {
+                return L("Log.NullValue");
+            }
+
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return boneName;
+            }
+
+            return $"{boneName} ({relativePath})";
+        }
+
         internal static bool IsNearlyOne(Vector3 scale)
         {
             return Mathf.Abs(scale.x - 1f) < ScaleEpsilon &&
