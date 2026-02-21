@@ -33,7 +33,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal static class OCTCostumeScaleAdjuster
     {
-        private const float ScaleEpsilon = 0.0001f;
         private const int MaxLoggedExcludedArmaturePaths = 1000;
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
@@ -60,28 +59,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             var baseArmaturePaths = BuildBaseArmatureTransformPaths(basePrefabRoot, logs);
-            new OCTConversionLogger(logs).Add("Log.CostumeScaleCriteria");
-
             var avatarBoneScaleModifiers = BuildAvatarBoneScaleModifiers(dstArmature, baseArmaturePaths, logs);
             if (avatarBoneScaleModifiers.Count == 0)
             {
                 return true;
             }
 
-            if (costumeRoots == null || costumeRoots.Count == 0)
-            {
-                return true;
-            }
-
-            logs?.Add(L("Log.CostumeScaleHeader"));
-            logs?.Add(F("Log.CostumeCount", costumeRoots.Count));
-
-            foreach (var costumeRoot in costumeRoots)
-            {
-                AdjustOneCostume(costumeRoot, avatarBoneScaleModifiers, logs);
-            }
-
-            return true;
+            return OCTCostumeScaleApplyUtility.AdjustCostumeRoots(
+                costumeRoots,
+                logs,
+                (costumeRoot, sharedLogs) => AdjustOneCostume(costumeRoot, avatarBoneScaleModifiers, sharedLogs)
+            );
         }
 
         private sealed class AvatarBoneScaleModifier
@@ -146,7 +134,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var bones = avatarArmature.GetComponentsInChildren<Transform>(true);
             foreach (var b in bones)
             {
-                if (b == null || IsNearlyOne(b.localScale))
+                if (b == null || OCTCostumeScaleApplyUtility.IsNearlyOne(b.localScale))
                 {
                     continue;
                 }
@@ -208,19 +196,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             List<string> logs
         )
         {
-            if (costumeRoot == null)
-            {
-                return;
-            }
-
-            Undo.RegisterFullObjectHierarchyUndo(costumeRoot.gameObject, L("Undo.AdjustCostumeScales"));
             if (avatarBoneScaleModifiers == null || avatarBoneScaleModifiers.Count == 0)
             {
                 return;
             }
 
+            if (!OCTCostumeScaleApplyUtility.TryPrepareCostume(
+                    costumeRoot,
+                    L("Undo.AdjustCostumeScales"),
+                    out var costumeBones
+                ))
+            {
+                return;
+            }
+
             int appliedCount = 0;
-            var costumeBones = costumeRoot.GetComponentsInChildren<Transform>(true).ToList();
             var costumeArmature = OCTEditorUtility.FindAvatarMainArmature(costumeRoot);
 
             ApplyScaleModifiers(
@@ -232,14 +222,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 ref appliedCount
             );
 
-            logs?.Add(F("Log.CostumeApplied", costumeRoot.name, appliedCount));
-        }
-
-        private static bool IsNearlyOne(Vector3 s)
-        {
-            return Mathf.Abs(s.x - 1f) < ScaleEpsilon &&
-                   Mathf.Abs(s.y - 1f) < ScaleEpsilon &&
-                   Mathf.Abs(s.z - 1f) < ScaleEpsilon;
+            OCTCostumeScaleApplyUtility.LogCostumeApplied(logs, costumeRoot, appliedCount);
         }
 
         private static void ApplyScaleModifiers(
@@ -284,7 +267,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         candidate = null;
                     }
 
-                    if (TryApplyScaleToBone(
+                    if (OCTCostumeScaleApplyUtility.TryApplyScaleToBone(
                             candidate,
                             modifier.Scale,
                             costumeBones,
@@ -350,7 +333,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                return TryApplyScaleToBone(
+                return OCTCostumeScaleApplyUtility.TryApplyScaleToBone(
                     bone,
                     scaleModifier,
                     removalTarget,
@@ -363,51 +346,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// 実際に1ボーンへスケール補正を反映し、ログ・dirty化を行います。
-        /// </summary>
-        private static bool TryApplyScaleToBone(
-            Transform bone,
-            Vector3 scaleModifier,
-            List<Transform> removalTarget,
-            List<string> logs,
-            Transform costumeRoot,
-            string modifierKey,
-            string matchLabel,
-            ref int appliedCount
-        )
-        {
-            if (bone == null)
-            {
-                return false;
-            }
-
-            bone.localScale = Vector3.Scale(bone.localScale, scaleModifier);
-            EditorUtility.SetDirty(bone);
-            appliedCount++;
-
-            new OCTConversionLogger(logs).Add(
-                "Log.CostumeScaleApplied",
-                costumeRoot?.name ?? L("Log.NullValue"),
-                modifierKey,
-                matchLabel,
-                FormatMatchedBoneForLog(bone, costumeRoot));
-
-            removalTarget?.Remove(bone);
-            return true;
-        }
-
-        private static string FormatMatchedBoneForLog(Transform bone, Transform costumeRoot)
-        {
-            if (bone == null)
-            {
-                return L("Log.NullValue");
-            }
-
-            var path = GetTransformPath(bone, costumeRoot);
-            return $"{bone.name} ({path})";
         }
 
         private static string GetStableTransformPathWithSiblingIndex(Transform target, Transform root)
