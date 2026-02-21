@@ -13,8 +13,9 @@
 // - このクラスは「依存有無の判断」と「処理の振り分け」だけを担当します。
 // - 実処理は以下へ分離されています。
 //   - MA依存: OCTModularAvatarBoneProxyUtility / OCTModularAvatarCostumeDetector
-//   - MA非依存: OCTCostumeScaleAdjuster
+//   - MA非依存: OCTCostumeScaleAdjuster / OCTCostumeBlendShapeAdjuster
 // - MA未導入時に落とさない（安全スキップ）ことを最優先にしています。
+// - 処理順は「衣装スケール補正 -> BlendShape 同期」の順で固定です。
 //
 // ============================================================================
 // チーム開発向けルール
@@ -66,7 +67,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         }
 
         /// <summary>
-        /// MA Mesh Settings が付与された衣装ルートを検出し、衣装スケール調整を行います。
+        /// MA Mesh Settings が付与された衣装ルートを検出し、衣装スケール調整と BlendShape 同期を行います。
+        /// 処理順序は互換性のため固定です（Scale -> BlendShape）。
         /// Modular Avatar 未導入時は安全にスキップします。
         /// </summary>
         public static bool AdjustCostumeScalesForModularAvatarMeshSettings(
@@ -87,8 +89,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             var costumeRoots = OCTModularAvatarCostumeDetector.CollectCostumeRoots(dstRoot);
-            return OCTCostumeScaleAdjuster.AdjustCostumeScales(
+            if (!OCTCostumeScaleAdjuster.AdjustCostumeScales(
                 dstRoot,
+                basePrefabRoot,
+                costumeRoots,
+                logs
+            ))
+            {
+                return false;
+            }
+
+            return OCTCostumeBlendShapeAdjuster.AdjustCostumeBlendShapes(
                 basePrefabRoot,
                 costumeRoots,
                 logs
