@@ -7,7 +7,7 @@ Usage:
   Tools/release/update_version.py <version> --dry-run
 
 Updates:
-  - Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolEditorConstants.cs (ToolVersion)
+  - Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTEditorConstants.cs (ToolVersion)
   - Assets/Aramaa/OchibiChansConverterTool/package.json (version, url)
 """
 
@@ -28,7 +28,7 @@ def find_repo_root(start: Path) -> Path:
 
 
 ROOT = find_repo_root(Path(__file__).resolve())
-CS_CONSTANTS = ROOT / "Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OchibiChansConverterToolEditorConstants.cs"
+CS_CONSTANTS = ROOT / "Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTEditorConstants.cs"
 PACKAGE_JSON = ROOT / "Assets/Aramaa/OchibiChansConverterTool/package.json"
 SEMVER_PATTERN = re.compile(
     r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
