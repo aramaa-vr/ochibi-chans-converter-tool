@@ -1,25 +1,26 @@
 #if UNITY_EDITOR
-// Assets/Aramaa/OchibiChansConverterTool/Editor/Utilities/OCTCostumeScaleAdjuster.cs
+// Assets/Aramaa/OchibiChansConverterTool/Editor/Conversion/Avatar/OCTCostumeScaleAdjuster.cs
 //
 // ============================================================================
 // 概要
 // ============================================================================
-// - 検出済みの衣装ルートに対し、ボーン localScale 補正と BlendShape 同期を適用します。
-// - 本クラスは Modular Avatar API に直接依存しない「汎用の適用処理」です。
+// - 検出済みの衣装ルートに対し、ボーン localScale 補正のみを担当します。
+// - BlendShape 同期は OCTCostumeBlendShapeAdjuster に分離されています。
 //
 // ============================================================================
 // 重要メモ（初心者向け）
 // ============================================================================
-// - 「どの衣装を対象にするか」は外部（Detector）から受け取ります。
-// - ここは「どう適用するか」に専念する実装です。
-// - Undo 記録・Prefab差分記録を行い、ユーザーが戻せることを優先します。
+// - このクラスは「衣装の検出」は行いません。検出済み costumeRoots を入力として受け取ります。
+// - 変換の互換性のため、マッチ順序は
+//   完全一致 -> Armature相対パス一致 -> 部分一致 の順を維持します。
+// - Undo とログ記録を残すことで、変換後の確認・巻き戻しをしやすくしています。
 //
 // ============================================================================
 // チーム開発向けルール
 // ============================================================================
-// - マッチング順序（完全一致→Armatureパス→部分一致）は互換仕様。
-// - ログキー/処理順を変更する場合は既存変換結果への影響を確認する。
-// - 衣装選定ロジック（MA依存）はこのクラスに入れない。
+// - マッチング順序・ログキーを変更する場合は既存アバターの変換結果への影響を確認すること。
+// - MA 依存コード（コンポーネント検出など）は本クラスに入れず、呼び出し側で解決すること。
+// - 補正対象の条件を増やす場合は、既存ロジックを壊さないよう段階的に追加すること。
 // ============================================================================
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ using UnityEngine;
 namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 {
     /// <summary>
-    /// 検出済みの衣装ルートに対してスケール補正と BlendShape 同期を適用する責務を持つクラス。
+    /// 検出済みの衣装ルートに対して、ボーン localScale の補正を適用する責務を持つクラス。
     /// </summary>
     internal static class OCTCostumeScaleAdjuster
     {
@@ -38,6 +39,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
+        /// <summary>
+        /// 検出済み衣装ルート群に対し、スケール補正を順に適用します。
+        /// </summary>
         internal static bool AdjustCostumeScales(
             GameObject dstRoot,
             GameObject basePrefabRoot,
@@ -50,7 +54,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                 return false;
             }
 
-            var log = new OCTConversionLogger(logs);
             var dstArmature = OCTEditorUtility.FindAvatarMainArmature(dstRoot.transform);
             if (dstArmature == null)
             {
@@ -58,7 +61,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             var baseArmaturePaths = BuildBaseArmatureTransformPaths(basePrefabRoot, logs);
-            log.Add("Log.CostumeScaleCriteria");
+            new OCTConversionLogger(logs).Add("Log.CostumeScaleCriteria");
 
             var avatarBoneScaleModifiers = BuildAvatarBoneScaleModifiers(dstArmature, baseArmaturePaths, logs);
             if (avatarBoneScaleModifiers.Count == 0)
@@ -74,17 +77,24 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             logs?.Add(L("Log.CostumeScaleHeader"));
             logs?.Add(F("Log.CostumeCount", costumeRoots.Count));
 
-            var baseBlendShapeWeights = BuildBaseBlendShapeWeightsByMeshAndName(basePrefabRoot, logs);
-
             foreach (var costumeRoot in costumeRoots)
             {
                 AdjustOneCostume(costumeRoot, avatarBoneScaleModifiers, logs);
-                InspectAndSyncBlendShapesUnderCostumeRoot(costumeRoot, baseBlendShapeWeights, logs);
             }
 
             return true;
         }
 
+        private sealed class AvatarBoneScaleModifier
+        {
+            public string Name;
+            public Vector3 Scale;
+            public string RelativePath;
+        }
+
+        /// <summary>
+        /// ベースPrefabのArmature配下から、比較用の安定パス集合を構築します。
+        /// </summary>
         private static HashSet<string> BuildBaseArmatureTransformPaths(GameObject basePrefabRoot, List<string> logs)
         {
             if (basePrefabRoot == null)
@@ -93,7 +103,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             var baseArmature = OCTEditorUtility.FindAvatarMainArmature(basePrefabRoot.transform);
-
             if (baseArmature == null)
             {
                 logs?.Add(L("Log.BaseArmatureMissing"));
@@ -116,13 +125,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             return paths;
         }
 
-        private sealed class AvatarBoneScaleModifier
-        {
-            public string Name;
-            public Vector3 Scale;
-            public string RelativePath;
-        }
-
+        /// <summary>
+        /// 変換先アバター側の非等倍スケールボーンを抽出し、衣装へ適用する補正リストを作成します。
+        /// </summary>
         private static List<AvatarBoneScaleModifier> BuildAvatarBoneScaleModifiers(
             Transform avatarArmature,
             HashSet<string> allowedArmaturePaths,
@@ -195,6 +200,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             return result;
         }
 
+        /// <summary>
+        /// 1つの衣装ルート配下に対して、ボーンスケール補正を適用します。
+        /// </summary>
         private static void AdjustOneCostume(
             Transform costumeRoot,
             List<AvatarBoneScaleModifier> avatarBoneScaleModifiers,
@@ -286,6 +294,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
                    Mathf.Abs(s.z - 1f) < ScaleEpsilon;
         }
 
+        /// <summary>
+        /// 条件に一致した最初のボーンへ補正を適用します。
+        /// </summary>
         private static bool TryApplyScaleToFirstMatch(
             IEnumerable<Transform> bones,
             Func<Transform, bool> predicate,
@@ -320,6 +331,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             return false;
         }
 
+        /// <summary>
+        /// 実際に1ボーンへスケール補正を反映し、ログ・dirty化を行います。
+        /// </summary>
         private static bool TryApplyScaleToBone(
             Transform bone,
             Vector3 scaleModifier,
@@ -337,12 +351,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             bone.localScale = Vector3.Scale(bone.localScale, scaleModifier);
-
             EditorUtility.SetDirty(bone);
             appliedCount++;
 
-            var log = new OCTConversionLogger(logs);
-            log.Add(
+            new OCTConversionLogger(logs).Add(
                 "Log.CostumeScaleApplied",
                 costumeRoot?.name ?? L("Log.NullValue"),
                 modifierKey,
@@ -351,200 +363,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
 
             removalTarget?.Remove(bone);
             return true;
-        }
-
-        private static Dictionary<string, float> BuildBaseBlendShapeWeightsByMeshAndName(GameObject basePrefabRoot, List<string> logs)
-        {
-            var map = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
-            if (basePrefabRoot == null)
-            {
-                return map;
-            }
-
-            var smrs = basePrefabRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-            smrs = smrs
-                .OrderByDescending(GetBaseSmrPriority)
-                .ThenBy(s => s != null && s.sharedMesh != null ? s.sharedMesh.name : string.Empty)
-                .ToArray();
-
-            logs?.Add(L("Log.BaseBlendShapeHeader"));
-            logs?.Add(F("Log.BasePrefabRootSummary", basePrefabRoot.name, smrs.Length));
-
-            foreach (var smr in smrs)
-            {
-                if (smr == null)
-                {
-                    continue;
-                }
-
-                var mesh = smr.sharedMesh;
-                if (mesh == null)
-                {
-                    continue;
-                }
-
-                int count = mesh.blendShapeCount;
-                if (count <= 0)
-                {
-                    continue;
-                }
-
-                var smrPath = GetTransformPath(smr.transform, basePrefabRoot.transform);
-                logs?.Add(F("Log.BaseSmrSummary", smrPath, mesh.name, count));
-
-                for (int i = 0; i < count; i++)
-                {
-                    var shapeName = mesh.GetBlendShapeName(i);
-
-                    float weight;
-                    try
-                    {
-                        weight = smr.GetBlendShapeWeight(i);
-                    }
-                    catch
-                    {
-                        continue;
-                    }
-
-                    var key = MakeBlendShapeKey(mesh, shapeName);
-
-                    if (!map.ContainsKey(key))
-                    {
-                        map.Add(key, weight);
-                    }
-                    else
-                    {
-                        logs?.Add(F("Log.BaseBlendshapeDuplicate", mesh.name, shapeName));
-                    }
-                }
-            }
-
-            return map;
-        }
-
-        private static void InspectAndSyncBlendShapesUnderCostumeRoot(
-            Transform costumeRoot,
-            Dictionary<string, float> baseBlendShapeWeights,
-            List<string> logs
-        )
-        {
-            if (costumeRoot == null)
-            {
-                return;
-            }
-
-            var log = new OCTConversionLogger(logs);
-            var smrs = costumeRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-
-            logs?.Add(F("Log.CostumeBlendshapeHeader", GetTransformPath(costumeRoot, costumeRoot)));
-            logs?.Add(F("Log.CostumeSmrCount", smrs.Length));
-
-            foreach (var smr in smrs)
-            {
-                if (smr == null)
-                {
-                    continue;
-                }
-
-                var mesh = smr.sharedMesh;
-                var smrPath = GetTransformPath(smr.transform, costumeRoot);
-
-                if (mesh == null)
-                {
-                    logs?.Add(F("Log.CostumeSmrMeshMissing", smrPath));
-                    continue;
-                }
-
-                int count = mesh.blendShapeCount;
-                logs?.Add(F("Log.CostumeSmrSummary", smrPath, mesh.name, count));
-
-                if (count <= 0)
-                {
-                    continue;
-                }
-
-                var toApplyIndices = new List<int>();
-                var toApplyNames = new List<string>();
-                var allShapeNames = new List<string>(count);
-
-                for (int i = 0; i < count; i++)
-                {
-                    var shapeName = mesh.GetBlendShapeName(i);
-                    allShapeNames.Add(shapeName);
-
-                    if (baseBlendShapeWeights == null)
-                    {
-                        continue;
-                    }
-
-                    var key = MakeBlendShapeKey(mesh, shapeName);
-                    if (baseBlendShapeWeights.ContainsKey(key))
-                    {
-                        toApplyIndices.Add(i);
-                        toApplyNames.Add(shapeName);
-                    }
-                }
-
-                log.AddBlendshapeEntries(allShapeNames);
-
-                if (toApplyIndices.Count == 0)
-                {
-                    continue;
-                }
-
-                Undo.RecordObject(smr, L("Undo.OchibiChansConverterToolSyncBlendShapes"));
-
-                for (int k = 0; k < toApplyIndices.Count; k++)
-                {
-                    int idx = toApplyIndices[k];
-                    string shapeName = toApplyNames[k];
-
-                    var key = MakeBlendShapeKey(mesh, shapeName);
-                    var weight = baseBlendShapeWeights[key];
-
-                    smr.SetBlendShapeWeight(idx, weight);
-                    TrySetBlendShapeWeightSerialized(smr, idx, weight);
-                }
-
-                EditorUtility.SetDirty(smr);
-                PrefabUtility.RecordPrefabInstancePropertyModifications(smr);
-                logs?.Add(F("Log.BlendshapeSynced", string.Join(", ", toApplyNames)));
-            }
-        }
-
-        private static string MakeBlendShapeKey(Mesh mesh, string shapeName)
-        {
-            return NormalizeBlendShapeName(shapeName);
-        }
-
-        private static string NormalizeBlendShapeName(string shapeName)
-        {
-            return string.IsNullOrEmpty(shapeName) ? string.Empty : shapeName.Trim();
-        }
-
-        private static int GetBaseSmrPriority(SkinnedMeshRenderer smr)
-        {
-            if (smr == null)
-            {
-                return 0;
-            }
-
-            var meshName = smr.sharedMesh != null ? smr.sharedMesh.name : string.Empty;
-            var goName = smr.gameObject != null ? smr.gameObject.name : string.Empty;
-
-            if (string.Equals(meshName, "Body_base", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(goName, "Body_base", StringComparison.OrdinalIgnoreCase))
-            {
-                return 100;
-            }
-
-            if (string.Equals(meshName, "Body", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(goName, "Body", StringComparison.OrdinalIgnoreCase))
-            {
-                return 90;
-            }
-
-            return 0;
         }
 
         private static string GetStableTransformPathWithSiblingIndex(Transform target, Transform root)
@@ -617,37 +435,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor.Utilities
             }
 
             var rel = AnimationUtility.CalculateTransformPath(target, root);
-            if (string.IsNullOrEmpty(rel))
-            {
-                return root.name;
-            }
-
-            return root.name + "/" + rel;
-        }
-
-        private static void TrySetBlendShapeWeightSerialized(SkinnedMeshRenderer smr, int blendShapeIndex, float weight)
-        {
-            try
-            {
-                var so = new SerializedObject(smr);
-                var prop = so.FindProperty("m_BlendShapeWeights");
-                if (prop == null || !prop.isArray)
-                {
-                    return;
-                }
-
-                if (blendShapeIndex < 0 || blendShapeIndex >= prop.arraySize)
-                {
-                    return;
-                }
-
-                prop.GetArrayElementAtIndex(blendShapeIndex).floatValue = weight;
-                so.ApplyModifiedPropertiesWithoutUndo();
-            }
-            catch
-            {
-                // SetBlendShapeWeight が適用済みのため安全に無視
-            }
+            return string.IsNullOrEmpty(rel) ? root.name : root.name + "/" + rel;
         }
     }
 }
