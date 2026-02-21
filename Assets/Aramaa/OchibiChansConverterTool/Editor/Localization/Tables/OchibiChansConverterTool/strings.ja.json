@@ -374,6 +374,10 @@
       "value": "アーマチュア"
     },
     {
+      "key": "Log.MatchModularAvatar",
+      "value": "Modular Avatar"
+    },
+    {
       "key": "Log.MatchContains",
       "value": "含む"
     },

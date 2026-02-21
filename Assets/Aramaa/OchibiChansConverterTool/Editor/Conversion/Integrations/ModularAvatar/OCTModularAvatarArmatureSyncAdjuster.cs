@@ -1,10 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
-#if CHIBI_MODULAR_AVATAR
-using nadena.dev.modular_avatar.core;
-#endif
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
@@ -14,7 +10,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OCTModularAvatarArmatureSyncAdjuster
     {
         private static string L(string key) => OCTLocalization.Get(key);
-        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         internal static bool AdjustByMergeArmatureMapping(List<Transform> costumeRoots, List<string> logs)
         {
@@ -23,28 +18,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         internal static bool HasMergeArmatureMapping(Transform costumeRoot)
         {
-#if CHIBI_MODULAR_AVATAR
-            if (costumeRoot == null)
-            {
-                return false;
-            }
-
-            return BuildMergeArmatureMappings(costumeRoot, null).Count > 0;
-#else
-            _ = costumeRoot;
-            return false;
-#endif
+            return OCTModularAvatarMergeArmatureUtility.TryCollectBoneScaleMappings(
+                costumeRoot,
+                new List<OCTModularAvatarMergeArmatureUtility.BoneScaleMapping>()
+            );
         }
 
-        private sealed class MergeArmatureBoneScaleMapping
-        {
-            public string BaseBoneName;
-            public string BaseBoneRelativePath;
-            public Vector3 BaseScale;
-            public Transform OutfitBone;
-        }
-
-#if CHIBI_MODULAR_AVATAR
         private static void AdjustOneCostume(Transform costumeRoot, List<string> logs)
         {
             if (!OCTCostumeScaleApplyUtility.TryPrepareCostume(
@@ -56,8 +35,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-            var mergeArmatureMappings = BuildMergeArmatureMappings(costumeRoot, logs);
-            if (mergeArmatureMappings.Count == 0)
+            var mergeArmatureMappings = new List<OCTModularAvatarMergeArmatureUtility.BoneScaleMapping>();
+            var hasMergeArmatureMappings = OCTModularAvatarMergeArmatureUtility.TryCollectBoneScaleMappings(costumeRoot, mergeArmatureMappings);
+            if (!hasMergeArmatureMappings)
             {
                 OCTCostumeScaleApplyUtility.LogCostumeApplied(logs, costumeRoot, 0);
                 return;
@@ -70,59 +50,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             OCTCostumeScaleApplyUtility.LogCostumeApplied(logs, costumeRoot, appliedCount);
         }
 
-        private static List<MergeArmatureBoneScaleMapping> BuildMergeArmatureMappings(Transform costumeRoot, List<string> logs)
-        {
-            var result = new List<MergeArmatureBoneScaleMapping>();
-
-            var mergeArmature = costumeRoot.GetComponentInParent<ModularAvatarMergeArmature>(true);
-            if (mergeArmature == null)
-            {
-                logs?.Add(F("Log.CostumeScaleSkipMergeArmatureMissing", costumeRoot.name));
-                return result;
-            }
-
-            var mapping = mergeArmature.GetBonesMapping();
-            if (mapping == null || mapping.Count == 0)
-            {
-                logs?.Add(F("Log.CostumeScaleSkipBoneMappingEmpty", costumeRoot.name));
-                return result;
-            }
-
-            foreach (var pair in mapping)
-            {
-                var baseBone = pair.Item1;
-                var outfitBone = pair.Item2;
-                if (baseBone == null || outfitBone == null)
-                {
-                    continue;
-                }
-
-                if (OCTCostumeScaleApplyUtility.IsNearlyOne(baseBone.localScale))
-                {
-                    continue;
-                }
-
-                result.Add(new MergeArmatureBoneScaleMapping
-                {
-                    BaseBoneName = baseBone.name,
-                    BaseBoneRelativePath = AnimationUtility.CalculateTransformPath(baseBone, mergeArmature.transform),
-                    BaseScale = baseBone.localScale,
-                    OutfitBone = outfitBone
-                });
-            }
-
-            return result;
-        }
-#else
-        private static void AdjustOneCostume(Transform costumeRoot, List<string> logs)
-        {
-            _ = costumeRoot;
-            _ = logs;
-        }
-#endif
-
         private static void ApplyMergeArmatureScaleMappings(
-            List<MergeArmatureBoneScaleMapping> mergeArmatureMappings,
+            List<OCTModularAvatarMergeArmatureUtility.BoneScaleMapping> mergeArmatureMappings,
             List<Transform> costumeBones,
             List<string> logs,
             Transform costumeRoot,
@@ -149,8 +78,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     costumeBones,
                     logs,
                     costumeRoot,
-                    OCTCostumeScaleApplyUtility.BuildModifierKeyForLog(mapping.BaseBoneName, mapping.BaseBoneRelativePath),
-                    L("Log.MatchArmature"),
+                    mapping.BaseBoneName,
+                    L("Log.MatchModularAvatar"),
                     ref appliedCount
                 );
             }
