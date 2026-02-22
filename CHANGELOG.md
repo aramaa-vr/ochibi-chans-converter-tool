@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.5-beta.2]（Pre-release）
+### 主な変更点
+- **衣装スケール補正を MA 連携中心へ移行**：`OCTModularAvatarCostumeScaleAdjuster` を追加し、Merge Armature ベースでボーンスケールを反映する処理を導入しました
+- **旧スケール補正の扱いを整理**：従来の `OCTCostumeScaleAdjuster` は legacy 扱いに切り替え、実行経路から外しました（該当処理はコメントアウトで無効化）
+- **スケール補正デバッグを強化**：MA 経由でのスケールマッピング時に、変換元/変換先ボーンのフルパスをログ出力できるようにしました
+- **MA 未導入時の挙動を明文化**：MA が無い場合にスケール補正が一時的にスキップされる旨をコードコメントで補足し、挙動を追いやすくしました
+- **VPM依存関係に上限を追加**：`nadena.dev.modular-avatar` / `net.narazaka.vrchat.floor-adjuster` / `jp.lilxyzw.liltoon` に、次期メジャー系プレリリースを誤って取り込まないための上限（`<2.0.0-a` / `<3.0.0-a`）を設定しました
+- **依存バージョン指定の表記を調整**：上限付きレンジ指定の空白を整え、`vpmDependencies` の記述を統一しました
+- **パッケージバージョンを更新**：`ToolVersion` / `package.json` / 配布URLを **0.5.5-beta.2** に更新しました
+
 ## [0.5.5-beta.1]（Pre-release）
 ### 主な変更点
 - **スケール補正処理を強化**：`ApplyScaleModifiers` を取り込み、衣装変換時のスケール反映をより正確にしました
