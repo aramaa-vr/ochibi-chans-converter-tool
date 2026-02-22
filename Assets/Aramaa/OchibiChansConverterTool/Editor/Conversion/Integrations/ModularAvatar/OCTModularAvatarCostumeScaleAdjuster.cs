@@ -67,12 +67,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     EditorUtility.SetDirty(mergeBone);
                     appliedCount++;
 
+                    var baseBonePath = OCTConversionLogFormatter.GetHierarchyPath(baseBone);
+                    var mergeBonePath = OCTConversionLogFormatter.GetHierarchyPath(mergeBone);
+
                     new OCTConversionLogger(logs).Add(
                         "Log.CostumeScaleApplied",
                         merger.name,
-                        $"{baseBone.name}->{mergeBone.name}",
+                        $"{baseBonePath}->{mergeBonePath}",
                         "ModularAvatarMergeArmature",
-                        mergeBone.name
+                        mergeBonePath
                     );
                 }
             }
