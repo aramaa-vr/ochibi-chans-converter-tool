@@ -731,7 +731,7 @@
     },
     {
       "key": "Version.UpToDate",
-      "value": "You are on version {0}, which is the latest {1}."
+      "value": "You are on version {0}, which is the latest version."
     },
     {
       "key": "Warning.AddMenuPrefabMissing",

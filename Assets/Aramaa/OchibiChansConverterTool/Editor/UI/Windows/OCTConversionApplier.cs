@@ -504,7 +504,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         return F("Version.Ahead", ToolVersion, _latestVersion);
                     case OCTVersionStatus.UpToDate:
                         color = SelectStatusColor(new Color(0.35f, 0.8f, 0.4f), new Color(0.15f, 0.55f, 0.2f));
-                        return F("Version.UpToDate", ToolVersion, _latestVersion);
+                        return F("Version.UpToDate", ToolVersion);
                     default:
                         color = SelectStatusColor(new Color(0.7f, 0.7f, 0.7f), new Color(0.45f, 0.45f, 0.45f));
                         return F("Version.Unknown", ToolVersion);

@@ -26,6 +26,10 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
+// NOTE:
+// このファイルは自作スケール調整の旧実装です。
+// いずれ見直して再実装する想定のため、現時点では全体をコメントアウト（無効化）しています。
+#if false
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
@@ -41,7 +45,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// <summary>
         /// 検出済み衣装ルート群に対し、スケール補正を順に適用します。
         /// </summary>
-        internal static bool AdjustCostumeScales(
+        internal static bool AdjustCostumeScalesLegacy(
             GameObject dstRoot,
             GameObject basePrefabRoot,
             List<Transform> costumeRoots,
@@ -484,4 +488,5 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
     }
 }
+#endif
 #endif
