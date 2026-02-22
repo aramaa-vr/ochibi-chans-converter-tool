@@ -214,7 +214,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _opened = null;
                 }
 
-                EditorApplication.hierarchyChanged -= MarkMaboneProxyCountDirty;
+                UnregisterMaboneProxyDirtyCallbacks();
                 OCTPrefabDropdownCache.SaveCacheToDisk();
             }
 
@@ -229,9 +229,24 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _cachedProSkin = EditorGUIUtility.isProSkin;
                 _isMaboneProxyCountDirty = true;
                 _maboneProxyCountSourceTarget = null;
-                EditorApplication.hierarchyChanged -= MarkMaboneProxyCountDirty;
-                EditorApplication.hierarchyChanged += MarkMaboneProxyCountDirty;
+                RegisterMaboneProxyDirtyCallbacks();
                 ClearCachedStyles();
+            }
+
+            private void RegisterMaboneProxyDirtyCallbacks()
+            {
+                // 多重登録防止
+                EditorApplication.hierarchyChanged -= MarkMaboneProxyCountDirty;
+                Undo.undoRedoPerformed -= MarkMaboneProxyCountDirty;
+
+                EditorApplication.hierarchyChanged += MarkMaboneProxyCountDirty;
+                Undo.undoRedoPerformed += MarkMaboneProxyCountDirty;
+            }
+
+            private void UnregisterMaboneProxyDirtyCallbacks()
+            {
+                EditorApplication.hierarchyChanged -= MarkMaboneProxyCountDirty;
+                Undo.undoRedoPerformed -= MarkMaboneProxyCountDirty;
             }
 
             private void OnGUI()
