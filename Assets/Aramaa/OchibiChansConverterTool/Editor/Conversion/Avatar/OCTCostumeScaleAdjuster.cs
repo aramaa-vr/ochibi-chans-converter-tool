@@ -151,14 +151,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                // Armature 名は FBX 小物などで入れ子になりやすく、
-                // ここに混ざると衣装側の Armature.1 へ誤適用されるリスクが高いです。
-                // 「メイン Armature 自体」以外の同名 Transform は除外します。
-                if (!ReferenceEquals(b, avatarArmature) && string.Equals(b.name, avatarArmature.name, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
                 if (allowedArmaturePaths != null)
                 {
                     var path = GetStableTransformPathWithSiblingIndex(b, avatarArmature);
@@ -306,22 +298,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         continue;
                     }
                 }
-                // RelativePath が空のキーは「Armature ルート自身」を意味するため、
-                // Armature-path 一致でのみ適用し、Contains フォールバックは行いません。
-                if (!string.IsNullOrEmpty(modifier.RelativePath) && (costumeArmature == null || !string.Equals(modifier.Name, costumeArmature.name, StringComparison.Ordinal)))
-                {
-                    TryApplyScaleToFirstMatch(
-                        temp,
-                        bone => bone.name.Contains(modifier.Name),
-                        modifier.Scale,
-                        costumeBones,
-                        logs,
-                        costumeRoot,
-                        modifierKeyForLog,
-                        L("Log.MatchContains"),
-                        ref appliedCount
-                    );
-                }
+
+                TryApplyScaleToFirstMatch(
+                    temp,
+                    bone => bone.name.Contains(modifier.Name),
+                    modifier.Scale,
+                    costumeBones,
+                    logs,
+                    costumeRoot,
+                    modifierKeyForLog,
+                    L("Log.MatchContains"),
+                    ref appliedCount
+                );
             }
         }
 
