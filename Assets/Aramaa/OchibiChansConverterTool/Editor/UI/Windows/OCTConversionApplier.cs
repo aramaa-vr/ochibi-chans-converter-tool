@@ -233,6 +233,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 ClearCachedStyles();
             }
 
+            /// <summary>
+            /// MA BoneProxy 検出キャッシュの再計算トリガーを登録します。
+            ///
+            /// 目的: OnGUI のたびに重い検索をしないため、
+            /// Hierarchy 変更や Undo/Redo が起きた時だけ dirty フラグを立てます。
+            /// </summary>
             private void RegisterMaboneProxyDirtyCallbacks()
             {
                 // 多重登録防止
@@ -243,6 +249,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 Undo.undoRedoPerformed += MarkMaboneProxyCountDirty;
             }
 
+            /// <summary>
+            /// RegisterMaboneProxyDirtyCallbacks で登録したイベントを解除します。
+            /// ウィンドウ破棄時のリークや重複発火を防ぐため必ず対で呼びます。
+            /// </summary>
             private void UnregisterMaboneProxyDirtyCallbacks()
             {
                 EditorApplication.hierarchyChanged -= MarkMaboneProxyCountDirty;
@@ -744,6 +754,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
             }
 
+            /// <summary>
+            /// MA BoneProxy 補正トグルと補足メッセージを描画します。
+            ///
+            /// - 検出件数はキャッシュ経由で取得（毎描画で全探索しない）
+            /// - 検出あり + OFF のときのみ警告表示
+            /// - ON のときは補正内容の説明を表示
+            /// </summary>
             private void DrawMaboneProxyToggle()
             {
                 EnsureDetectedMaboneProxyCount();
@@ -761,6 +778,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
             }
 
+            /// <summary>
+            /// MA BoneProxy 検出数キャッシュを必要時のみ更新します。
+            /// dirty でなく、かつ対象アバターが同じ場合は再計算しません。
+            /// </summary>
             private void EnsureDetectedMaboneProxyCount()
             {
                 if (!_isMaboneProxyCountDirty && _maboneProxyCountSourceTarget == _sourceTarget)
@@ -773,11 +794,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _isMaboneProxyCountDirty = false;
             }
 
+            /// <summary>
+            /// MA BoneProxy 検出キャッシュを無効化します（次回描画時に再計算）。
+            /// </summary>
             private void MarkMaboneProxyCountDirty()
             {
                 _isMaboneProxyCountDirty = true;
             }
 
+            /// <summary>
+            /// 対象アバター配下の ModularAvatarBoneProxy コンポーネント数を数えます。
+            /// MA 未導入環境では 0 を返して安全にスキップします。
+            /// </summary>
             private static int CountDetectedMaboneProxies(GameObject avatarRoot)
             {
                 if (avatarRoot == null || !OCTModularAvatarUtility.IsModularAvatarAvailable)
