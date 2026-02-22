@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,20 +24,28 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal sealed class OCTConversionLogWindow : EditorWindow
     {
+        private sealed class LogSection
+        {
+            public string Title;
+            public readonly List<string> Lines = new List<string>();
+            public bool IsExpanded = true;
+        }
+
         private static string L(string key) => OCTLocalization.Get(key);
-        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         private static OCTConversionLogWindow _opened;
 
         private readonly List<string> _logs = new List<string>();
+        private readonly List<LogSection> _sections = new List<LogSection>();
         private string _cachedText = string.Empty;
         private Vector2 _scroll;
 
-        private static readonly Vector2 DefaultMinSize = new Vector2(640, 440);
+        private static readonly Vector2 DefaultMinSize = new Vector2(720, 500);
         private static readonly GUIStyle ReadOnlyLogStyle = new GUIStyle(EditorStyles.textArea)
         {
             wordWrap = false,
-            richText = false
+            richText = false,
+            padding = new RectOffset(8, 8, 6, 6)
         };
 
         /// <summary>
@@ -49,7 +58,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _opened = CreateInstance<OCTConversionLogWindow>();
                 _opened.minSize = DefaultMinSize;
                 _opened.titleContent = new GUIContent(windowTitle);
-                _opened.ShowUtility(); // “補助ウィンドウ”として表示
+                _opened.ShowUtility();
             }
             else
             {
@@ -77,8 +86,106 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             _cachedText = _logs.Count > 0 ? string.Join("\n", _logs) : L("LogWindow.NoLogs");
+            RebuildSections();
             _scroll = Vector2.zero;
             Repaint();
+        }
+
+        private void RebuildSections()
+        {
+            _sections.Clear();
+
+            if (_logs.Count == 0)
+            {
+                return;
+            }
+
+            string currentTargetLabel = null;
+            LogSection current = CreateSection("Overview", true);
+
+            foreach (var rawLine in _logs)
+            {
+                var line = rawLine ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    if (current.Lines.Count > 0 && !string.IsNullOrEmpty(current.Lines[current.Lines.Count - 1]))
+                    {
+                        current.Lines.Add(string.Empty);
+                    }
+
+                    continue;
+                }
+
+                if (IsSeparatorLine(line))
+                {
+                    continue;
+                }
+
+                if (IsTargetLine(line))
+                {
+                    currentTargetLabel = line;
+                    current = CreateSection(currentTargetLabel, true);
+                    continue;
+                }
+
+                if (IsStepHeaderLine(line))
+                {
+                    var title = string.IsNullOrEmpty(currentTargetLabel)
+                        ? line
+                        : $"{currentTargetLabel} / {line}";
+                    current = CreateSection(title, true);
+                    continue;
+                }
+
+                current.Lines.Add(line);
+            }
+
+            _sections.RemoveAll(x => x == null || x.Lines.Count == 0);
+            if (_sections.Count == 0)
+            {
+                var noLogsSection = CreateSection("Logs", true);
+                noLogsSection.Lines.Add(L("LogWindow.NoLogs"));
+            }
+        }
+
+        private LogSection CreateSection(string title, bool expanded)
+        {
+            var section = new LogSection
+            {
+                Title = string.IsNullOrWhiteSpace(title) ? "Logs" : title,
+                IsExpanded = expanded
+            };
+            _sections.Add(section);
+            return section;
+        }
+
+        private static bool IsStepHeaderLine(string line)
+        {
+            return line.StartsWith("[Step ", StringComparison.Ordinal);
+        }
+
+        private static bool IsTargetLine(string line)
+        {
+            return line.StartsWith("対象:", StringComparison.Ordinal)
+                || line.StartsWith("Target:", StringComparison.Ordinal);
+        }
+
+        private static bool IsSeparatorLine(string line)
+        {
+            if (string.IsNullOrEmpty(line))
+            {
+                return false;
+            }
+
+            foreach (var c in line)
+            {
+                if (c != '-')
+                {
+                    return false;
+                }
+            }
+
+            return line.Length >= 10;
         }
 
         private void OnGUI()
@@ -90,6 +197,16 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     if (GUILayout.Button(L("LogWindow.CopyButton"), GUILayout.Height(24)))
                     {
                         EditorGUIUtility.systemCopyBuffer = _cachedText ?? string.Empty;
+                    }
+
+                    if (GUILayout.Button("すべて展開", GUILayout.Width(90), GUILayout.Height(24)))
+                    {
+                        SetAllExpanded(true);
+                    }
+
+                    if (GUILayout.Button("すべて折りたたむ", GUILayout.Width(110), GUILayout.Height(24)))
+                    {
+                        SetAllExpanded(false);
                     }
 
                     GUILayout.FlexibleSpace();
@@ -105,12 +222,73 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 _scroll = EditorGUILayout.BeginScrollView(_scroll);
 
-                var logText = _cachedText ?? string.Empty;
-                var height = Mathf.Max(position.height - 64f, 120f);
-                EditorGUILayout.SelectableLabel(logText, ReadOnlyLogStyle, GUILayout.ExpandHeight(true), GUILayout.MinHeight(height));
+                for (int i = 0; i < _sections.Count; i++)
+                {
+                    DrawSection(_sections[i], i + 1);
+                }
 
                 EditorGUILayout.EndScrollView();
             }
+        }
+
+        private void SetAllExpanded(bool expanded)
+        {
+            foreach (var section in _sections)
+            {
+                section.IsExpanded = expanded;
+            }
+
+            Repaint();
+        }
+
+        private void DrawSection(LogSection section, int index)
+        {
+            if (section == null)
+            {
+                return;
+            }
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                section.IsExpanded = EditorGUILayout.Foldout(
+                    section.IsExpanded,
+                    $"{index}. {section.Title}",
+                    true,
+                    EditorStyles.foldout);
+
+                if (!section.IsExpanded)
+                {
+                    return;
+                }
+
+                var text = JoinLines(section.Lines);
+                var lineCount = Mathf.Max(1, section.Lines.Count);
+                var estimatedHeight = Mathf.Clamp(lineCount * 18f + 14f, 80f, 420f);
+                EditorGUILayout.SelectableLabel(text, ReadOnlyLogStyle, GUILayout.MinHeight(estimatedHeight));
+            }
+
+            EditorGUILayout.Space(4);
+        }
+
+        private static string JoinLines(List<string> lines)
+        {
+            if (lines == null || lines.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append('\n');
+                }
+
+                sb.Append(lines[i]);
+            }
+
+            return sb.ToString();
         }
     }
 }
