@@ -31,6 +31,10 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+#if CHIBI_MODULAR_AVATAR
+using nadena.dev.modular_avatar.core;
+#endif
+
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
@@ -137,6 +141,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             private bool _showLogs;
             private bool _applyMaboneProxyProcessing;
+            private int _detectedMaboneProxyCount;
             private Vector2 _scrollPosition;
             private bool _versionCheckRequested;
             private bool _versionCheckInProgress;
@@ -719,6 +724,27 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     EditorGUILayout.HelpBox(L("Help.MaboneProxy"), MessageType.Info);
                 }
+
+                _detectedMaboneProxyCount = CountDetectedMaboneProxies(_sourceTarget);
+                if (!_applyMaboneProxyProcessing && _detectedMaboneProxyCount > 0)
+                {
+                    EditorGUILayout.HelpBox(F("Help.MaboneProxyRecommendOnWhenDetected", _detectedMaboneProxyCount), MessageType.Warning);
+                }
+            }
+
+            private static int CountDetectedMaboneProxies(GameObject avatarRoot)
+            {
+                if (avatarRoot == null || !OCTModularAvatarUtility.IsModularAvatarAvailable)
+                {
+                    return 0;
+                }
+
+#if CHIBI_MODULAR_AVATAR
+                var proxies = avatarRoot.GetComponentsInChildren<ModularAvatarBoneProxy>(true);
+                return proxies?.Length ?? 0;
+#else
+                return 0;
+#endif
             }
 
             /// <summary>

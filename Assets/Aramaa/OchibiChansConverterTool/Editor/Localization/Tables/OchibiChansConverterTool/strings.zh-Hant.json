@@ -62,6 +62,10 @@
       "value": "啟用後，會在複製後模擬執行 MA Bone Proxy 處理，將物件移動到 Armature 後再調整縮放。"
     },
     {
+      "key": "Help.MaboneProxyRecommendOnWhenDetected",
+      "value": "在此 Avatar 中偵測到 {0} 個 MA Bone Proxy 元件。建議開啟此選項，以降低頭髮／飾品錯位。"
+    },
+    {
       "key": "Help.ManualPrefabWarning",
       "value": "執行前請確認手動選取的預製體與原始角色相符。"
     },
