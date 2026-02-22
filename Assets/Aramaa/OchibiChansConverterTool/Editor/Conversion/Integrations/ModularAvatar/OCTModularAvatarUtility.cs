@@ -88,16 +88,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             var costumeRoots = OCTModularAvatarCostumeDetector.CollectCostumeRoots(dstRoot);
             OCTModularAvatarCostumeScaleAdjuster.AdjustByMergeArmatureMapping(dstRoot, logs);
-            if (!OCTCostumeScaleAdjuster.AdjustCostumeScales(
-                dstRoot,
-                basePrefabRoot,
-                costumeRoots,
-                logs
-            ))
-            {
-                return false;
-            }
-
+            // NOTE:
+            // - 旧実装のスケール補正（OCTCostumeScaleAdjuster.AdjustCostumeScalesLegacy）は
+            //   いったんレガシー扱いとしてここでは使用しない。
+            // - 以降は MA Merge Armature ベースの補正 + BlendShape 同期を実行する。
             return OCTCostumeBlendShapeAdjuster.AdjustCostumeBlendShapes(
                 basePrefabRoot,
                 costumeRoots,

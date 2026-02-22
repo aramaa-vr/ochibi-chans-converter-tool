@@ -41,7 +41,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// <summary>
         /// 検出済み衣装ルート群に対し、スケール補正を順に適用します。
         /// </summary>
-        internal static bool AdjustCostumeScales(
+        internal static bool AdjustCostumeScalesLegacy(
             GameObject dstRoot,
             GameObject basePrefabRoot,
             List<Transform> costumeRoots,
