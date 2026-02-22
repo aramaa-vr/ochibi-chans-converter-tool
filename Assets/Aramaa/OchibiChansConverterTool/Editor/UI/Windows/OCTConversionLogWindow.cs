@@ -29,6 +29,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             public string Title;
             public readonly List<string> Lines = new List<string>();
             public bool IsExpanded = true;
+            public Vector2 ContentScroll;
         }
 
         private static string L(string key) => OCTLocalization.Get(key);
@@ -39,6 +40,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private readonly List<LogSection> _sections = new List<LogSection>();
         private string _cachedText = string.Empty;
         private Vector2 _scroll;
+        private string _targetPrefix;
+        private string _stepHeaderPrefix;
 
         private static readonly Vector2 DefaultMinSize = new Vector2(720, 500);
         private static readonly GUIStyle ReadOnlyLogStyle = new GUIStyle(EditorStyles.textArea)
@@ -86,6 +89,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             _cachedText = _logs.Count > 0 ? string.Join("\n", _logs) : L("LogWindow.NoLogs");
+            _targetPrefix = BuildPrefixFromFormat(L("Log.TargetEntry"));
+            _stepHeaderPrefix = BuildPrefixFromFormat(L("Log.Step.Header"));
             RebuildSections();
             _scroll = Vector2.zero;
             Repaint();
@@ -161,13 +166,49 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private static bool IsStepHeaderLine(string line)
         {
+            if (string.IsNullOrEmpty(line))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(_opened?._stepHeaderPrefix) && line.StartsWith(_opened._stepHeaderPrefix, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
             return line.StartsWith("[Step ", StringComparison.Ordinal);
         }
 
         private static bool IsTargetLine(string line)
         {
+            if (string.IsNullOrEmpty(line))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(_opened?._targetPrefix) && line.StartsWith(_opened._targetPrefix, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
             return line.StartsWith("対象:", StringComparison.Ordinal)
                 || line.StartsWith("Target:", StringComparison.Ordinal);
+        }
+
+        private static string BuildPrefixFromFormat(string format)
+        {
+            if (string.IsNullOrEmpty(format))
+            {
+                return string.Empty;
+            }
+
+            var placeholderIndex = format.IndexOf("{0}", StringComparison.Ordinal);
+            if (placeholderIndex >= 0)
+            {
+                return format.Substring(0, placeholderIndex);
+            }
+
+            return format;
         }
 
         private static bool IsSeparatorLine(string line)
@@ -263,8 +304,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 var text = JoinLines(section.Lines);
                 var lineCount = Mathf.Max(1, section.Lines.Count);
-                var estimatedHeight = Mathf.Clamp(lineCount * 18f + 14f, 80f, 420f);
-                EditorGUILayout.SelectableLabel(text, ReadOnlyLogStyle, GUILayout.MinHeight(estimatedHeight));
+                var contentHeight = Mathf.Max(120f, lineCount * 18f + 12f);
+                var viewportHeight = Mathf.Clamp(contentHeight, 120f, 240f);
+
+                section.ContentScroll = EditorGUILayout.BeginScrollView(section.ContentScroll, GUILayout.Height(viewportHeight));
+                EditorGUILayout.SelectableLabel(text, ReadOnlyLogStyle, GUILayout.MinHeight(contentHeight));
+                EditorGUILayout.EndScrollView();
             }
 
             EditorGUILayout.Space(4);
