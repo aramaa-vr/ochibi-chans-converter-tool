@@ -62,8 +62,8 @@
       "value": "When enabled, it pseudo-runs MA Bone Proxy processing after duplication, moves objects under Armature, then adjusts scale."
     },
     {
-      "key": "Help.MaboneProxyRecommendOnWhenDetected",
-      "value": "Detected {0} MA Bone Proxy component(s) in this avatar. We recommend turning this checkbox ON to reduce hair/accessory misalignment."
+      "key": "Help.MaboneProxyRequiredWhenDetected",
+      "value": "Detected {0} MA Bone Proxy component(s). For this avatar, this correction is required, so the checkbox is automatically kept ON."
     },
     {
       "key": "Help.ManualPrefabWarning",

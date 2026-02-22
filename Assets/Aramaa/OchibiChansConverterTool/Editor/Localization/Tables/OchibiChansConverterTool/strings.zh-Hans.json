@@ -62,8 +62,8 @@
       "value": "启用后，会在复制后模拟执行 MA Bone Proxy 处理，将对象移动到 Armature 后再调整缩放。"
     },
     {
-      "key": "Help.MaboneProxyRecommendOnWhenDetected",
-      "value": "在该头像中检测到 {0} 个 MA Bone Proxy 组件。建议将此选项开启，以减少头发/饰品错位。"
+      "key": "Help.MaboneProxyRequiredWhenDetected",
+      "value": "检测到 {0} 个 MA Bone Proxy 组件。此头像必须启用该修正，因此该复选框会自动保持开启。"
     },
     {
       "key": "Help.ManualPrefabWarning",
