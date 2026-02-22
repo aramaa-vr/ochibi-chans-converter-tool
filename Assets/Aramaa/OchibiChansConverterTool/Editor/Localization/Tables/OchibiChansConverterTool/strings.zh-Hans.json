@@ -731,7 +731,7 @@
     },
     {
       "key": "Version.UpToDate",
-      "value": "你使用的版本 {0} 是最新版本 {1}。"
+      "value": "你使用的版本 {0} 是最新版本。"
     },
     {
       "key": "Warning.AddMenuPrefabMissing",
