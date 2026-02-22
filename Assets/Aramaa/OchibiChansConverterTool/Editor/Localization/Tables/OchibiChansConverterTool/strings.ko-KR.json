@@ -257,6 +257,11 @@
       "key": "Log.Error.ExceptionOccurred",
       "value": "[ERROR] 예외가 발생했습니다. 자세한 내용은 Console을 확인하세요."
     },
+
+    {
+      "key": "Log.Error.SourceOrTargetInvalidBeforeApply",
+      "value": "[ERROR] 적용 전에 소스 또는 대상이 유효하지 않게 되어 변환을 취소했습니다."
+    },
     {
       "key": "Log.ExPrefabAdded",
       "value": "EX 프리팹: 추가됨 / {0} / {1}"

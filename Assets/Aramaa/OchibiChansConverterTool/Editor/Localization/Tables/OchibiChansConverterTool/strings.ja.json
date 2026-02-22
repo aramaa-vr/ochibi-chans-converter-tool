@@ -273,6 +273,11 @@
       "key": "Log.Error.ExceptionOccurred",
       "value": "[ERROR] 例外が発生しました。詳細はConsoleを確認してください。"
     },
+
+    {
+      "key": "Log.Error.SourceOrTargetInvalidBeforeApply",
+      "value": "[ERROR] 実行前にソースまたはターゲットが無効になったため、変換を中止しました。"
+    },
     {
       "key": "Log.ExPrefabAdded",
       "value": "EXプレハブ: 追加 / {0} / {1}"

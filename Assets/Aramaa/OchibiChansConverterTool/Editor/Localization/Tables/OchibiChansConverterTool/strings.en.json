@@ -273,6 +273,11 @@
       "key": "Log.Error.ExceptionOccurred",
       "value": "[ERROR] An exception occurred. Check the Console for details."
     },
+
+    {
+      "key": "Log.Error.SourceOrTargetInvalidBeforeApply",
+      "value": "[ERROR] Source or target became invalid before apply; conversion was canceled."
+    },
     {
       "key": "Log.ExPrefabAdded",
       "value": "EX prefab: added / {0} / {1}"

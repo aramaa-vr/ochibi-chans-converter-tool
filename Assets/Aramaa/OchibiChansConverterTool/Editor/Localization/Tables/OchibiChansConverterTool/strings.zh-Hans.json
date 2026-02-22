@@ -257,6 +257,11 @@
       "key": "Log.Error.ExceptionOccurred",
       "value": "[ERROR] 发生异常。请查看 Console 了解详情。"
     },
+
+    {
+      "key": "Log.Error.SourceOrTargetInvalidBeforeApply",
+      "value": "[ERROR] 执行前源对象或目标对象已无效，已取消转换。"
+    },
     {
       "key": "Log.ExPrefabAdded",
       "value": "EX 预制体：已添加 / {0} / {1}"

@@ -257,6 +257,11 @@
       "key": "Log.Error.ExceptionOccurred",
       "value": "[ERROR] 發生例外狀況。請查看 Console 詳情。"
     },
+
+    {
+      "key": "Log.Error.SourceOrTargetInvalidBeforeApply",
+      "value": "[ERROR] 執行前來源或目標已失效，已取消轉換。"
+    },
     {
       "key": "Log.ExPrefabAdded",
       "value": "EX 預製體：已新增 / {0} / {1}"

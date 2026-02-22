@@ -876,7 +876,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var capturedApplyMaboneProxyProcessing = _applyMaboneProxyProcessing;
 
                 var capturedTargetName = capturedTarget != null ? capturedTarget.name : L("Log.NullValue");
-                Debug.Log(F("Log.QueuedApply", capturedTargetName, capturedSourcePrefab.name));
+                var capturedSourcePrefabName = capturedSourcePrefab != null ? capturedSourcePrefab.name : L("Log.NullValue");
+                Debug.Log(F("Log.QueuedApply", capturedTargetName, capturedSourcePrefabName));
 
                 // SVG 対応ステップ: 入口（UI）
                 EditorApplication.delayCall += () =>
@@ -885,6 +886,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     try
                     {
+                        // delayCall 実行までの間に参照が無効化されることがあるため、実行直前に再検証する。
+                        if (capturedSourcePrefab == null || !IsPrefabAsset(capturedSourcePrefab)
+                            || capturedTarget == null || EditorUtility.IsPersistent(capturedTarget)
+                            || !capturedTarget.scene.IsValid() || !capturedTarget.scene.isLoaded)
+                        {
+                            logs.Add(L("Log.Error.SourceOrTargetInvalidBeforeApply"));
+                            return;
+                        }
+
                         var applySucceeded = OCTConversionPipeline.DuplicateThenApply(
                             capturedSourcePrefab,
                             capturedTarget,
