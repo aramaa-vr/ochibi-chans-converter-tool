@@ -26,6 +26,10 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
+// NOTE:
+// このファイルは自作スケール調整の旧実装です。
+// いずれ見直して再実装する想定のため、現時点では全体をコメントアウト（無効化）しています。
+#if false
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
@@ -41,7 +45,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// <summary>
         /// 検出済み衣装ルート群に対し、スケール補正を順に適用します。
         /// </summary>
-        internal static bool AdjustCostumeScales(
+        internal static bool AdjustCostumeScalesLegacy(
             GameObject dstRoot,
             GameObject basePrefabRoot,
             List<Transform> costumeRoots,
@@ -147,14 +151,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             foreach (var b in bones)
             {
                 if (b == null || IsNearlyOne(b.localScale))
-                {
-                    continue;
-                }
-
-                // Armature 名は FBX 小物などで入れ子になりやすく、
-                // ここに混ざると衣装側の Armature.1 へ誤適用されるリスクが高いです。
-                // 「メイン Armature 自体」以外の同名 Transform は除外します。
-                if (!ReferenceEquals(b, avatarArmature) && string.Equals(b.name, avatarArmature.name, StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -306,22 +302,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         continue;
                     }
                 }
-                // RelativePath が空のキーは「Armature ルート自身」を意味するため、
-                // Armature-path 一致でのみ適用し、Contains フォールバックは行いません。
-                if (!string.IsNullOrEmpty(modifier.RelativePath) && (costumeArmature == null || !string.Equals(modifier.Name, costumeArmature.name, StringComparison.Ordinal)))
-                {
-                    TryApplyScaleToFirstMatch(
-                        temp,
-                        bone => bone.name.Contains(modifier.Name),
-                        modifier.Scale,
-                        costumeBones,
-                        logs,
-                        costumeRoot,
-                        modifierKeyForLog,
-                        L("Log.MatchContains"),
-                        ref appliedCount
-                    );
-                }
+
+                TryApplyScaleToFirstMatch(
+                    temp,
+                    bone => bone.name.Contains(modifier.Name),
+                    modifier.Scale,
+                    costumeBones,
+                    logs,
+                    costumeRoot,
+                    modifierKeyForLog,
+                    L("Log.MatchContains"),
+                    ref appliedCount
+                );
             }
         }
 
@@ -496,4 +488,5 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
     }
 }
+#endif
 #endif
