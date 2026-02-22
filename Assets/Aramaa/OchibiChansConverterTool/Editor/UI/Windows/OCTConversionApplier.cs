@@ -600,13 +600,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (EditorGUI.EndChangeCheck())
                 {
                     _sourceTarget = nextTarget;
-                    _prefabDropdownCache.MarkNeedsRefresh();
-                    _sourcePrefabAsset = null;
-
-                    // 対象切り替え直後に古い検出件数が見えないよう、キャッシュ値を明示的に初期化する。
-                    _maboneProxyCountSourceTarget = null;
-                    _detectedMaboneProxyCount = 0;
-                    MarkMaboneProxyCountDirty();
+                    RefreshSourceTargetDependentState(clearSourcePrefabAsset: true);
                 }
 
                 if (_sourceTarget == null)
@@ -620,11 +614,32 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     EditorGUILayout.HelpBox(L("Help.SourceAvatarAssetInvalid"), MessageType.Error);
                     _sourceTarget = null;
-                    _maboneProxyCountSourceTarget = null;
-                    _detectedMaboneProxyCount = 0;
-                    _prefabDropdownCache.MarkNeedsRefresh();
-                    MarkMaboneProxyCountDirty();
+                    RefreshSourceTargetDependentState(clearSourcePrefabAsset: false);
                 }
+            }
+
+            /// <summary>
+            /// sourceTarget 依存の状態（Prefab 候補キャッシュ、MA BoneProxy 検出キャッシュ）を更新します。
+            /// </summary>
+            private void RefreshSourceTargetDependentState(bool clearSourcePrefabAsset)
+            {
+                _prefabDropdownCache.MarkNeedsRefresh();
+                if (clearSourcePrefabAsset)
+                {
+                    _sourcePrefabAsset = null;
+                }
+
+                ResetMaboneProxyDetectionCache();
+            }
+
+            /// <summary>
+            /// MA BoneProxy 検出キャッシュを初期化し、次回描画時に再計算させます。
+            /// </summary>
+            private void ResetMaboneProxyDetectionCache()
+            {
+                _maboneProxyCountSourceTarget = null;
+                _detectedMaboneProxyCount = 0;
+                MarkMaboneProxyCountDirty();
             }
 
             /// <summary>
