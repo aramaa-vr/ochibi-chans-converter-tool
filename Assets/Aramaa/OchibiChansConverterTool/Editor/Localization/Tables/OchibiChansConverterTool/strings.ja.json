@@ -62,8 +62,8 @@
       "value": "ONにすると、複製後にMA Bone Ploxyの処理を疑似的に実行し、オブジェクトをArmatureへ移動後にスケールの調節を行います。"
     },
     {
-      "key": "Help.MaboneProxyRequiredWhenDetected",
-      "value": "アバター内に MA Bone Proxy を {0} 件検出しました。このアバターでは補正チェックは必須のため、自動でONになります。"
+      "key": "Help.MaboneProxyRecommendOrAdjustWhenDetected",
+      "value": "アバター内に MA Bone Proxy を {0} 件検出しました。ONチェックをつけることを推奨します。OFFで変換する場合は、変換後にご自身で位置・スケールを調整してください。"
     },
     {
       "key": "Help.ManualPrefabWarning",

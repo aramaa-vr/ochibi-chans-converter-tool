@@ -62,8 +62,8 @@
       "value": "启用后，会在复制后模拟执行 MA Bone Proxy 处理，将对象移动到 Armature 后再调整缩放。"
     },
     {
-      "key": "Help.MaboneProxyRequiredWhenDetected",
-      "value": "检测到 {0} 个 MA Bone Proxy 组件。此头像必须启用该修正，因此该复选框会自动保持开启。"
+      "key": "Help.MaboneProxyRecommendOrAdjustWhenDetected",
+      "value": "检测到 {0} 个 MA Bone Proxy 组件。建议开启此复选框。若关闭后进行转换，请在转换后自行调整位置/缩放。"
     },
     {
       "key": "Help.ManualPrefabWarning",

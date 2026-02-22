@@ -62,8 +62,8 @@
       "value": "啟用後，會在複製後模擬執行 MA Bone Proxy 處理，將物件移動到 Armature 後再調整縮放。"
     },
     {
-      "key": "Help.MaboneProxyRequiredWhenDetected",
-      "value": "偵測到 {0} 個 MA Bone Proxy 元件。此 Avatar 必須啟用此修正，因此此核取方塊會自動維持開啟。"
+      "key": "Help.MaboneProxyRecommendOrAdjustWhenDetected",
+      "value": "偵測到 {0} 個 MA Bone Proxy 元件。建議開啟此核取方塊。若關閉後進行轉換，請在轉換後自行調整位置／縮放。"
     },
     {
       "key": "Help.ManualPrefabWarning",

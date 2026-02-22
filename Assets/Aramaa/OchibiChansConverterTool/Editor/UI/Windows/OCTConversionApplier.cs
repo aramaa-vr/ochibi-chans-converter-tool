@@ -745,19 +745,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 EnsureDetectedMaboneProxyCount();
 
-                if (_detectedMaboneProxyCount > 0)
-                {
-                    _applyMaboneProxyProcessing = true;
-                    using (new EditorGUI.DisabledScope(true))
-                    {
-                        EditorGUILayout.ToggleLeft(L("Toggle.MaboneProxy"), true);
-                    }
+                _applyMaboneProxyProcessing = EditorGUILayout.ToggleLeft(L("Toggle.MaboneProxy"), _applyMaboneProxyProcessing);
 
-                    EditorGUILayout.HelpBox(F("Help.MaboneProxyRequiredWhenDetected", _detectedMaboneProxyCount), MessageType.Warning);
-                    return;
+                if (_detectedMaboneProxyCount > 0 && !_applyMaboneProxyProcessing)
+                {
+                    EditorGUILayout.HelpBox(F("Help.MaboneProxyRecommendOrAdjustWhenDetected", _detectedMaboneProxyCount), MessageType.Warning);
                 }
 
-                _applyMaboneProxyProcessing = EditorGUILayout.ToggleLeft(L("Toggle.MaboneProxy"), _applyMaboneProxyProcessing);
                 if (_applyMaboneProxyProcessing)
                 {
                     EditorGUILayout.HelpBox(L("Help.MaboneProxy"), MessageType.Info);
