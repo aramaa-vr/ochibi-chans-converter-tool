@@ -136,7 +136,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private bool _applyQueued;
 
             private bool _showLogs;
-            private bool _applyMaboneProxyProcessing;
+            private bool _applyMaboneProxyProcessing = true;
             private Vector2 _scrollPosition;
             private bool _versionCheckRequested;
             private bool _versionCheckInProgress;

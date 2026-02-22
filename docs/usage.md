@@ -68,7 +68,7 @@ nav_order: 4
 
 ### オプション: MA Bone Proxy のずれ対策
 
-「**MA Bone Proxyで設定している髪・小物がずれる場合に合わせる**」を ON にすると、複製後に MA Bone Proxy の処理を行い、ずれを軽減します。
+「**MA Bone Proxyで設定している髪・小物がずれる場合に合わせる**」は初期状態で ON です。実行すると、複製後に MA Bone Proxy 処理を行い、ずれを軽減します。
 
 <details close markdown="1">
 <summary>チェックを付けた場合の動作詳細はこちら</summary>
@@ -81,10 +81,10 @@ MA Bone Proxy を疑似的に実行してから **調整** を行うようにな
 
 </details>
 
-> MA Bone Proxy が含まれるアバターでは、ONチェックをつけることを推奨します。OFFで変換する場合は、変換後にご自身で位置・スケールを調整してください。
+> MA Bone Proxy が含まれるアバターでは、ON のまま実行するのがおすすめです。OFF で変換した場合は、変換後に位置・スケールを調整してください。
 {: .warning }
 
-> MA Bone Proxy が含まれないアバターでは OFF のままでも問題ありません。
+> MA Bone Proxy が含まれないアバターでは、ON/OFF どちらでも問題ありません。
 {: .note }
 
 ### おちびちゃんズ Prefab（手動指定）
