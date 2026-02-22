@@ -461,7 +461,6 @@
       "key": "Log.VrcSdkVersion",
       "value": "VRC SDK：{0}"
     },
-
     {
       "key": "Log.Step.Header",
       "value": "[Step {0}] {1}"
@@ -578,7 +577,6 @@
       "key": "Log.Step.6.Substep4",
       "value": "  - 6-4. Sync SkinnedMeshRenderer blendshapes by matching names (values hidden)."
     },
-
     {
       "key": "Log.ArmatureTransformScan",
       "value": "Armature transform sync: source transform count={0}"

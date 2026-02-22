@@ -731,7 +731,7 @@
     },
     {
       "key": "Version.UpToDate",
-      "value": "現在のバージョン {0} は最新バージョンです。"
+      "value": "現在のバージョン {0} は最新バージョン {1} です。"
     },
     {
       "key": "Warning.AddMenuPrefabMissing",
