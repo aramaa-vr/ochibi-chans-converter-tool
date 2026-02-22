@@ -592,6 +592,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _sourceTarget = nextTarget;
                     _prefabDropdownCache.MarkNeedsRefresh();
                     _sourcePrefabAsset = null;
+                    _maboneProxyCountSourceTarget = null;
                     MarkMaboneProxyCountDirty();
                 }
 
@@ -606,6 +607,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     EditorGUILayout.HelpBox(L("Help.SourceAvatarAssetInvalid"), MessageType.Error);
                     _sourceTarget = null;
+                    _maboneProxyCountSourceTarget = null;
+                    _detectedMaboneProxyCount = 0;
                     _prefabDropdownCache.MarkNeedsRefresh();
                     MarkMaboneProxyCountDirty();
                 }
