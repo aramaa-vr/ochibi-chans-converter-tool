@@ -629,16 +629,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _sourcePrefabAsset = null;
                 }
 
-                ResetMaboneProxyDetectionCache();
-            }
-
-            /// <summary>
-            /// MA BoneProxy 検出キャッシュを初期化し、次回描画時に再計算させます。
-            /// </summary>
-            private void ResetMaboneProxyDetectionCache()
-            {
-                _maboneProxyCountSourceTarget = null;
-                _detectedMaboneProxyCount = 0;
                 MarkMaboneProxyCountDirty();
             }
 
@@ -813,10 +803,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             /// <summary>
-            /// MA BoneProxy 検出キャッシュを無効化します（次回描画時に再計算）。
+            /// MA BoneProxy 検出キャッシュを初期化し、次回描画時に再計算させます。
+            ///
+            /// hierarchyChanged / Undo からも呼ばれるため、軽量な代入のみに留めます。
             /// </summary>
             private void MarkMaboneProxyCountDirty()
             {
+                _maboneProxyCountSourceTarget = null;
+                _detectedMaboneProxyCount = 0;
                 _isMaboneProxyCountDirty = true;
             }
 
