@@ -602,7 +602,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _sourceTarget = nextTarget;
                     _prefabDropdownCache.MarkNeedsRefresh();
                     _sourcePrefabAsset = null;
+
+                    // 対象切り替え直後に古い検出件数が見えないよう、キャッシュ値を明示的に初期化する。
                     _maboneProxyCountSourceTarget = null;
+                    _detectedMaboneProxyCount = 0;
                     MarkMaboneProxyCountDirty();
                 }
 
