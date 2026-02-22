@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.5]
+### 主な変更点
+- **MA Bone Proxyで設定している髪・小物がずれる場合に合わせる**：初期状態をONにしました。
+
 ## [0.5.5-beta.2]（Pre-release）
 ### 主な変更点
 - **衣装スケール補正を MA 連携中心へ移行**：`OCTModularAvatarCostumeScaleAdjuster` を追加し、Merge Armature ベースでボーンスケールを反映する処理を導入しました
