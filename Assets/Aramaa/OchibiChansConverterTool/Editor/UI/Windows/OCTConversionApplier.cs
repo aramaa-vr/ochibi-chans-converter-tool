@@ -227,8 +227,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _versionError = null;
                 _versionStatus = OCTVersionStatus.Unknown;
                 _cachedProSkin = EditorGUIUtility.isProSkin;
-                _isMaboneProxyCountDirty = true;
-                _maboneProxyCountSourceTarget = null;
+
+                // セッション再開時に古い検出状態を持ち越さないよう、
+                // MA BoneProxy の検出キャッシュを無効化してからコールバック登録する。
+                InvalidateMaboneProxyDetectionCache();
                 RegisterMaboneProxyDirtyCallbacks();
                 ClearCachedStyles();
             }
@@ -242,11 +244,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private void RegisterMaboneProxyDirtyCallbacks()
             {
                 // 多重登録防止
-                EditorApplication.hierarchyChanged -= MarkMaboneProxyCountDirty;
-                Undo.undoRedoPerformed -= MarkMaboneProxyCountDirty;
+                EditorApplication.hierarchyChanged -= InvalidateMaboneProxyDetectionCache;
+                Undo.undoRedoPerformed -= InvalidateMaboneProxyDetectionCache;
 
-                EditorApplication.hierarchyChanged += MarkMaboneProxyCountDirty;
-                Undo.undoRedoPerformed += MarkMaboneProxyCountDirty;
+                EditorApplication.hierarchyChanged += InvalidateMaboneProxyDetectionCache;
+                Undo.undoRedoPerformed += InvalidateMaboneProxyDetectionCache;
             }
 
             /// <summary>
@@ -255,8 +257,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             /// </summary>
             private void UnregisterMaboneProxyDirtyCallbacks()
             {
-                EditorApplication.hierarchyChanged -= MarkMaboneProxyCountDirty;
-                Undo.undoRedoPerformed -= MarkMaboneProxyCountDirty;
+                EditorApplication.hierarchyChanged -= InvalidateMaboneProxyDetectionCache;
+                Undo.undoRedoPerformed -= InvalidateMaboneProxyDetectionCache;
             }
 
             private void OnGUI()
@@ -629,7 +631,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _sourcePrefabAsset = null;
                 }
 
-                MarkMaboneProxyCountDirty();
+                InvalidateMaboneProxyDetectionCache();
             }
 
             /// <summary>
@@ -807,7 +809,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             ///
             /// hierarchyChanged / Undo からも呼ばれるため、軽量な代入のみに留めます。
             /// </summary>
-            private void MarkMaboneProxyCountDirty()
+            private void InvalidateMaboneProxyDetectionCache()
             {
                 _maboneProxyCountSourceTarget = null;
                 _detectedMaboneProxyCount = 0;
