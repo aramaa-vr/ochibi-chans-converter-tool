@@ -43,7 +43,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private string _targetPrefix;
         private string _stepHeaderPrefix;
 
-        private static readonly Vector2 DefaultMinSize = new Vector2(720, 500);
+        private static readonly Vector2 DefaultMinSize = new Vector2(720, 1000);
         private static readonly GUIStyle ReadOnlyLogStyle = new GUIStyle(EditorStyles.textArea)
         {
             wordWrap = false,
@@ -304,8 +304,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 var text = JoinLines(section.Lines);
                 var lineCount = Mathf.Max(1, section.Lines.Count);
-                var contentHeight = Mathf.Max(120f, lineCount * 18f + 12f);
-                var viewportHeight = Mathf.Clamp(contentHeight, 120f, 240f);
+                var contentHeight = Mathf.Max(240f, lineCount * 18f + 12f);
+                var viewportHeight = Mathf.Clamp(contentHeight, 240f, 480f);
 
                 section.ContentScroll = EditorGUILayout.BeginScrollView(section.ContentScroll, GUILayout.Height(viewportHeight));
                 EditorGUILayout.SelectableLabel(text, ReadOnlyLogStyle, GUILayout.MinHeight(contentHeight));
