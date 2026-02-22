@@ -371,6 +371,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         L("Log.Step.7.Detail1"),
                         L("Log.Step.7.Detail2")
                     );
+                    logs.Add("");
                     if (fxController != null)
                     {
                         logs.Add(F("Log.FxApply", OCTConversionLogFormatter.FormatAssetRef(fxController)));
@@ -380,6 +381,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     {
                         logs.Add(L("Log.FxApplySkipped"));
                     }
+
+                    logs.Add("");
 
                     if (expressionsMenu != null || expressionParameters != null)
                     {
@@ -391,11 +394,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         logs.Add(L("Log.ExpressionsApplySkipped"));
                     }
 
+                    logs.Add("");
+
                     // ViewPosition も sourceChibiPrefab と同じ値へ同期
                     {
                         var viewOk = OCTVrcAvatarDescriptorUtility.TryCopyViewPositionFromBasePrefab(dstRoot, basePrefabRoot);
                         logs.Add(viewOk ? L("Log.ViewPositionApplied") : L("Log.ViewPositionSkipped"));
                     }
+
+                    logs.Add("");
 
                     // MA 衣装スケール調整（Modular Avatar がある環境のみ実行）
                     if (!OCTModularAvatarUtility.AdjustCostumeScalesForModularAvatarMeshSettings(dstRoot, basePrefabRoot, logs))

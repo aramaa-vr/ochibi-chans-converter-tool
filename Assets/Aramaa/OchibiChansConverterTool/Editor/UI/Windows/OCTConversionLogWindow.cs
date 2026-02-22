@@ -33,6 +33,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private Vector2 _scroll;
 
         private static readonly Vector2 DefaultMinSize = new Vector2(640, 440);
+        private static readonly GUIStyle ReadOnlyLogStyle = new GUIStyle(EditorStyles.textArea)
+        {
+            wordWrap = false,
+            richText = false
+        };
 
         /// <summary>
         /// ログウィンドウを表示し、内容を差し替えます（既に開いていれば再利用）。
@@ -100,11 +105,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 _scroll = EditorGUILayout.BeginScrollView(_scroll);
 
-                // TextArea で “全文” を表示すると、コピーしたい時に選択もしやすい
-                using (new EditorGUI.DisabledScope(true))
-                {
-                    EditorGUILayout.TextArea(_cachedText ?? string.Empty, GUILayout.ExpandHeight(true));
-                }
+                var logText = _cachedText ?? string.Empty;
+                var height = Mathf.Max(position.height - 64f, 120f);
+                EditorGUILayout.SelectableLabel(logText, ReadOnlyLogStyle, GUILayout.ExpandHeight(true), GUILayout.MinHeight(height));
 
                 EditorGUILayout.EndScrollView();
             }
