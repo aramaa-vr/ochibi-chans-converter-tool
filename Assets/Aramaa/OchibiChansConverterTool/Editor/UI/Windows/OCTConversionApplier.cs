@@ -214,7 +214,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _opened = null;
                 }
 
-                UnregisterMaboneProxyDirtyCallbacks();
+                UnregisterMaboneProxyDetectionInvalidationCallbacks();
                 OCTPrefabDropdownCache.SaveCacheToDisk();
             }
 
@@ -231,17 +231,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // セッション再開時に古い検出状態を持ち越さないよう、
                 // MA BoneProxy の検出キャッシュを無効化してからコールバック登録する。
                 InvalidateMaboneProxyDetectionCache();
-                RegisterMaboneProxyDirtyCallbacks();
+                RegisterMaboneProxyDetectionInvalidationCallbacks();
                 ClearCachedStyles();
             }
 
             /// <summary>
-            /// MA BoneProxy 検出キャッシュの再計算トリガーを登録します。
+            /// MA BoneProxy 検出キャッシュ無効化コールバックを登録します。
             ///
             /// 目的: OnGUI のたびに重い検索をしないため、
             /// Hierarchy 変更や Undo/Redo が起きた時だけ dirty フラグを立てます。
             /// </summary>
-            private void RegisterMaboneProxyDirtyCallbacks()
+            private void RegisterMaboneProxyDetectionInvalidationCallbacks()
             {
                 // 多重登録防止
                 EditorApplication.hierarchyChanged -= InvalidateMaboneProxyDetectionCache;
@@ -252,10 +252,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             /// <summary>
-            /// RegisterMaboneProxyDirtyCallbacks で登録したイベントを解除します。
+            /// RegisterMaboneProxyDetectionInvalidationCallbacks で登録したコールバックを解除します。
             /// ウィンドウ破棄時のリークや重複発火を防ぐため必ず対で呼びます。
             /// </summary>
-            private void UnregisterMaboneProxyDirtyCallbacks()
+            private void UnregisterMaboneProxyDetectionInvalidationCallbacks()
             {
                 EditorApplication.hierarchyChanged -= InvalidateMaboneProxyDetectionCache;
                 Undo.undoRedoPerformed -= InvalidateMaboneProxyDetectionCache;
