@@ -142,6 +142,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private bool _showLogs;
             private bool _applyMaboneProxyProcessing;
             private int _detectedMaboneProxyCount;
+            private bool _isMaboneProxyCountDirty = true;
+            private GameObject _maboneProxyCountSourceTarget;
             private Vector2 _scrollPosition;
             private bool _versionCheckRequested;
             private bool _versionCheckInProgress;
@@ -212,6 +214,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _opened = null;
                 }
 
+                EditorApplication.hierarchyChanged -= MarkMaboneProxyCountDirty;
                 OCTPrefabDropdownCache.SaveCacheToDisk();
             }
 
@@ -224,6 +227,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _versionError = null;
                 _versionStatus = OCTVersionStatus.Unknown;
                 _cachedProSkin = EditorGUIUtility.isProSkin;
+                _isMaboneProxyCountDirty = true;
+                _maboneProxyCountSourceTarget = null;
+                EditorApplication.hierarchyChanged -= MarkMaboneProxyCountDirty;
+                EditorApplication.hierarchyChanged += MarkMaboneProxyCountDirty;
                 ClearCachedStyles();
             }
 
@@ -570,6 +577,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _sourceTarget = nextTarget;
                     _prefabDropdownCache.MarkNeedsRefresh();
                     _sourcePrefabAsset = null;
+                    MarkMaboneProxyCountDirty();
                 }
 
                 if (_sourceTarget == null)
@@ -584,6 +592,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     EditorGUILayout.HelpBox(L("Help.SourceAvatarAssetInvalid"), MessageType.Error);
                     _sourceTarget = null;
                     _prefabDropdownCache.MarkNeedsRefresh();
+                    MarkMaboneProxyCountDirty();
                 }
             }
 
@@ -725,11 +734,28 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     EditorGUILayout.HelpBox(L("Help.MaboneProxy"), MessageType.Info);
                 }
 
-                _detectedMaboneProxyCount = CountDetectedMaboneProxies(_sourceTarget);
+                EnsureDetectedMaboneProxyCount();
                 if (!_applyMaboneProxyProcessing && _detectedMaboneProxyCount > 0)
                 {
                     EditorGUILayout.HelpBox(F("Help.MaboneProxyRecommendOnWhenDetected", _detectedMaboneProxyCount), MessageType.Warning);
                 }
+            }
+
+            private void EnsureDetectedMaboneProxyCount()
+            {
+                if (!_isMaboneProxyCountDirty && _maboneProxyCountSourceTarget == _sourceTarget)
+                {
+                    return;
+                }
+
+                _detectedMaboneProxyCount = CountDetectedMaboneProxies(_sourceTarget);
+                _maboneProxyCountSourceTarget = _sourceTarget;
+                _isMaboneProxyCountDirty = false;
+            }
+
+            private void MarkMaboneProxyCountDirty()
+            {
+                _isMaboneProxyCountDirty = true;
             }
 
             private static int CountDetectedMaboneProxies(GameObject avatarRoot)
