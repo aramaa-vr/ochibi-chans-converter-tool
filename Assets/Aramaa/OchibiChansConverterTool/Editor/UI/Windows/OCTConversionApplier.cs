@@ -239,16 +239,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             /// MA BoneProxy 検出キャッシュ無効化コールバックを登録します。
             ///
             /// 目的: OnGUI のたびに重い検索をしないため、
-            /// Hierarchy 変更や Undo/Redo が起きた時だけ dirty フラグを立てます。
+            /// Hierarchy 変更 / Undo/Redo / Selection 変更が起きた時に dirty フラグを立てます。
             /// </summary>
             private void RegisterMaboneProxyDetectionInvalidationCallbacks()
             {
                 // 多重登録防止
                 EditorApplication.hierarchyChanged -= InvalidateMaboneProxyDetectionCache;
                 Undo.undoRedoPerformed -= InvalidateMaboneProxyDetectionCache;
+                Selection.selectionChanged -= InvalidateMaboneProxyDetectionCache;
 
                 EditorApplication.hierarchyChanged += InvalidateMaboneProxyDetectionCache;
                 Undo.undoRedoPerformed += InvalidateMaboneProxyDetectionCache;
+                Selection.selectionChanged += InvalidateMaboneProxyDetectionCache;
             }
 
             /// <summary>
@@ -259,6 +261,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 EditorApplication.hierarchyChanged -= InvalidateMaboneProxyDetectionCache;
                 Undo.undoRedoPerformed -= InvalidateMaboneProxyDetectionCache;
+                Selection.selectionChanged -= InvalidateMaboneProxyDetectionCache;
             }
 
             private void OnGUI()
@@ -807,7 +810,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             /// <summary>
             /// MA BoneProxy 検出キャッシュを初期化し、次回描画時に再計算させます。
             ///
-            /// hierarchyChanged / Undo からも呼ばれるため、軽量な代入のみに留めます。
+            /// hierarchyChanged / Undo / selectionChanged からも呼ばれるため、軽量な代入のみに留めます。
             /// </summary>
             private void InvalidateMaboneProxyDetectionCache()
             {
