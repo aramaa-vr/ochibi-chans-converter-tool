@@ -181,7 +181,10 @@ https://github.com/aramaa-vr/dakochite-gimmick
 ご購入時点で利用規約に同意したものとみなされますので、必ず事前にご確認ください。
 
 利用規約：
-https://drive.google.com/drive/folders/1mWXgxCtc5IcKuPoi7xtcjmUsy6tgddNm?usp=sharing
+https://github.com/aramaa-vr/ochibi-chans-converter-tool/blob/master/LICENSE
+
+第三者ライセンス：
+https://github.com/aramaa-vr/ochibi-chans-converter-tool/blob/master/THIRD_PARTY_NOTICES.md
 
 【問い合わせ（Discord）】
 https://discord.gg/BJ3BpVnMna
