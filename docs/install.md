@@ -23,6 +23,9 @@ nav_order: 3
 
 ## 関連するVCCをインストール
 
+> 🚨 **重要：Modular Avatar は `1.16.2` の利用を推奨しています。**  
+> それ以外のバージョンでは、想定どおりに動作しない場合があります。
+
 - [Modular Avatar](https://modular-avatar.nadena.dev/ja/)
 - [Floor Adjuster](https://narazaka.booth.pm/items/5756378)
 - [lilToon](https://lilxyzw.booth.pm/items/3087170)
