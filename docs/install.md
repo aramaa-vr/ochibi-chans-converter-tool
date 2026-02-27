@@ -109,6 +109,21 @@ nav_order: 3
 
 </details>
 
+## アンインストール（削除）方法
+
+次の手順で削除してください。
+
+### VCCで導入した場合（推奨）
+
+1. VCCを開き、`Projects` から対象プロジェクトの **Manage Project** を開く
+2. `Packages` タブで `おちびちゃんズ化ツール（Ochibi-chans Converter Tool）` を探す
+3. パッケージ右側の **「-」ボタン（Remove / 削除）** を押す
+4. Unityプロジェクトを開き直し、エラーがないか確認する
+
+![VCCでアップデートする画面（同じ場所の「-」ボタンから削除可能）]({{ "/assets/img/ochibi-chans-converter-tool/pages/install/vcc-update.webp" | relative_url }})
+
+> 補足: 依存関係として一緒に導入したパッケージ（Modular Avatar / Floor Adjuster / lilToon）も削除されてしまう場合は、お手数おかけしますが削除後に入れなおしてください。
+
 ## うまくいかないとき（よくあるケース）
 
 まずは以下を確認してください。
