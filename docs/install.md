@@ -116,7 +116,7 @@ nav_order: 3
 ### VCCで導入した場合（推奨）
 
 1. VCCを開き、`Projects` から対象プロジェクトの **Manage Project** を開く
-2. `Packages` タブで `おちびちゃんズ化ツール（Ochibi-chans Converter Tool）` を探す
+2. `Search Packages...` で `おちびちゃんズ化ツール（Ochibi-chans Converter Tool）` を探す
 3. パッケージ右側の **「-」ボタン（Remove / 削除）** を押す
 4. Unityプロジェクトを開き直し、エラーがないか確認する
 
