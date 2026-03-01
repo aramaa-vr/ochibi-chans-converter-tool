@@ -8,7 +8,7 @@
 // ============================================================================
 // 重要メモ（初心者向け）
 // ============================================================================
-// - 推奨範囲は RecommendedVersionMin〜RecommendedVersionMax（現在 1.16.2 以上 2.0.0 未満）です。
+// - 推奨範囲は RecommendedVersionMin〜RecommendedVersionMax です。
 // - バージョンが不明でも MA 型が見つかれば「検出あり」と判定します。
 // - ここでの警告はユーザーへの注意喚起であり、処理停止条件ではありません。
 //
@@ -33,7 +33,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     {
         internal const string ModularAvatarPackageName = "nadena.dev.modular-avatar";
         internal const string RecommendedVersionMin = "1.16.2";
-        internal const string RecommendedVersionMax = "2.0.0";
+        internal const string RecommendedVersionMax = "1.16.3";
         internal const string RecommendedVersionRangeLabel = ">= " + RecommendedVersionMin + ", < " + RecommendedVersionMax;
 
         private static bool _cached;
