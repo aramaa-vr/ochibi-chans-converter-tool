@@ -3,14 +3,14 @@
 // 概要
 // ============================================================================
 // - Modular Avatar 依存処理の「入口」を1箇所に集約するユーティリティです。
-// - CHIBI_MODULAR_AVATAR の有無判定と、各専用クラスへの委譲を担当します。
+// - MA の存在判定（PackageManager/リフレクション）と、各専用クラスへの委譲を担当します。
 //
 // ============================================================================
 // 重要メモ（初心者向け）
 // ============================================================================
 // - このクラスは「依存有無の判断」と「処理の振り分け」だけを担当します。
 // - 実処理は以下へ分離されています。
-//   - MA依存: OCTModularAvatarBoneProxyUtility / OCTModularAvatarCostumeDetector
+//   - MA連携: OCTModularAvatarBoneProxyUtility / OCTModularAvatarCostumeDetector
 //   - MA非依存: OCTCostumeScaleAdjuster / OCTCostumeBlendShapeAdjuster
 // - MA未導入時に落とさない（安全スキップ）ことを最優先にしています。
 // - 処理順は「衣装スケール補正 -> BlendShape 同期」の順で固定です。
@@ -18,7 +18,7 @@
 // ============================================================================
 // チーム開発向けルール
 // ============================================================================
-// - MA依存の #if 分岐は可能な限りこのクラスへ集約する。
+// - MA 連携の有効/無効判定は可能な限りこのクラスへ集約する。
 // - 呼び出し元（Pipeline）には、業務フローのみを残し、実装詳細を漏らさない。
 // - MA未導入時のログ文言（スキップ/不足）は既存キーを使って互換維持する。
 // ============================================================================
@@ -30,7 +30,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// Modular Avatar 関連処理のエントリポイント。
-    /// CHIBI_MODULAR_AVATAR の有無による分岐をここに集約する。
+    /// MA の存在/無効化判定をここに集約する。
     /// </summary>
     internal static class OCTModularAvatarUtility
     {
@@ -40,12 +40,35 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             get
             {
-#if CHIBI_MODULAR_AVATAR
-                return true;
-#else
-                return false;
-#endif
+                if (OCTModularAvatarIntegrationGuard.IsIntegrationDisabled)
+                {
+                    return false;
+                }
+
+                return OCTModularAvatarIntegrationGuard.IsModularAvatarDetected();
             }
+        }
+
+        internal static void AppendBoneProxySkippedLog(List<string> logs)
+        {
+            if (logs == null) return;
+
+            logs.Add(
+                OCTModularAvatarIntegrationGuard.IsIntegrationDisabled
+                    ? L("Log.MaboneProxySkippedDisabled")
+                    : L("Log.MaboneProxySkipped")
+            );
+        }
+
+        internal static void AppendModularAvatarSkippedLog(List<string> logs)
+        {
+            if (logs == null) return;
+
+            logs.Add(
+                OCTModularAvatarIntegrationGuard.IsIntegrationDisabled
+                    ? L("Log.ModularAvatarDisabled")
+                    : L("Log.ModularAvatarMissing")
+            );
         }
 
         /// <summary>
@@ -59,9 +82,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-#if CHIBI_MODULAR_AVATAR
             OCTModularAvatarBoneProxyUtility.ProcessBoneProxies(avatarRoot, logs);
-#endif
         }
 
         /// <summary>
@@ -82,9 +103,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (!IsModularAvatarAvailable)
             {
-                logs?.Add(L("Log.ModularAvatarMissing"));
+                AppendModularAvatarSkippedLog(logs);
                 return true;
             }
+
+            // バージョン不一致は警告のみ（処理は試みる）
+            OCTModularAvatarIntegrationGuard.AppendVersionWarningIfNeeded(logs);
 
             var costumeRoots = OCTModularAvatarCostumeDetector.CollectCostumeRoots(dstRoot);
             // NOTE:

@@ -760,6 +760,22 @@
     {
       "key": "Window.TitleWithVersion",
       "value": "{0} v{1}"
+    },
+    {
+      "key": "Log.MaboneProxySkippedDisabled",
+      "value": "MABoneProxy processing was skipped because Modular Avatar integration is disabled."
+    },
+    {
+      "key": "Log.ModularAvatarDisabled",
+      "value": "[WARN] Costume scale adjustment was skipped because Modular Avatar integration is disabled."
+    },
+    {
+      "key": "Log.ModularAvatarVersionMismatch",
+      "value": "[WARN] Modular Avatar version: {0} (recommended: {1}). Compatibility is not guaranteed, but integration will be attempted."
+    },
+    {
+      "key": "Log.ModularAvatarVersionUnknown",
+      "value": "[WARN] Modular Avatar was detected, but its version could not be determined (recommended: {0})."
     }
   ]
 }

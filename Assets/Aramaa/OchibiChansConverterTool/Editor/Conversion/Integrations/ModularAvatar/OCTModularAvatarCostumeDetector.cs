@@ -8,7 +8,7 @@
 // ============================================================================
 // 重要メモ（初心者向け）
 // ============================================================================
-// - このクラスは CHIBI_MODULAR_AVATAR が有効な時だけ MAコンポーネントを参照します。
+// - MA へのコンパイル時依存を避けるため、型参照はリフレクションで行います。
 // - 検出結果（Transform一覧）は「入力データ」であり、ここでは値変更をしません。
 //
 // ============================================================================
@@ -20,9 +20,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-#if CHIBI_MODULAR_AVATAR
-using nadena.dev.modular_avatar.core;
-#endif
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
@@ -39,13 +36,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return costumeRoots;
             }
 
-#if CHIBI_MODULAR_AVATAR
-            costumeRoots = dstRoot.GetComponentsInChildren<ModularAvatarMeshSettings>(true)
+            if (!OCTModularAvatarReflection.TryGetMeshSettingsType(out var meshSettingsType))
+            {
+                return costumeRoots;
+            }
+
+            costumeRoots = OCTModularAvatarReflection
+                .GetComponentsInChildren(dstRoot, meshSettingsType, includeInactive: true)
                 .Select(c => c != null ? c.transform : null)
                 .Where(t => t != null && t.gameObject != dstRoot)
                 .Distinct()
                 .ToList();
-#endif
 
             return costumeRoots;
         }

@@ -760,6 +760,22 @@
     {
       "key": "Window.TitleWithVersion",
       "value": "{0} v{1}"
+    },
+    {
+      "key": "Log.MaboneProxySkippedDisabled",
+      "value": "Modular Avatar 연동이 비활성화되어 MABoneProxy 처리를 건너뛰었습니다."
+    },
+    {
+      "key": "Log.ModularAvatarDisabled",
+      "value": "[WARN] Modular Avatar 연동이 비활성화되어 의상 스케일 조정을 건너뛰었습니다."
+    },
+    {
+      "key": "Log.ModularAvatarVersionMismatch",
+      "value": "[WARN] Modular Avatar 버전: {0} (권장: {1}). 호환성은 보장되지 않지만 가능한 범위에서 연동을 시도합니다."
+    },
+    {
+      "key": "Log.ModularAvatarVersionUnknown",
+      "value": "[WARN] Modular Avatar가 감지되었지만 버전을 확인할 수 없습니다(권장: {0})."
     }
   ]
 }

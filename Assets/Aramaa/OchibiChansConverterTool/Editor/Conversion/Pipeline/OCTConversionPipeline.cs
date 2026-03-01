@@ -190,7 +190,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     // ※ ProcessBoneProxies 側では重複判定しない（責務重複を避ける）。
                     if (!OCTModularAvatarUtility.IsModularAvatarAvailable)
                     {
-                        logs.Add(L("Log.MaboneProxySkipped"));
+                        OCTModularAvatarUtility.AppendBoneProxySkippedLog(logs);
                     }
                     else
                     {
