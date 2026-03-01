@@ -1,10 +1,34 @@
 #if UNITY_EDITOR
+// ============================================================================
+// 概要
+// ============================================================================
+// - Modular Avatar 連携に関する「検出・バージョン警告」の安全ガードです。
+// - 推奨バージョンとの差分を警告しつつ、変換自体は止めない方針を担います。
+//
+// ============================================================================
+// 重要メモ（初心者向け）
+// ============================================================================
+// - 推奨値は RecommendedVersion（現在 1.16.2）です。
+// - バージョンが不明でも MA 型が見つかれば「検出あり」と判定します。
+// - ここでの警告はユーザーへの注意喚起であり、処理停止条件ではありません。
+//
+// ============================================================================
+// チーム開発向けルール
+// ============================================================================
+// - MA バージョン運用方針を変更する場合はこのファイルを起点に統一する。
+// - warning は one-shot（_warned*）で出し、ログ洪水を避ける。
+// - Unity API 互換性を優先し、PackageManager 呼び出しは最小限に保つ。
+// ============================================================================
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
+    /// <summary>
+    /// MA 連携の可用性判定と推奨バージョン警告を提供します。
+    /// </summary>
     internal static class OCTModularAvatarIntegrationGuard
     {
         internal const string ModularAvatarPackageName = "nadena.dev.modular-avatar";
@@ -17,6 +41,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static bool _warnedMismatch;
         private static bool _warnedUnknown;
 
+        /// <summary>
+        /// MA が検出されているかを返します（Package 情報 or 型検出）。
+        /// </summary>
         internal static bool IsModularAvatarDetected()
         {
             if (TryGetInstalledModularAvatarVersion(out _))
@@ -29,6 +56,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                    || OCTModularAvatarReflection.TryGetMeshSettingsType(out _);
         }
 
+        /// <summary>
+        /// インストール済み MA バージョンを取得できた時のみ true。
+        /// </summary>
         internal static bool TryGetInstalledModularAvatarVersion(out string version)
         {
             EnsureCachedPackageInfo();
@@ -36,6 +66,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return _found && !string.IsNullOrEmpty(version);
         }
 
+        /// <summary>
+        /// 推奨バージョン不一致かを UI 表示用途で返します。
+        /// </summary>
         internal static bool TryGetRecommendedVersionMismatch(out string installedVersion)
         {
             installedVersion = null;
@@ -48,6 +81,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return !string.Equals(installed, RecommendedVersion, StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// 不一致/不明のバージョン警告を logs と Console に追加します。
+        /// </summary>
         internal static void AppendVersionWarningIfNeeded(List<string> logs)
         {
             if (!TryGetInstalledModularAvatarVersion(out var installed))
@@ -67,6 +103,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// PackageManager から MA パッケージ情報を一度だけ取得します。
+        /// </summary>
         private static void EnsureCachedPackageInfo()
         {
             if (_cached)
@@ -115,6 +154,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// 不一致警告を 1 回だけ出します。
+        /// </summary>
         private static void WarnMismatchOnce(string installed)
         {
             if (_warnedMismatch) return;
@@ -123,6 +165,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             Debug.LogWarning($"[OchibiChansConverterTool] Modular Avatar version mismatch. Installed: {installed}, recommended: {RecommendedVersion}. Integration will continue, but compatibility is not guaranteed.");
         }
 
+        /// <summary>
+        /// バージョン不明警告を 1 回だけ出します。
+        /// </summary>
         private static void WarnUnknownOnce()
         {
             if (_warnedUnknown) return;

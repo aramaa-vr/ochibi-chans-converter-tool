@@ -1,4 +1,28 @@
 #if UNITY_EDITOR
+// ============================================================================
+// 概要
+// ============================================================================
+// - MA BoneProxy を「疑似実行」して、複製先アバター上で親子付けと姿勢補正を行います。
+// - MA 直接参照は行わず、反射経由で target / attachmentMode を取得します。
+//
+// ============================================================================
+// 重要メモ（初心者向け）
+// ============================================================================
+// - 処理順は次の通りです。
+//   1) Proxy 情報を事前スナップショット
+//   2) 親子付け（必要時のみ prefab unpack）
+//   3) 親→子順で keep-world 系補正
+//   4) BoneProxy コンポーネント削除
+// - target が見つからない場合は TargetMissing としてスキップログを残します。
+//
+// ============================================================================
+// チーム開発向けルール
+// ============================================================================
+// - BoneProxy 実装差分に追従する時は、Reflection ヘルパとこの補正順をセットで見直す。
+// - validation 結果はログに出る文字列になるため、enum 名変更時は翻訳影響も確認する。
+// - ここでは「処理を止める」より「安全に継続」を優先する。
+// ============================================================================
+
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -6,11 +30,17 @@ using UnityEngine;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
+    /// <summary>
+    /// MA BoneProxy の疑似適用ユーティリティです。
+    /// </summary>
     internal static class OCTModularAvatarBoneProxyUtility
     {
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
+        /// <summary>
+        /// BoneProxy target の妥当性判定結果。
+        /// </summary>
         private enum ValidationResult
         {
             Ok,
@@ -18,6 +48,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             NotInAvatar
         }
 
+        /// <summary>
+        /// 1 BoneProxy 分のスナップショット情報。
+        /// </summary>
         private sealed class ProxyInfo
         {
             public readonly Component Proxy;
@@ -41,6 +74,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 Applied = false;
             }
 
+            /// <summary>
+            /// 先に取ったスナップショットを優先して target を返します。
+            /// </summary>
             public Transform ResolveTarget()
             {
                 if (TargetSnapshot != null) return TargetSnapshot.transform;
@@ -48,6 +84,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// avatarRoot 配下の BoneProxy を収集・疑似適用します。
+        /// </summary>
         public static void ProcessBoneProxies(GameObject avatarRoot, List<string> logs = null)
         {
             if (avatarRoot == null)
@@ -55,6 +94,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
+            // バージョン警告は出すが処理は続行
             OCTModularAvatarIntegrationGuard.AppendVersionWarningIfNeeded(logs);
 
             if (!OCTModularAvatarReflection.TryGetBoneProxyType(out var boneProxyType))
@@ -82,11 +122,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             var unpackedPrefabRoots = new HashSet<GameObject>();
 
+            // 1) 親子付け
             foreach (var info in proxyInfos)
             {
                 ProcessProxy(avatarRoot, info, unpackedPrefabRoots, logs);
             }
 
+            // 2) keep-world 補正（親->子）
             foreach (var info in proxyInfos
                          .Where(i => i != null && i.Applied)
                          .OrderBy(i => GetDepthFromRoot(avatarRoot.transform, i.Proxy.transform)))
@@ -94,6 +136,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 AdjustTransform(info);
             }
 
+            // 3) BoneProxy コンポーネント削除
             foreach (var info in proxyInfos)
             {
                 if (info?.Proxy != null)
@@ -103,6 +146,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// 1 つの Proxy に対し、target 検証後に親子付けを行います。
+        /// </summary>
         private static void ProcessProxy(
             GameObject avatarRoot,
             ProxyInfo proxy,
@@ -147,6 +193,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// attachmentMode に応じて位置・回転を補正します。
+        /// </summary>
         private static void AdjustTransform(ProxyInfo proxy)
         {
             if (proxy?.Proxy == null)
@@ -199,6 +248,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// target が avatarRoot 配下かどうかを判定します。
+        /// </summary>
         private static ValidationResult ValidateTarget(GameObject avatarRoot, Transform proxyTarget)
         {
             if (avatarRoot == null)
@@ -222,6 +274,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return node == null ? ValidationResult.NotInAvatar : ValidationResult.Ok;
         }
 
+        /// <summary>
+        /// root から node までの深さを返します（root 外なら MaxValue）。
+        /// </summary>
         private static int GetDepthFromRoot(Transform root, Transform node)
         {
             if (root == null || node == null)
@@ -240,6 +295,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return cur == null ? int.MaxValue : depth;
         }
 
+        /// <summary>
+        /// Proxy の prefab instance を必要時のみ unpack します（1 instance root につき 1 回）。
+        /// </summary>
         private static void UnpackPrefabIfNeeded(
             GameObject proxyObject,
             HashSet<GameObject> unpackedPrefabRoots,

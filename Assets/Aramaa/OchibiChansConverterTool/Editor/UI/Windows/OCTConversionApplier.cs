@@ -370,6 +370,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 EditorGUILayout.Space(2);
             }
 
+            /// <summary>
+            /// ツール自体の最新バージョンチェック結果を表示します。
+            /// </summary>
             private void DrawVersionStatus()
             {
                 var message = GetVersionStatusMessage(out var color);
@@ -389,6 +392,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 EditorGUILayout.LabelField(message, _versionStatusStyle ?? EditorStyles.miniLabel);
             }
 
+            /// <summary>
+            /// MA 推奨バージョン不一致時に、ウィンドウ上へ警告を表示します。
+            /// </summary>
             private void DrawModularAvatarRecommendedVersionWarning()
             {
                 if (!OCTModularAvatarIntegrationGuard.TryGetRecommendedVersionMismatch(out var installedVersion))
@@ -782,6 +788,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     try
                     {
+                        // 1回の変換実行単位で反射失敗を判定するため、開始時にフラグを初期化する
                         OCTModularAvatarReflection.ResetReflectionFailureFlag();
 
                         var applySucceeded = OCTConversionPipeline.DuplicateThenApply(
@@ -799,6 +806,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                             EditorUtility.SetDirty(capturedTarget);
                         }
 
+                        // MA 反射参照で失敗があった場合は、変換が不完全な可能性をユーザーへ明示する
                         if (OCTModularAvatarReflection.ConsumeReflectionFailureFlag())
                         {
                             EditorUtility.DisplayDialog(

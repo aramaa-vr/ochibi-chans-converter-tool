@@ -1,4 +1,23 @@
 #if UNITY_EDITOR
+// ============================================================================
+// 概要
+// ============================================================================
+// - MA MergeArmature のボーン対応情報を使って衣装ボーン localScale を補正します。
+// - MA 未導入や取得失敗時は何も変更せず終了します。
+//
+// ============================================================================
+// 重要メモ（初心者向け）
+// ============================================================================
+// - 反射で GetBonesMapping を呼ぶため、MA 側 API 変更時はここが影響を受けます。
+// - 1.0 に近いスケールは変更対象から除外し、差分最小化を優先します。
+//
+// ============================================================================
+// チーム開発向けルール
+// ============================================================================
+// - Undo 登録は維持する（ユーザーが戻せることを保証）。
+// - 補正条件の閾値変更時は既存アバターで目視確認を必須にする。
+// ============================================================================
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -6,11 +25,17 @@ using UnityEngine;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
+    /// <summary>
+    /// MA マッピングに基づく衣装スケール補正クラスです。
+    /// </summary>
     internal static class OCTModularAvatarCostumeScaleAdjuster
     {
         private const float ScaleEpsilon = 0.0001f;
         private static string L(string key) => OCTLocalization.Get(key);
 
+        /// <summary>
+        /// MergeArmature マッピングを使って衣装スケールを補正し、適用数を返します。
+        /// </summary>
         internal static int AdjustByMergeArmatureMapping(GameObject dstRoot, List<string> logs = null)
         {
             if (dstRoot == null)
@@ -97,6 +122,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return appliedCount;
         }
 
+        /// <summary>
+        /// スケールが (1,1,1) に十分近いかを判定します。
+        /// </summary>
         private static bool IsNearlyOne(Vector3 scale)
         {
             return Mathf.Abs(scale.x - 1f) < ScaleEpsilon
@@ -104,6 +132,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                    && Mathf.Abs(scale.z - 1f) < ScaleEpsilon;
         }
 
+        /// <summary>
+        /// 2 つのスケールが十分近いかを判定します。
+        /// </summary>
         private static bool IsNearlyEqual(Vector3 a, Vector3 b)
         {
             return Mathf.Abs(a.x - b.x) < ScaleEpsilon
