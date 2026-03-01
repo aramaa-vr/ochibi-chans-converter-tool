@@ -153,14 +153,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         internal static object InvokeGetBonesMapping(Component mergeArmature)
         {
             if (mergeArmature == null) return null;
+            var typeName = mergeArmature.GetType().FullName;
             try
             {
                 var method = mergeArmature.GetType().GetMethod("GetBonesMapping", BindingFlags.Instance | BindingFlags.Public);
-                return method?.Invoke(mergeArmature, null);
+                if (method == null)
+                {
+                    WarnOnce($"InvokeGetBonesMapping:MethodMissing:{typeName}",
+                        $"[OchibiChansConverterTool] MergeArmature.GetBonesMapping method was not found on '{typeName}'. This warning is shown once per type and integration may be incomplete.");
+                    return null;
+                }
+
+                return method.Invoke(mergeArmature, null);
             }
             catch (Exception e)
             {
-                var typeName = mergeArmature.GetType().FullName;
                 WarnOnce($"InvokeGetBonesMapping:{typeName}",
                     $"[OchibiChansConverterTool] Failed to invoke GetBonesMapping via reflection from '{typeName}'. This warning is shown once per type. Error: {e.Message}");
                 return null;
