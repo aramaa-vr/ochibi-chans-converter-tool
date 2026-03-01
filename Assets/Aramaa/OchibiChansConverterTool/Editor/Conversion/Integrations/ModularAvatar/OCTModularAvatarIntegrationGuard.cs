@@ -10,7 +10,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     ///
     /// 目的:
     /// - 推奨バージョンチェック（警告のみ。動作は継続）
-    /// - 連携の強制無効化（Scripting Define）
     /// - Unity 2022.3.22f1 で存在する UnityEditor.PackageManager.PackageInfo API だけを使用する
     ///
     /// 注意:
@@ -28,18 +27,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private static bool _warnedMismatch;
         private static bool _warnedUnknown;
-
-        internal static bool IsIntegrationDisabled
-        {
-            get
-            {
-#if OCT_DISABLE_MA_INTEGRATION
-                return true;
-#else
-                return false;
-#endif
-            }
-        }
 
         /// <summary>
         /// MA が検出できるか（パッケージ or 型のどちらかで判定）
@@ -72,11 +59,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         internal static void AppendVersionWarningIfNeeded(List<string> logs)
         {
-            if (IsIntegrationDisabled)
-            {
-                logs?.Add(OCTLocalization.Get("Log.ModularAvatarDisabled"));
-                return;
-            }
 
             if (!TryGetInstalledModularAvatarVersion(out var installed))
             {

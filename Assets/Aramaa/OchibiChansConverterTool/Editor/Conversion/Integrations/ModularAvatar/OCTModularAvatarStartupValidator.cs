@@ -24,6 +24,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             try
             {
+#if OCT_DISABLE_MA_INTEGRATION
+                return;
+#endif
                 // logs は null（Console のみ）
                 OCTModularAvatarIntegrationGuard.AppendVersionWarningIfNeeded(null);
             }

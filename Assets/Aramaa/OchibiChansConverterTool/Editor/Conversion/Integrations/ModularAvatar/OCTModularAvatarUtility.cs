@@ -40,12 +40,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             get
             {
-                if (OCTModularAvatarIntegrationGuard.IsIntegrationDisabled)
-                {
-                    return false;
-                }
-
+                
                 return OCTModularAvatarIntegrationGuard.IsModularAvatarDetected();
+
             }
         }
 
@@ -53,23 +50,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             if (logs == null) return;
 
-            logs.Add(
-                OCTModularAvatarIntegrationGuard.IsIntegrationDisabled
-                    ? L("Log.MaboneProxySkippedDisabled")
-                    : L("Log.MaboneProxySkipped")
-            );
-        }
+            logs.Add(L("Log.MaboneProxySkipped"));
+}
 
         internal static void AppendModularAvatarSkippedLog(List<string> logs)
         {
             if (logs == null) return;
 
-            logs.Add(
-                OCTModularAvatarIntegrationGuard.IsIntegrationDisabled
-                    ? L("Log.ModularAvatarDisabled")
-                    : L("Log.ModularAvatarMissing")
-            );
-        }
+            logs.Add(L("Log.ModularAvatarMissing"));
+}
 
         /// <summary>
         /// MABoneProxy を処理します。

@@ -75,12 +75,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             // バージョン不一致は「警告のみ」（動作は試みる）
             OCTModularAvatarIntegrationGuard.AppendVersionWarningIfNeeded(logs);
 
-            if (OCTModularAvatarIntegrationGuard.IsIntegrationDisabled)
-            {
-                logs?.Add(L("Log.MaboneProxySkippedDisabled"));
-                return;
-            }
-
             if (!OCTModularAvatarReflection.TryGetBoneProxyType(out var boneProxyType))
             {
                 logs?.Add(L("Log.MaboneProxySkipped"));
