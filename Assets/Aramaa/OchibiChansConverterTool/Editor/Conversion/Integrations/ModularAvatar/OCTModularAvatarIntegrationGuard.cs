@@ -22,7 +22,6 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
@@ -80,30 +79,23 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         internal static void AppendVersionWarningIfNeeded(List<string> logs)
         {
+            if (logs == null)
+            {
+                return;
+            }
+
             if (!TryGetInstalledModularAvatarVersion(out var installed))
             {
                 if (IsModularAvatarDetected())
                 {
-                    var message = OCTLocalization.Format("Log.ModularAvatarVersionUnknown", RecommendedVersionRangeLabel);
-                    logs?.Add(message);
-
-                    if (logs == null)
-                    {
-                        Debug.LogWarning($"[OchibiChansConverterTool] {message}");
-                    }
+                    logs.Add(OCTLocalization.Format("Log.ModularAvatarVersionUnknown", RecommendedVersionRangeLabel));
                 }
                 return;
             }
 
             if (!IsVersionInRecommendedRange(installed))
             {
-                var message = OCTLocalization.Format("Log.ModularAvatarVersionMismatch", installed, RecommendedVersionRangeLabel);
-                logs?.Add(message);
-
-                if (logs == null)
-                {
-                    Debug.LogWarning($"[OchibiChansConverterTool] {message}");
-                }
+                logs.Add(OCTLocalization.Format("Log.ModularAvatarVersionMismatch", installed, RecommendedVersionRangeLabel));
             }
         }
 
