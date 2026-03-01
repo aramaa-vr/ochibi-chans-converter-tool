@@ -136,7 +136,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             try
             {
                 var field = t.GetField("attachmentMode", BindingFlags.Instance | BindingFlags.Public);
-                var value = field?.GetValue(boneProxy);
+                if (field == null)
+                {
+                    WarnOnce($"GetBoneProxyAttachmentModeName:FieldMissing:{t.FullName}",
+                        $"[OchibiChansConverterTool] BoneProxy.attachmentMode field was not found on '{t.FullName}'. This warning is shown once per type and integration may be incomplete.");
+                    return null;
+                }
+
+                var value = field.GetValue(boneProxy);
                 return value?.ToString();
             }
             catch (Exception e)
