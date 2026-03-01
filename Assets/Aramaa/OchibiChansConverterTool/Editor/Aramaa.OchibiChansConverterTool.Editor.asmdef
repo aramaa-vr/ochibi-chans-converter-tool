@@ -2,7 +2,6 @@
   "name": "Aramaa.OchibiChansConverterTool.Editor",
   "rootNamespace": "Aramaa.OchibiChansConverterTool",
   "references": [
-    "nadena.dev.modular-avatar.core",
     "VRC.SDK3A"
   ],
   "includePlatforms": [

@@ -37,6 +37,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OCTConversionPipeline
     {
         private const string DuplicatedNameSuffix = " (Ochibi-chans)";
+        private static readonly HashSet<string> OneShotWarningKeys = new HashSet<string>();
         /// <summary>
         /// ローカライズ文字列を取得します。
         /// </summary>
@@ -46,6 +47,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// ローカライズ文字列をフォーマットして取得します。
         /// </summary>
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
+        private static void WarnOnce(string key, string message)
+        {
+            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(message))
+            {
+                return;
+            }
+
+            if (!OneShotWarningKeys.Add(key))
+            {
+                return;
+            }
+
+            Debug.LogWarning(message);
+        }
 
         // --------------------------------------------------------------------
         // 処理の全体像（初心者向け）
@@ -190,7 +206,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     // ※ ProcessBoneProxies 側では重複判定しない（責務重複を避ける）。
                     if (!OCTModularAvatarUtility.IsModularAvatarAvailable)
                     {
-                        logs.Add(L("Log.MaboneProxySkipped"));
+                        OCTModularAvatarUtility.AppendBoneProxySkippedLog(logs);
                     }
                     else
                     {
@@ -866,8 +882,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         {
                             newComp = Undo.AddComponent(dstGO, type);
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            WarnOnce(
+                                $"AddComponent:{type.FullName}",
+                                $"[OchibiChansConverterTool] Failed to add component '{type.FullName}' during sync. This warning is shown once per component type. Error: {e.Message}"
+                            );
                             continue;
                         }
 
@@ -880,8 +900,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         {
                             EditorUtility.CopySerialized(srcList[i], newComp);
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            WarnOnce(
+                                $"CopySerialized:{type.FullName}",
+                                $"[OchibiChansConverterTool] Failed to copy serialized data for component '{type.FullName}' during sync. This warning is shown once per component type. Error: {e.Message}"
+                            );
                             // コピーに失敗した場合は、追加だけ残して処理続行
                         }
 

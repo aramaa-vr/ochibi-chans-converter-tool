@@ -760,6 +760,22 @@
     {
       "key": "Window.TitleWithVersion",
       "value": "{0} v{1}"
+    },
+    {
+      "key": "Log.MaboneProxySkippedDisabled",
+      "value": "由於 Modular Avatar 連動已被停用，已略過 MABoneProxy 處理。"
+    },
+    {
+      "key": "Log.ModularAvatarDisabled",
+      "value": "[WARN] 由於 Modular Avatar 連動已被停用，已略過服裝縮放調整。"
+    },
+    {
+      "key": "Log.ModularAvatarVersionMismatch",
+      "value": "[WARN] Modular Avatar 版本：{0}（建議：{1}）。不保證相容性，但會盡可能嘗試連動。"
+    },
+    {
+      "key": "Log.ModularAvatarVersionUnknown",
+      "value": "[WARN] 偵測到 Modular Avatar，但無法取得版本（建議：{0}）。"
     }
   ]
 }

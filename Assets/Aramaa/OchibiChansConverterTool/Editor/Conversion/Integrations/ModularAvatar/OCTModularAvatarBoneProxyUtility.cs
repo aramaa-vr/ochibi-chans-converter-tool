@@ -1,23 +1,11 @@
-#if UNITY_EDITOR && CHIBI_MODULAR_AVATAR
-//
-// ============================================================================
-// 概要
-// ============================================================================
-// - MABoneProxy（Modular Avatar）を複製先に対して実行します
-// - Modular Avatar の BoneProxyProcessor に近い処理を行います
-//
-// ============================================================================
-
+#if UNITY_EDITOR
 using System.Collections.Generic;
-using nadena.dev.modular_avatar.core;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
-    /// <summary>
-    /// Modular Avatar の MABoneProxy を複製先へ適用するユーティリティです。
-    /// </summary>
     internal static class OCTModularAvatarBoneProxyUtility
     {
         private static string L(string key) => OCTLocalization.Get(key);
@@ -26,8 +14,38 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private enum ValidationResult
         {
             Ok,
-            MovingTarget,
+            TargetMissing,
             NotInAvatar
+        }
+
+        private sealed class ProxyInfo
+        {
+            public readonly Component Proxy;
+            public readonly GameObject TargetSnapshot;
+            public readonly Vector3 WorldPos;
+            public readonly Quaternion WorldRot;
+            public readonly string AttachmentModeName;
+
+            public bool Applied;
+
+            public ProxyInfo(Component proxy)
+            {
+                Proxy = proxy;
+                var target = OCTModularAvatarReflection.GetBoneProxyTarget(proxy);
+                TargetSnapshot = target != null ? target.gameObject : null;
+
+                var tr = proxy.transform;
+                WorldPos = tr.position;
+                WorldRot = tr.rotation;
+                AttachmentModeName = OCTModularAvatarReflection.GetBoneProxyAttachmentModeName(proxy);
+                Applied = false;
+            }
+
+            public Transform ResolveTarget()
+            {
+                if (TargetSnapshot != null) return TargetSnapshot.transform;
+                return OCTModularAvatarReflection.GetBoneProxyTarget(Proxy);
+            }
         }
 
         public static void ProcessBoneProxies(GameObject avatarRoot, List<string> logs = null)
@@ -37,103 +55,160 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-            var proxies = avatarRoot.GetComponentsInChildren<ModularAvatarBoneProxy>(true);
-            if (proxies == null || proxies.Length == 0)
+            OCTModularAvatarIntegrationGuard.AppendVersionWarningIfNeeded(logs);
+
+            if (!OCTModularAvatarReflection.TryGetBoneProxyType(out var boneProxyType))
+            {
+                logs?.Add(L("Log.MaboneProxySkipped"));
+                return;
+            }
+
+            var proxyComponents = OCTModularAvatarReflection
+                .GetComponentsInChildren(avatarRoot, boneProxyType, includeInactive: true)
+                .ToArray();
+
+            if (proxyComponents.Length == 0)
             {
                 logs?.Add(L("Log.MaboneProxyNone"));
                 return;
             }
 
-            logs?.Add(F("Log.MaboneProxyCount", proxies.Length));
+            logs?.Add(F("Log.MaboneProxyCount", proxyComponents.Length));
+
+            var proxyInfos = proxyComponents
+                .Where(p => p != null)
+                .Select(p => new ProxyInfo(p))
+                .ToList();
 
             var unpackedPrefabRoots = new HashSet<GameObject>();
 
-            foreach (var proxy in proxies)
+            foreach (var info in proxyInfos)
             {
-                if (proxy == null)
-                {
-                    continue;
-                }
+                ProcessProxy(avatarRoot, info, unpackedPrefabRoots, logs);
+            }
 
-                ProcessProxy(avatarRoot, proxy, unpackedPrefabRoots, logs);
+            foreach (var info in proxyInfos
+                         .Where(i => i != null && i.Applied)
+                         .OrderBy(i => GetDepthFromRoot(avatarRoot.transform, i.Proxy.transform)))
+            {
+                AdjustTransform(info);
+            }
+
+            foreach (var info in proxyInfos)
+            {
+                if (info?.Proxy != null)
+                {
+                    Object.DestroyImmediate(info.Proxy);
+                }
             }
         }
 
         private static void ProcessProxy(
             GameObject avatarRoot,
-            ModularAvatarBoneProxy proxy,
+            ProxyInfo proxy,
             HashSet<GameObject> unpackedPrefabRoots,
             List<string> logs
         )
         {
-            var target = proxy.target;
-            var validation = target != null ? ValidateTarget(avatarRoot, target) : ValidationResult.NotInAvatar;
-
-            if (target != null && validation == ValidationResult.Ok)
+            if (avatarRoot == null || proxy?.Proxy == null)
             {
-                UnpackPrefabIfNeeded(proxy.gameObject, unpackedPrefabRoots, logs);
+                return;
+            }
+
+            var target = proxy.ResolveTarget();
+            var validation = ValidateTarget(avatarRoot, target);
+
+            if (validation == ValidationResult.Ok)
+            {
+                proxy.Applied = true;
+                UnpackPrefabIfNeeded(proxy.Proxy.gameObject, unpackedPrefabRoots, logs);
 
                 string suffix = string.Empty;
                 int i = 1;
-                while (target.Find(proxy.gameObject.name + suffix) != null)
+                while (target.Find(proxy.Proxy.gameObject.name + suffix) != null)
                 {
                     suffix = $" ({i++})";
                 }
 
-                var proxyTransform = proxy.transform;
-                proxy.gameObject.name += suffix;
+                proxy.Proxy.gameObject.name += suffix;
 
+                var proxyTransform = proxy.Proxy.transform;
                 proxyTransform.SetParent(target, worldPositionStays: true);
-
-                bool keepPos;
-                bool keepRot;
-                switch (proxy.attachmentMode)
-                {
-                    default:
-                    case BoneProxyAttachmentMode.Unset:
-                    case BoneProxyAttachmentMode.AsChildAtRoot:
-                        keepPos = false;
-                        keepRot = false;
-                        break;
-                    case BoneProxyAttachmentMode.AsChildKeepWorldPose:
-                        keepPos = true;
-                        keepRot = true;
-                        break;
-                    case BoneProxyAttachmentMode.AsChildKeepPosition:
-                        keepPos = true;
-                        keepRot = false;
-                        break;
-                    case BoneProxyAttachmentMode.AsChildKeepRotation:
-                        keepPos = false;
-                        keepRot = true;
-                        break;
-                }
-
-                if (!keepPos)
-                {
-                    proxyTransform.localPosition = Vector3.zero;
-                }
-
-                if (!keepRot)
-                {
-                    proxyTransform.localRotation = Quaternion.identity;
-                }
 
                 logs?.Add(F("Log.MaboneProxyProcessed", OCTConversionLogFormatter.GetHierarchyPath(proxyTransform)));
             }
             else
             {
-                logs?.Add(F("Log.MaboneProxySkipDetail", OCTConversionLogFormatter.GetHierarchyPath(proxy.transform), validation));
+                logs?.Add(F(
+                    "Log.MaboneProxySkipDetail",
+                    OCTConversionLogFormatter.GetHierarchyPath(proxy.Proxy.transform),
+                    validation
+                ));
+            }
+        }
+
+        private static void AdjustTransform(ProxyInfo proxy)
+        {
+            if (proxy?.Proxy == null)
+            {
+                return;
             }
 
-            Object.DestroyImmediate(proxy);
+            bool keepPos;
+            bool keepRot;
+
+            switch (proxy.AttachmentModeName)
+            {
+                case "AsChildKeepWorldPose":
+                    keepPos = true;
+                    keepRot = true;
+                    break;
+                case "AsChildKeepPosition":
+                    keepPos = true;
+                    keepRot = false;
+                    break;
+                case "AsChildKeepRotation":
+                    keepPos = false;
+                    keepRot = true;
+                    break;
+                case "Unset":
+                case "AsChildAtRoot":
+                default:
+                    keepPos = false;
+                    keepRot = false;
+                    break;
+            }
+
+            var t = proxy.Proxy.transform;
+            if (keepPos)
+            {
+                t.position = proxy.WorldPos;
+            }
+            else
+            {
+                t.localPosition = Vector3.zero;
+            }
+
+            if (keepRot)
+            {
+                t.rotation = proxy.WorldRot;
+            }
+            else
+            {
+                t.localRotation = Quaternion.identity;
+            }
         }
 
         private static ValidationResult ValidateTarget(GameObject avatarRoot, Transform proxyTarget)
         {
-            if (avatarRoot == null || proxyTarget == null)
+            if (avatarRoot == null)
             {
                 return ValidationResult.NotInAvatar;
+            }
+
+            if (proxyTarget == null)
+            {
+                return ValidationResult.TargetMissing;
             }
 
             var avatar = avatarRoot.transform;
@@ -141,16 +216,28 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             while (node != null && node != avatar)
             {
-                if (node.GetComponent<ModularAvatarMergeArmature>() != null ||
-                    node.GetComponent<ModularAvatarBoneProxy>() != null)
-                {
-                    return ValidationResult.MovingTarget;
-                }
-
                 node = node.parent;
             }
 
             return node == null ? ValidationResult.NotInAvatar : ValidationResult.Ok;
+        }
+
+        private static int GetDepthFromRoot(Transform root, Transform node)
+        {
+            if (root == null || node == null)
+            {
+                return int.MaxValue;
+            }
+
+            int depth = 0;
+            var cur = node;
+            while (cur != null && cur != root)
+            {
+                depth++;
+                cur = cur.parent;
+            }
+
+            return cur == null ? int.MaxValue : depth;
         }
 
         private static void UnpackPrefabIfNeeded(
