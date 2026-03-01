@@ -152,6 +152,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private GUIStyle _linkStyle;
             private bool _cachedProSkin;
             private bool _isWindowActive;
+            private bool _maVersionChecked;
+            private bool _maVersionMismatch;
+            private string _maInstalledVersion;
 
             // 変換対象（Hierarchy で選択されているアバター）
             private GameObject _sourceTarget;
@@ -219,6 +222,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _versionError = null;
                 _versionStatus = OCTVersionStatus.Unknown;
                 _cachedProSkin = EditorGUIUtility.isProSkin;
+                _maVersionChecked = false;
+                _maVersionMismatch = false;
+                _maInstalledVersion = null;
                 ClearCachedStyles();
             }
 
@@ -397,13 +403,19 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             /// </summary>
             private void DrawModularAvatarRecommendedVersionWarning()
             {
-                if (!OCTModularAvatarIntegrationGuard.TryGetRecommendedVersionMismatch(out var installedVersion))
+                if (!_maVersionChecked)
+                {
+                    _maVersionChecked = true;
+                    _maVersionMismatch = OCTModularAvatarIntegrationGuard.TryGetRecommendedVersionMismatch(out _maInstalledVersion);
+                }
+
+                if (!_maVersionMismatch)
                 {
                     return;
                 }
 
                 EditorGUILayout.HelpBox(
-                    F("Log.ModularAvatarVersionMismatch", installedVersion, OCTModularAvatarIntegrationGuard.RecommendedVersionRangeLabel),
+                    F("Log.ModularAvatarVersionMismatch", _maInstalledVersion, OCTModularAvatarIntegrationGuard.RecommendedVersionRangeLabel),
                     MessageType.Warning
                 );
             }

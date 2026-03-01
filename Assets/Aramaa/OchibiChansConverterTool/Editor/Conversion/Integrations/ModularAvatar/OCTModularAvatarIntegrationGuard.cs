@@ -39,9 +39,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static bool _cached;
         private static bool _found;
         private static string _installedVersion;
-        private static double _nextRetryTime;
-
-        private const double PackageInfoRetryIntervalSeconds = 5.0d;
 
         private static bool _warnedMismatch;
         private static bool _warnedUnknown;
@@ -159,11 +156,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-            if (UnityEditor.EditorApplication.timeSinceStartup < _nextRetryTime)
-            {
-                return;
-            }
-
             _found = false;
             _installedVersion = null;
 
@@ -206,7 +198,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 _found = false;
                 _installedVersion = null;
-                _nextRetryTime = UnityEditor.EditorApplication.timeSinceStartup + PackageInfoRetryIntervalSeconds;
             }
         }
 
