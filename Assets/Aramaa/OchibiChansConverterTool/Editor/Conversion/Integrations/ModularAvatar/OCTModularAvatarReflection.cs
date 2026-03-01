@@ -108,7 +108,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             try
             {
                 var prop = t.GetProperty("target", BindingFlags.Instance | BindingFlags.Public);
-                return prop?.GetValue(boneProxy) as Transform;
+                if (prop == null)
+                {
+                    WarnOnce($"GetBoneProxyTarget:PropertyMissing:{t.FullName}",
+                        $"[OchibiChansConverterTool] BoneProxy.target property was not found on '{t.FullName}'. This warning is shown once per type and integration may be incomplete.");
+                    return null;
+                }
+
+                return prop.GetValue(boneProxy) as Transform;
             }
             catch (Exception e)
             {
