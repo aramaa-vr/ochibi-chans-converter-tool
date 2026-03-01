@@ -45,9 +45,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return true;
             }
 
-            return OCTModularAvatarReflection.TryGetBoneProxyType(out _)
-                   || OCTModularAvatarReflection.TryGetMergeArmatureType(out _)
-                   || OCTModularAvatarReflection.TryGetMeshSettingsType(out _);
+            return IsModularAvatarTypeDetected();
         }
 
         /// <summary>
@@ -75,7 +73,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
-        /// 不一致/不明のバージョン警告を logs と Console に追加します。
+        /// 不一致/不明のバージョン警告を logs に追加します。
         /// </summary>
         internal static void AppendVersionWarningIfNeeded(List<string> logs)
         {
@@ -86,7 +84,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (!TryGetInstalledModularAvatarVersion(out var installed))
             {
-                if (IsModularAvatarDetected())
+                if (IsModularAvatarTypeDetected())
                 {
                     logs.Add(OCTLocalization.Format("Log.ModularAvatarVersionUnknown", RecommendedVersionRangeLabel));
                 }
@@ -97,6 +95,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 logs.Add(OCTLocalization.Format("Log.ModularAvatarVersionMismatch", installed, RecommendedVersionRangeLabel));
             }
+        }
+
+
+        /// <summary>
+        /// MA 関連型が 1 つでも解決できるかを返します。
+        /// </summary>
+        private static bool IsModularAvatarTypeDetected()
+        {
+            return OCTModularAvatarReflection.TryGetBoneProxyType(out _)
+                   || OCTModularAvatarReflection.TryGetMergeArmatureType(out _)
+                   || OCTModularAvatarReflection.TryGetMeshSettingsType(out _);
         }
 
         /// <summary>
