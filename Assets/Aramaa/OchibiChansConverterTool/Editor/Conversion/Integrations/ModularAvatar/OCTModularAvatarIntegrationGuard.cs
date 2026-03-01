@@ -34,8 +34,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         internal const string ModularAvatarPackageName = "nadena.dev.modular-avatar";
         internal const string RecommendedVersionMin = "1.16.2";
         internal const string RecommendedVersionMax = "2.0.0";
-        // 既存文言互換のため最小推奨を代表値として扱う
-        internal const string RecommendedVersion = RecommendedVersionMin;
         internal const string RecommendedVersionRangeLabel = ">= " + RecommendedVersionMin + ", < " + RecommendedVersionMax;
 
         private static bool _cached;
