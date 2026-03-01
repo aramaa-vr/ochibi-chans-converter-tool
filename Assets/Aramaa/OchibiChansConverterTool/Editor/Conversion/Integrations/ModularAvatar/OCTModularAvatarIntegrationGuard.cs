@@ -36,6 +36,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return _found && !string.IsNullOrEmpty(version);
         }
 
+        internal static bool TryGetRecommendedVersionMismatch(out string installedVersion)
+        {
+            installedVersion = null;
+            if (!TryGetInstalledModularAvatarVersion(out var installed))
+            {
+                return false;
+            }
+
+            installedVersion = installed;
+            return !string.Equals(installed, RecommendedVersion, StringComparison.Ordinal);
+        }
+
         internal static void AppendVersionWarningIfNeeded(List<string> logs)
         {
             if (!TryGetInstalledModularAvatarVersion(out var installed))

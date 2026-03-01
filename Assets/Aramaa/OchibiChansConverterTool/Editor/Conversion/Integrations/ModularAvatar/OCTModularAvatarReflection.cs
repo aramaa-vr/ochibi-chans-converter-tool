@@ -18,6 +18,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private static readonly Dictionary<string, Type> TypeCache = new Dictionary<string, Type>(StringComparer.Ordinal);
         private static readonly HashSet<string> WarnedKeys = new HashSet<string>(StringComparer.Ordinal);
+        private static bool _hadReflectionAccessFailure;
 
         internal static bool TryGetBoneProxyType(out Type type) => TryGetType(BoneProxyTypeName, out type);
         internal static bool TryGetMergeArmatureType(out Type type) => TryGetType(MergeArmatureTypeName, out type);
@@ -163,9 +164,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        internal static void ResetReflectionFailureFlag()
+        {
+            _hadReflectionAccessFailure = false;
+        }
+
+        internal static bool ConsumeReflectionFailureFlag()
+        {
+            var hadFailure = _hadReflectionAccessFailure;
+            _hadReflectionAccessFailure = false;
+            return hadFailure;
+        }
+
         private static void WarnOnce(string key, string message)
         {
             if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(message)) return;
+            _hadReflectionAccessFailure = true;
             if (!WarnedKeys.Add(key)) return;
             Debug.LogWarning(message);
         }

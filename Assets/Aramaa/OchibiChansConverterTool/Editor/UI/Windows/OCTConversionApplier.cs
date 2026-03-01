@@ -246,6 +246,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         DrawLanguageSelector();
                         EnsureVersionCheck();
                         DrawVersionStatus();
+                        DrawModularAvatarRecommendedVersionWarning();
                         EditorGUILayout.Space(4);
                         EditorGUILayout.LabelField(L("Window.Description"), _descriptionStyle ?? EditorStyles.wordWrappedLabel);
                     });
@@ -386,6 +387,19 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 ApplyStatusColor(_versionStatusStyle, color);
                 EditorGUILayout.LabelField(message, _versionStatusStyle ?? EditorStyles.miniLabel);
+            }
+
+            private void DrawModularAvatarRecommendedVersionWarning()
+            {
+                if (!OCTModularAvatarIntegrationGuard.TryGetRecommendedVersionMismatch(out var installedVersion))
+                {
+                    return;
+                }
+
+                EditorGUILayout.HelpBox(
+                    F("Log.ModularAvatarVersionMismatch", installedVersion, OCTModularAvatarIntegrationGuard.RecommendedVersion),
+                    MessageType.Warning
+                );
             }
 
             private void UpdateWindowTitle()
@@ -768,6 +782,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     try
                     {
+                        OCTModularAvatarReflection.ResetReflectionFailureFlag();
+
                         var applySucceeded = OCTConversionPipeline.DuplicateThenApply(
                             capturedSourcePrefab,
                             capturedTarget,
@@ -781,6 +797,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                             Undo.RecordObject(capturedTarget, L("Undo.DuplicateApply"));
                             capturedTarget.SetActive(false);
                             EditorUtility.SetDirty(capturedTarget);
+                        }
+
+                        if (OCTModularAvatarReflection.ConsumeReflectionFailureFlag())
+                        {
+                            EditorUtility.DisplayDialog(
+                                L("Dialog.ToolTitle"),
+                                L("Dialog.ModularAvatarReflectionWarning"),
+                                L("Dialog.Ok")
+                            );
                         }
                     }
                     catch (Exception e)

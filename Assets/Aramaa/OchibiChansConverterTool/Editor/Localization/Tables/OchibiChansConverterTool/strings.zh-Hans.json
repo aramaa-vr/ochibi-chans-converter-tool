@@ -46,6 +46,10 @@
       "value": "Ochibi-chans Converter Tool"
     },
     {
+      "key": "Dialog.ModularAvatarReflectionWarning",
+      "value": "[WARN] 部分 Modular Avatar 反射获取失败。转换结果可能不完整，请检查日志。"
+    },
+    {
       "key": "Error.DuplicateFailed",
       "value": "[Ochibi-chans] 复制失败（相当于 Ctrl+D）。不会执行转换。"
     },
