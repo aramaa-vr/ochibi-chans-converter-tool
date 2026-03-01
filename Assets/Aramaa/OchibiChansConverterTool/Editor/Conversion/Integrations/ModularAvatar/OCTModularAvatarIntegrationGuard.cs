@@ -39,6 +39,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static bool _cached;
         private static bool _found;
         private static string _installedVersion;
+        private static double _nextRetryTime;
+
+        private const double PackageInfoRetryIntervalSeconds = 5.0d;
 
         private static bool _warnedMismatch;
         private static bool _warnedUnknown;
@@ -156,7 +159,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-            _cached = true;
+            if (UnityEditor.EditorApplication.timeSinceStartup < _nextRetryTime)
+            {
+                return;
+            }
+
             _found = false;
             _installedVersion = null;
 
@@ -168,12 +175,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     _found = true;
                     _installedVersion = byAsset.version;
+                    _cached = true;
                     return;
                 }
 
                 var pkgs = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
                 if (pkgs == null)
                 {
+                    _cached = true;
                     return;
                 }
 
@@ -186,14 +195,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     {
                         _found = true;
                         _installedVersion = p.version;
+                        _cached = true;
                         return;
                     }
                 }
+
+                _cached = true;
             }
             catch
             {
                 _found = false;
                 _installedVersion = null;
+                _nextRetryTime = UnityEditor.EditorApplication.timeSinceStartup + PackageInfoRetryIntervalSeconds;
             }
         }
 
