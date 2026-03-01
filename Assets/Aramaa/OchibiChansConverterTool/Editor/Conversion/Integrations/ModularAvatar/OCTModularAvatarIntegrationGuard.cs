@@ -16,7 +16,7 @@
 // チーム開発向けルール
 // ============================================================================
 // - MA バージョン運用方針を変更する場合はこのファイルを起点に統一する。
-// - warning は one-shot（_warned*）で出し、ログ洪水を避ける。
+// - warning は呼び出し側（UI / 変換処理）で必要範囲に限定して出す。
 // - Unity API 互換性を優先し、PackageManager 呼び出しは最小限に保つ。
 // ============================================================================
 
@@ -35,13 +35,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         internal const string RecommendedVersionMin = "1.16.2";
         internal const string RecommendedVersionMax = "1.16.3";
         internal const string RecommendedVersionRangeLabel = ">= " + RecommendedVersionMin + ", < " + RecommendedVersionMax;
-
-        private static bool _cached;
-        private static bool _found;
-        private static string _installedVersion;
-
-        private static bool _warnedMismatch;
-        private static bool _warnedUnknown;
 
         /// <summary>
         /// MA が検出されているかを返します（Package 情報 or 型検出）。
@@ -63,9 +56,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         internal static bool TryGetInstalledModularAvatarVersion(out string version)
         {
-            EnsureCachedPackageInfo();
-            version = _installedVersion;
-            return _found && !string.IsNullOrEmpty(version);
+            version = null;
+            return TryFindInstalledVersion(out version);
         }
 
         /// <summary>
@@ -92,16 +84,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 if (IsModularAvatarDetected())
                 {
-                    logs?.Add(OCTLocalization.Format("Log.ModularAvatarVersionUnknown", RecommendedVersionRangeLabel));
-                    WarnUnknownOnce();
+                    var message = OCTLocalization.Format("Log.ModularAvatarVersionUnknown", RecommendedVersionRangeLabel);
+                    logs?.Add(message);
+
+                    if (logs == null)
+                    {
+                        Debug.LogWarning($"[OchibiChansConverterTool] {message}");
+                    }
                 }
                 return;
             }
 
             if (!IsVersionInRecommendedRange(installed))
             {
-                logs?.Add(OCTLocalization.Format("Log.ModularAvatarVersionMismatch", installed, RecommendedVersionRangeLabel));
-                WarnMismatchOnce(installed);
+                var message = OCTLocalization.Format("Log.ModularAvatarVersionMismatch", installed, RecommendedVersionRangeLabel);
+                logs?.Add(message);
+
+                if (logs == null)
+                {
+                    Debug.LogWarning($"[OchibiChansConverterTool] {message}");
+                }
             }
         }
 
@@ -147,17 +149,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
-        /// PackageManager から MA パッケージ情報を一度だけ取得します。
+        /// PackageManager から MA パッケージ情報を取得します。
         /// </summary>
-        private static void EnsureCachedPackageInfo()
+        private static bool TryFindInstalledVersion(out string version)
         {
-            if (_cached)
-            {
-                return;
-            }
-
-            _found = false;
-            _installedVersion = null;
+            version = null;
 
             try
             {
@@ -165,17 +161,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var byAsset = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(assetPath);
                 if (byAsset != null && string.Equals(byAsset.name, ModularAvatarPackageName, StringComparison.Ordinal))
                 {
-                    _found = true;
-                    _installedVersion = byAsset.version;
-                    _cached = true;
-                    return;
+                    version = byAsset.version;
+                    return !string.IsNullOrEmpty(version);
                 }
 
                 var pkgs = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
                 if (pkgs == null)
                 {
-                    _cached = true;
-                    return;
+                    return false;
                 }
 
                 for (int i = 0; i < pkgs.Length; i++)
@@ -185,42 +178,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     if (string.Equals(p.name, ModularAvatarPackageName, StringComparison.Ordinal))
                     {
-                        _found = true;
-                        _installedVersion = p.version;
-                        _cached = true;
-                        return;
+                        version = p.version;
+                        return !string.IsNullOrEmpty(version);
                     }
                 }
 
-                _cached = true;
+                return false;
             }
             catch
             {
-                _found = false;
-                _installedVersion = null;
+                return false;
             }
-        }
-
-        /// <summary>
-        /// 不一致警告を 1 回だけ出します。
-        /// </summary>
-        private static void WarnMismatchOnce(string installed)
-        {
-            if (_warnedMismatch) return;
-            _warnedMismatch = true;
-
-            Debug.LogWarning($"[OchibiChansConverterTool] Modular Avatar version mismatch. Installed: {installed}, recommended range: {RecommendedVersionRangeLabel}. Integration will continue, but compatibility is not guaranteed.");
-        }
-
-        /// <summary>
-        /// バージョン不明警告を 1 回だけ出します。
-        /// </summary>
-        private static void WarnUnknownOnce()
-        {
-            if (_warnedUnknown) return;
-            _warnedUnknown = true;
-
-            Debug.LogWarning($"[OchibiChansConverterTool] Modular Avatar is present, but its version could not be determined. Recommended range: {RecommendedVersionRangeLabel}.");
         }
     }
 }
