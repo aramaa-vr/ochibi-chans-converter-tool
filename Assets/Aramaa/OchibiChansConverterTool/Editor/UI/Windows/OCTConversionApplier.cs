@@ -403,7 +403,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 EditorGUILayout.HelpBox(
-                    F("Log.ModularAvatarVersionMismatch", installedVersion, OCTModularAvatarIntegrationGuard.RecommendedVersion),
+                    F("Log.ModularAvatarVersionMismatch", installedVersion, OCTModularAvatarIntegrationGuard.RecommendedVersionRangeLabel),
                     MessageType.Warning
                 );
             }

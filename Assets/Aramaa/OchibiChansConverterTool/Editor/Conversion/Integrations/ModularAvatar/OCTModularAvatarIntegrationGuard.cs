@@ -8,7 +8,7 @@
 // ============================================================================
 // 重要メモ（初心者向け）
 // ============================================================================
-// - 推奨値は RecommendedVersion（現在 1.16.2）です。
+// - 推奨範囲は RecommendedVersionMin〜RecommendedVersionMax（現在 1.16.2 以上 2.0.0 未満）です。
 // - バージョンが不明でも MA 型が見つかれば「検出あり」と判定します。
 // - ここでの警告はユーザーへの注意喚起であり、処理停止条件ではありません。
 //
@@ -32,7 +32,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OCTModularAvatarIntegrationGuard
     {
         internal const string ModularAvatarPackageName = "nadena.dev.modular-avatar";
-        internal const string RecommendedVersion = "1.16.2";
+        internal const string RecommendedVersionMin = "1.16.2";
+        internal const string RecommendedVersionMax = "2.0.0";
+        // 既存文言互換のため最小推奨を代表値として扱う
+        internal const string RecommendedVersion = RecommendedVersionMin;
+        internal const string RecommendedVersionRangeLabel = ">= " + RecommendedVersionMin + ", < " + RecommendedVersionMax;
 
         private static bool _cached;
         private static bool _found;
@@ -90,7 +94,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 if (IsModularAvatarDetected())
                 {
-                    logs?.Add(OCTLocalization.Format("Log.ModularAvatarVersionUnknown", RecommendedVersion));
+                    logs?.Add(OCTLocalization.Format("Log.ModularAvatarVersionUnknown", RecommendedVersionRangeLabel));
                     WarnUnknownOnce();
                 }
                 return;
@@ -98,61 +102,50 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (!IsVersionInRecommendedRange(installed))
             {
-                logs?.Add(OCTLocalization.Format("Log.ModularAvatarVersionMismatch", installed, RecommendedVersion));
+                logs?.Add(OCTLocalization.Format("Log.ModularAvatarVersionMismatch", installed, RecommendedVersionRangeLabel));
                 WarnMismatchOnce(installed);
             }
         }
 
         /// <summary>
-        /// 推奨範囲（>=1.16.2 かつ <2.0.0）に収まっているかを判定します。
-        /// パッチ/マイナー更新で不要な警告を減らす目的です。
+        /// 推奨範囲（>= RecommendedVersionMin かつ < RecommendedVersionMax）に収まっているかを判定します。
+        /// 比較は .NET 標準の Version 比較を利用します。
         /// </summary>
         private static bool IsVersionInRecommendedRange(string installed)
         {
-            if (!TryParseSemVer(installed, out var major, out var minor, out var patch))
+            if (!TryParseComparableVersion(installed, out var installedVersion))
             {
                 return false;
             }
 
-            if (major != 1)
+            if (!TryParseComparableVersion(RecommendedVersionMin, out var minVersion))
             {
                 return false;
             }
 
-            if (minor > 16)
-            {
-                return true;
-            }
-
-            if (minor < 16)
+            if (!TryParseComparableVersion(RecommendedVersionMax, out var maxVersion))
             {
                 return false;
             }
 
-            return patch >= 2;
+            return installedVersion.CompareTo(minVersion) >= 0
+                   && installedVersion.CompareTo(maxVersion) < 0;
         }
 
-        private static bool TryParseSemVer(string version, out int major, out int minor, out int patch)
+        /// <summary>
+        /// 比較可能な Version を生成します（pre-release / metadata は無視）。
+        /// </summary>
+        private static bool TryParseComparableVersion(string version, out Version parsed)
         {
-            major = 0;
-            minor = 0;
-            patch = 0;
-
+            parsed = null;
             if (string.IsNullOrWhiteSpace(version))
             {
                 return false;
             }
 
-            // 1.16.2-preview.1 などを考慮して先頭の数値3要素を抽出
-            var tokens = version.Split('.', '-', '+');
-            if (tokens.Length < 3)
-            {
-                return false;
-            }
-
-            return int.TryParse(tokens[0], out major)
-                   && int.TryParse(tokens[1], out minor)
-                   && int.TryParse(tokens[2], out patch);
+            // 例: 1.16.2-preview.1 / 1.16.2+meta -> 1.16.2
+            var core = version.Split('-', '+')[0];
+            return Version.TryParse(core, out parsed);
         }
 
         /// <summary>
@@ -214,7 +207,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (_warnedMismatch) return;
             _warnedMismatch = true;
 
-            Debug.LogWarning($"[OchibiChansConverterTool] Modular Avatar version mismatch. Installed: {installed}, recommended: {RecommendedVersion}. Integration will continue, but compatibility is not guaranteed.");
+            Debug.LogWarning($"[OchibiChansConverterTool] Modular Avatar version mismatch. Installed: {installed}, recommended range: {RecommendedVersionRangeLabel}. Integration will continue, but compatibility is not guaranteed.");
         }
 
         /// <summary>
@@ -225,7 +218,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (_warnedUnknown) return;
             _warnedUnknown = true;
 
-            Debug.LogWarning($"[OchibiChansConverterTool] Modular Avatar is present, but its version could not be determined. Recommended: {RecommendedVersion}.");
+            Debug.LogWarning($"[OchibiChansConverterTool] Modular Avatar is present, but its version could not be determined. Recommended range: {RecommendedVersionRangeLabel}.");
         }
     }
 }
