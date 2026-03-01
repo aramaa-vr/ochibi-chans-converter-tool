@@ -37,6 +37,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     {
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+        private static readonly HashSet<string> WarnedAttachmentModeNames = new HashSet<string>(System.StringComparer.Ordinal);
 
         /// <summary>
         /// BoneProxy target の妥当性判定結果。
@@ -269,10 +270,25 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (!string.Equals(attachmentModeName, "Unset", System.StringComparison.Ordinal)
                 && !string.Equals(attachmentModeName, "AsChildAtRoot", System.StringComparison.Ordinal))
             {
-                Debug.LogWarning($"[OchibiChansConverterTool] Unknown BoneProxy attachment mode '{attachmentModeName}'. Fallback: AsChildAtRoot.");
+                WarnUnknownAttachmentModeOnce(attachmentModeName);
             }
 
             return AttachmentModeBehavior.AtRoot;
+        }
+
+        private static void WarnUnknownAttachmentModeOnce(string attachmentModeName)
+        {
+            if (string.IsNullOrEmpty(attachmentModeName))
+            {
+                return;
+            }
+
+            if (!WarnedAttachmentModeNames.Add(attachmentModeName))
+            {
+                return;
+            }
+
+            Debug.LogWarning($"[OchibiChansConverterTool] Unknown BoneProxy attachment mode '{attachmentModeName}'. Fallback: AsChildAtRoot.");
         }
 
         /// <summary>

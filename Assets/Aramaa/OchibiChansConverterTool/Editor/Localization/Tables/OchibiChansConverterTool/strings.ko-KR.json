@@ -767,11 +767,11 @@
     },
     {
       "key": "Log.ModularAvatarVersionMismatch",
-      "value": "[WARN] Modular Avatar 버전: {0} (권장: {1}). 호환성은 보장되지 않지만 가능한 범위에서 연동을 시도합니다."
+      "value": "[WARN] Modular Avatar 버전: {0} (권장 범위: {1}). 호환성은 보장되지 않지만 가능한 범위에서 연동을 시도합니다."
     },
     {
       "key": "Log.ModularAvatarVersionUnknown",
-      "value": "[WARN] Modular Avatar가 감지되었지만 버전을 확인할 수 없습니다(권장: {0})."
+      "value": "[WARN] Modular Avatar가 감지되었지만 버전을 확인할 수 없습니다(권장 범위: {0})."
     }
   ]
 }

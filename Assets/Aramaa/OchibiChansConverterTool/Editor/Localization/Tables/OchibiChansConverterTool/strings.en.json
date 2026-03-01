@@ -767,11 +767,11 @@
     },
     {
       "key": "Log.ModularAvatarVersionMismatch",
-      "value": "[WARN] Modular Avatar version: {0} (recommended: {1}). Compatibility is not guaranteed, but integration will be attempted."
+      "value": "[WARN] Modular Avatar version: {0} (recommended range: {1}). Compatibility is not guaranteed, but integration will be attempted."
     },
     {
       "key": "Log.ModularAvatarVersionUnknown",
-      "value": "[WARN] Modular Avatar was detected, but its version could not be determined (recommended: {0})."
+      "value": "[WARN] Modular Avatar was detected, but its version could not be determined (recommended range: {0})."
     }
   ]
 }
