@@ -78,7 +78,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             installedVersion = installed;
-            return !string.Equals(installed, RecommendedVersion, StringComparison.Ordinal);
+            return !IsVersionInRecommendedRange(installed);
         }
 
         /// <summary>
@@ -96,11 +96,63 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-            if (!string.Equals(installed, RecommendedVersion, StringComparison.Ordinal))
+            if (!IsVersionInRecommendedRange(installed))
             {
                 logs?.Add(OCTLocalization.Format("Log.ModularAvatarVersionMismatch", installed, RecommendedVersion));
                 WarnMismatchOnce(installed);
             }
+        }
+
+        /// <summary>
+        /// 推奨範囲（>=1.16.2 かつ <2.0.0）に収まっているかを判定します。
+        /// パッチ/マイナー更新で不要な警告を減らす目的です。
+        /// </summary>
+        private static bool IsVersionInRecommendedRange(string installed)
+        {
+            if (!TryParseSemVer(installed, out var major, out var minor, out var patch))
+            {
+                return false;
+            }
+
+            if (major != 1)
+            {
+                return false;
+            }
+
+            if (minor > 16)
+            {
+                return true;
+            }
+
+            if (minor < 16)
+            {
+                return false;
+            }
+
+            return patch >= 2;
+        }
+
+        private static bool TryParseSemVer(string version, out int major, out int minor, out int patch)
+        {
+            major = 0;
+            minor = 0;
+            patch = 0;
+
+            if (string.IsNullOrWhiteSpace(version))
+            {
+                return false;
+            }
+
+            // 1.16.2-preview.1 などを考慮して先頭の数値3要素を抽出
+            var tokens = version.Split('.', '-', '+');
+            if (tokens.Length < 3)
+            {
+                return false;
+            }
+
+            return int.TryParse(tokens[0], out major)
+                   && int.TryParse(tokens[1], out minor)
+                   && int.TryParse(tokens[2], out patch);
         }
 
         /// <summary>

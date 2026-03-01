@@ -203,30 +203,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-            bool keepPos;
-            bool keepRot;
-
-            switch (proxy.AttachmentModeName)
-            {
-                case "AsChildKeepWorldPose":
-                    keepPos = true;
-                    keepRot = true;
-                    break;
-                case "AsChildKeepPosition":
-                    keepPos = true;
-                    keepRot = false;
-                    break;
-                case "AsChildKeepRotation":
-                    keepPos = false;
-                    keepRot = true;
-                    break;
-                case "Unset":
-                case "AsChildAtRoot":
-                default:
-                    keepPos = false;
-                    keepRot = false;
-                    break;
-            }
+            var attachmentMode = ParseAttachmentMode(proxy.AttachmentModeName);
+            bool keepPos = attachmentMode == AttachmentModeBehavior.KeepWorldPose
+                           || attachmentMode == AttachmentModeBehavior.KeepPosition;
+            bool keepRot = attachmentMode == AttachmentModeBehavior.KeepWorldPose
+                           || attachmentMode == AttachmentModeBehavior.KeepRotation;
 
             var t = proxy.Proxy.transform;
             if (keepPos)
@@ -246,6 +227,52 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 t.localRotation = Quaternion.identity;
             }
+        }
+
+        private enum AttachmentModeBehavior
+        {
+            AtRoot,
+            KeepWorldPose,
+            KeepPosition,
+            KeepRotation
+        }
+
+        /// <summary>
+        /// attachmentMode 名を安全に解釈します。
+        /// MA 側で命名が多少変わっても "Keep*" キーワードから解釈を試みます。
+        /// </summary>
+        private static AttachmentModeBehavior ParseAttachmentMode(string attachmentModeName)
+        {
+            if (string.IsNullOrEmpty(attachmentModeName))
+            {
+                return AttachmentModeBehavior.AtRoot;
+            }
+
+            if (string.Equals(attachmentModeName, "AsChildKeepWorldPose", System.StringComparison.Ordinal)
+                || attachmentModeName.IndexOf("KeepWorldPose", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return AttachmentModeBehavior.KeepWorldPose;
+            }
+
+            if (string.Equals(attachmentModeName, "AsChildKeepPosition", System.StringComparison.Ordinal)
+                || attachmentModeName.IndexOf("KeepPosition", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return AttachmentModeBehavior.KeepPosition;
+            }
+
+            if (string.Equals(attachmentModeName, "AsChildKeepRotation", System.StringComparison.Ordinal)
+                || attachmentModeName.IndexOf("KeepRotation", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return AttachmentModeBehavior.KeepRotation;
+            }
+
+            if (!string.Equals(attachmentModeName, "Unset", System.StringComparison.Ordinal)
+                && !string.Equals(attachmentModeName, "AsChildAtRoot", System.StringComparison.Ordinal))
+            {
+                Debug.LogWarning($"[OchibiChansConverterTool] Unknown BoneProxy attachment mode '{attachmentModeName}'. Fallback: AsChildAtRoot.");
+            }
+
+            return AttachmentModeBehavior.AtRoot;
         }
 
         /// <summary>

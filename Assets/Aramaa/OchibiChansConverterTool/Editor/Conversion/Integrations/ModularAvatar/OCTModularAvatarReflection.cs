@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
@@ -43,6 +44,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static readonly Dictionary<string, Type> TypeCache = new Dictionary<string, Type>(StringComparer.Ordinal);
         private static readonly HashSet<string> WarnedKeys = new HashSet<string>(StringComparer.Ordinal);
         private static bool _hadReflectionAccessFailure;
+        private static double _lastTypeCacheClearTime;
+        private const double TypeCacheClearIntervalSeconds = 60d;
+
+        static OCTModularAvatarReflection()
+        {
+            _lastTypeCacheClearTime = EditorApplication.timeSinceStartup;
+            AssemblyReloadEvents.beforeAssemblyReload += ClearTypeCache;
+            EditorApplication.playModeStateChanged += _ => MaybeClearTypeCachePeriodically();
+        }
 
         internal static bool TryGetBoneProxyType(out Type type) => TryGetType(BoneProxyTypeName, out type);
         internal static bool TryGetMergeArmatureType(out Type type) => TryGetType(MergeArmatureTypeName, out type);
@@ -53,6 +63,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         internal static bool TryGetType(string fullName, out Type type)
         {
+            MaybeClearTypeCachePeriodically();
+
             if (string.IsNullOrEmpty(fullName))
             {
                 type = null;
@@ -225,6 +237,23 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var hadFailure = _hadReflectionAccessFailure;
             _hadReflectionAccessFailure = false;
             return hadFailure;
+        }
+
+        private static void MaybeClearTypeCachePeriodically()
+        {
+            var now = EditorApplication.timeSinceStartup;
+            if (now - _lastTypeCacheClearTime < TypeCacheClearIntervalSeconds)
+            {
+                return;
+            }
+
+            ClearTypeCache();
+        }
+
+        private static void ClearTypeCache()
+        {
+            TypeCache.Clear();
+            _lastTypeCacheClearTime = EditorApplication.timeSinceStartup;
         }
 
         /// <summary>

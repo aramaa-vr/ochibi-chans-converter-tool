@@ -13,12 +13,6 @@
   "precompiledReferences": [],
   "autoReferenced": true,
   "defineConstraints": [],
-  "versionDefines": [
-    {
-      "name": "nadena.dev.modular-avatar",
-      "expression": "",
-      "define": "CHIBI_MODULAR_AVATAR"
-    }
-  ],
+  "versionDefines": [],
   "noEngineReferences": false
 }
