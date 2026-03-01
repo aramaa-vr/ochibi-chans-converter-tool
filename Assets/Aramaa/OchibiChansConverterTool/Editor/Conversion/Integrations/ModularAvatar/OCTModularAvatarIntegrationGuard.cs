@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
@@ -11,7 +10,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     ///
     /// 目的:
     /// - 推奨バージョンチェック（警告のみ。動作は継続）
-    /// - 連携の強制無効化（Scripting Define / EditorPrefs）
+    /// - 連携の強制無効化（Scripting Define）
     /// - Unity 2022.3.22f1 で存在する UnityEditor.PackageManager.PackageInfo API だけを使用する
     ///
     /// 注意:
@@ -22,8 +21,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     {
         internal const string ModularAvatarPackageName = "nadena.dev.modular-avatar";
         internal const string RecommendedVersion = "1.16.2";
-
-        private const string DisableIntegrationEditorPrefsKey = "Aramaa.OchibiChansConverterTool.DisableModularAvatarIntegration";
 
         private static bool _cached;
         private static bool _found;
@@ -39,14 +36,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 #if OCT_DISABLE_MA_INTEGRATION
                 return true;
 #else
-                return EditorPrefs.GetBool(DisableIntegrationEditorPrefsKey, false);
+                return false;
 #endif
             }
-        }
-
-        internal static void SetIntegrationDisabled(bool disabled)
-        {
-            EditorPrefs.SetBool(DisableIntegrationEditorPrefsKey, disabled);
         }
 
         /// <summary>
