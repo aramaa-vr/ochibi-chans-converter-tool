@@ -46,6 +46,10 @@
       "value": "Ochibi-chans Converter Tool"
     },
     {
+      "key": "Dialog.ModularAvatarReflectionWarning",
+      "value": "[WARN] Some Modular Avatar reflection lookups failed. The conversion result may be incomplete. Please check the logs."
+    },
+    {
       "key": "Error.DuplicateFailed",
       "value": "[Ochibi-chans] Failed to duplicate (Ctrl+D equivalent). Conversion will not run."
     },
@@ -760,6 +764,14 @@
     {
       "key": "Window.TitleWithVersion",
       "value": "{0} v{1}"
+    },
+    {
+      "key": "Log.ModularAvatarVersionMismatch",
+      "value": "[WARN] Modular Avatar version: {0} (recommended range: {1}). Compatibility is not guaranteed, but integration will be attempted."
+    },
+    {
+      "key": "Log.ModularAvatarVersionUnknown",
+      "value": "[WARN] Modular Avatar was detected, but its version could not be determined (recommended range: {0})."
     }
   ]
 }

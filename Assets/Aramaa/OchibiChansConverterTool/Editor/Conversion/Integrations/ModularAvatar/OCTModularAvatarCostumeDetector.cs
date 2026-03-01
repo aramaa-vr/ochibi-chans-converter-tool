@@ -2,35 +2,36 @@
 // ============================================================================
 // 概要
 // ============================================================================
-// - MA Mesh Settings を使って「衣装ルート候補」を検出する、MA依存クラスです。
-// - 検出だけに責務を限定し、スケール調整は別クラスへ委譲します。
+// - MA Mesh Settings を起点に、衣装候補 Transform を収集するクラスです。
+// - 値変更は行わず「検出専用」に徹します。
 //
 // ============================================================================
 // 重要メモ（初心者向け）
 // ============================================================================
-// - このクラスは CHIBI_MODULAR_AVATAR が有効な時だけ MAコンポーネントを参照します。
-// - 検出結果（Transform一覧）は「入力データ」であり、ここでは値変更をしません。
+// - MA への直接参照は使わず、反射で型解決して走査します。
+// - MA 未導入時は空リストを返すだけで安全に終了します。
 //
 // ============================================================================
 // チーム開発向けルール
 // ============================================================================
-// - MAコンポーネントの判定条件を変更する場合は、処理対象の意図をコメントに残す。
-// - ここにスケール適用ロジックを混ぜない（責務分離を維持）。
+// - ここに適用ロジック（scale/BlendShape 変更）を入れない。
+// - 検出条件を変える場合はログ・互換性影響を別 PR で明確化する。
 // ============================================================================
+
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-#if CHIBI_MODULAR_AVATAR
-using nadena.dev.modular_avatar.core;
-#endif
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
-    /// MA Mesh Settings を起点に衣装ルート候補を抽出する責務を持つクラス。
+    /// MA Mesh Settings を起点に衣装ルート候補を抽出します。
     /// </summary>
     internal static class OCTModularAvatarCostumeDetector
     {
+        /// <summary>
+        /// dstRoot 配下の衣装候補（重複なし）を返します。
+        /// </summary>
         internal static List<Transform> CollectCostumeRoots(GameObject dstRoot)
         {
             var costumeRoots = new List<Transform>();
@@ -39,13 +40,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return costumeRoots;
             }
 
-#if CHIBI_MODULAR_AVATAR
-            costumeRoots = dstRoot.GetComponentsInChildren<ModularAvatarMeshSettings>(true)
+            if (!OCTModularAvatarReflection.TryGetMeshSettingsType(out var meshSettingsType))
+            {
+                return costumeRoots;
+            }
+
+            costumeRoots = OCTModularAvatarReflection
+                .GetComponentsInChildren(dstRoot, meshSettingsType, includeInactive: true)
                 .Select(c => c != null ? c.transform : null)
                 .Where(t => t != null && t.gameObject != dstRoot)
                 .Distinct()
                 .ToList();
-#endif
 
             return costumeRoots;
         }

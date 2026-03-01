@@ -32,8 +32,24 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal static class OCTCostumeBlendShapeAdjuster
     {
+        private static readonly HashSet<string> OneShotWarningKeys = new HashSet<string>();
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
+        private static void WarnOnce(string key, string message)
+        {
+            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(message))
+            {
+                return;
+            }
+
+            if (!OneShotWarningKeys.Add(key))
+            {
+                return;
+            }
+
+            Debug.LogWarning(message);
+        }
 
         /// <summary>
         /// 検出済み衣装ルート群に対し、BlendShape 同期を順に実行します。
@@ -114,8 +130,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     {
                         weight = smr.GetBlendShapeWeight(i);
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        WarnOnce(
+                            $"BlendShapeRead:{mesh.name}:{i}",
+                            $"[OchibiChansConverterTool] Failed to read blendshape weight from mesh '{mesh.name}' at index {i}. This warning is shown once per mesh/index. Error: {e.Message}"
+                        );
                         continue;
                     }
 
@@ -295,8 +315,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 prop.GetArrayElementAtIndex(blendShapeIndex).floatValue = weight;
                 so.ApplyModifiedPropertiesWithoutUndo();
             }
-            catch
+            catch (Exception e)
             {
+                WarnOnce(
+                    $"BlendShapeSerializedWrite:{blendShapeIndex}",
+                    $"[OchibiChansConverterTool] Failed to write serialized blendshape weight at index {blendShapeIndex}. This warning is shown once per index. Error: {e.Message}"
+                );
                 // SetBlendShapeWeight が適用済みのため安全に無視
             }
         }

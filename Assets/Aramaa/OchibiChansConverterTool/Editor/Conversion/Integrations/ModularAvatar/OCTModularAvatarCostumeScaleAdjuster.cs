@@ -1,21 +1,41 @@
 #if UNITY_EDITOR
+// ============================================================================
+// 概要
+// ============================================================================
+// - MA MergeArmature のボーン対応情報を使って衣装ボーン localScale を補正します。
+// - MA 未導入や取得失敗時は何も変更せず終了します。
+//
+// ============================================================================
+// 重要メモ（初心者向け）
+// ============================================================================
+// - 反射で GetBonesMapping を呼ぶため、MA 側 API 変更時はここが影響を受けます。
+// - 1.0 に近いスケールは変更対象から除外し、差分最小化を優先します。
+//
+// ============================================================================
+// チーム開発向けルール
+// ============================================================================
+// - Undo 登録は維持する（ユーザーが戻せることを保証）。
+// - 補正条件の閾値変更時は既存アバターで目視確認を必須にする。
+// ============================================================================
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-#if CHIBI_MODULAR_AVATAR
-using nadena.dev.modular_avatar.core;
-#endif
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
-    /// Modular Avatar Merge Armature のボーン対応を利用して、衣装側ボーンの localScale を補正します。
+    /// MA マッピングに基づく衣装スケール補正クラスです。
     /// </summary>
     internal static class OCTModularAvatarCostumeScaleAdjuster
     {
         private const float ScaleEpsilon = 0.0001f;
         private static string L(string key) => OCTLocalization.Get(key);
 
+        /// <summary>
+        /// MergeArmature マッピングを使って衣装スケールを補正し、適用数を返します。
+        /// </summary>
         internal static int AdjustByMergeArmatureMapping(GameObject dstRoot, List<string> logs = null)
         {
             if (dstRoot == null)
@@ -23,9 +43,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return 0;
             }
 
-#if CHIBI_MODULAR_AVATAR
+            if (!OCTModularAvatarReflection.TryGetMergeArmatureType(out var mergeArmatureType))
+            {
+                return 0;
+            }
+
             int appliedCount = 0;
-            var mergers = dstRoot.GetComponentsInChildren<ModularAvatarMergeArmature>(true);
+
+            var mergers = OCTModularAvatarReflection
+                .GetComponentsInChildren(dstRoot, mergeArmatureType, includeInactive: true);
 
             foreach (var merger in mergers)
             {
@@ -34,18 +60,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                var mappings = merger.GetBonesMapping();
-                if (mappings == null || mappings.Count == 0)
+                var mappingsObj = OCTModularAvatarReflection.InvokeGetBonesMapping(merger);
+                if (!(mappingsObj is IEnumerable mappingsEnumerable))
+                {
+                    continue;
+                }
+
+                if (mappingsObj is ICollection col && col.Count == 0)
                 {
                     continue;
                 }
 
                 Undo.RegisterFullObjectHierarchyUndo(merger.gameObject, L("Undo.AdjustCostumeScales"));
 
-                foreach (var pair in mappings)
+                foreach (var pair in mappingsEnumerable)
                 {
-                    var baseBone = pair.Item1;
-                    var mergeBone = pair.Item2;
+                    if (pair == null) continue;
+
+                    if (!OCTModularAvatarReflection.TryGetValueTupleItem(pair, "Item1", out var baseBone)) continue;
+                    if (!OCTModularAvatarReflection.TryGetValueTupleItem(pair, "Item2", out var mergeBone)) continue;
+
                     if (baseBone == null || mergeBone == null)
                     {
                         continue;
@@ -74,7 +108,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         "Log.CostumeScaleApplied",
                         merger.name,
                         $"{baseBonePath}->{mergeBonePath}",
-                        "ModularAvatarMergeArmature",
+                        mergeArmatureType.Name,
                         mergeBonePath
                     );
                 }
@@ -86,11 +120,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return appliedCount;
-#else
-            return 0;
-#endif
         }
 
+        /// <summary>
+        /// スケールが (1,1,1) に十分近いかを判定します。
+        /// </summary>
         private static bool IsNearlyOne(Vector3 scale)
         {
             return Mathf.Abs(scale.x - 1f) < ScaleEpsilon
@@ -98,6 +132,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                    && Mathf.Abs(scale.z - 1f) < ScaleEpsilon;
         }
 
+        /// <summary>
+        /// 2 つのスケールが十分近いかを判定します。
+        /// </summary>
         private static bool IsNearlyEqual(Vector3 a, Vector3 b)
         {
             return Mathf.Abs(a.x - b.x) < ScaleEpsilon

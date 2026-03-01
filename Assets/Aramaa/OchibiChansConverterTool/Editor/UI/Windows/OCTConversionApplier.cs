@@ -152,6 +152,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private GUIStyle _linkStyle;
             private bool _cachedProSkin;
             private bool _isWindowActive;
+            private bool _maVersionChecked;
+            private bool _maVersionMismatch;
+            private string _maInstalledVersion;
 
             // 変換対象（Hierarchy で選択されているアバター）
             private GameObject _sourceTarget;
@@ -219,6 +222,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _versionError = null;
                 _versionStatus = OCTVersionStatus.Unknown;
                 _cachedProSkin = EditorGUIUtility.isProSkin;
+                _maVersionChecked = false;
+                _maVersionMismatch = false;
+                _maInstalledVersion = null;
                 ClearCachedStyles();
             }
 
@@ -246,6 +252,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         DrawLanguageSelector();
                         EnsureVersionCheck();
                         DrawVersionStatus();
+                        DrawModularAvatarRecommendedVersionWarning();
                         EditorGUILayout.Space(4);
                         EditorGUILayout.LabelField(L("Window.Description"), _descriptionStyle ?? EditorStyles.wordWrappedLabel);
                     });
@@ -369,6 +376,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 EditorGUILayout.Space(2);
             }
 
+            /// <summary>
+            /// ツール自体の最新バージョンチェック結果を表示します。
+            /// </summary>
             private void DrawVersionStatus()
             {
                 var message = GetVersionStatusMessage(out var color);
@@ -386,6 +396,28 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 ApplyStatusColor(_versionStatusStyle, color);
                 EditorGUILayout.LabelField(message, _versionStatusStyle ?? EditorStyles.miniLabel);
+            }
+
+            /// <summary>
+            /// MA 推奨バージョン不一致時に、ウィンドウ上へ警告を表示します。
+            /// </summary>
+            private void DrawModularAvatarRecommendedVersionWarning()
+            {
+                if (!_maVersionChecked)
+                {
+                    _maVersionChecked = true;
+                    _maVersionMismatch = OCTModularAvatarIntegrationGuard.TryGetRecommendedVersionMismatch(out _maInstalledVersion);
+                }
+
+                if (!_maVersionMismatch)
+                {
+                    return;
+                }
+
+                EditorGUILayout.HelpBox(
+                    F("Log.ModularAvatarVersionMismatch", _maInstalledVersion, OCTModularAvatarIntegrationGuard.RecommendedVersionRangeLabel),
+                    MessageType.Warning
+                );
             }
 
             private void UpdateWindowTitle()
@@ -768,6 +800,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     try
                     {
+                        // 1回の変換実行単位で反射失敗を判定するため、開始時にフラグを初期化する
+                        OCTModularAvatarReflection.ResetReflectionFailureFlag();
+
                         var applySucceeded = OCTConversionPipeline.DuplicateThenApply(
                             capturedSourcePrefab,
                             capturedTarget,
@@ -781,6 +816,16 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                             Undo.RecordObject(capturedTarget, L("Undo.DuplicateApply"));
                             capturedTarget.SetActive(false);
                             EditorUtility.SetDirty(capturedTarget);
+                        }
+
+                        // MA 反射参照で失敗があった場合は、変換が不完全な可能性をユーザーへ明示する
+                        if (OCTModularAvatarReflection.ConsumeReflectionFailureFlag())
+                        {
+                            EditorUtility.DisplayDialog(
+                                L("Dialog.ToolTitle"),
+                                L("Dialog.ModularAvatarReflectionWarning"),
+                                L("Dialog.Ok")
+                            );
                         }
                     }
                     catch (Exception e)
