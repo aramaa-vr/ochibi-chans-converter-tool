@@ -41,6 +41,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             public readonly Quaternion WorldRot;
             public readonly string AttachmentModeName;
 
+            public bool Applied;
+
             public ProxyInfo(Component proxy)
             {
                 Proxy = proxy;
@@ -52,6 +54,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 WorldPos = tr.position;
                 WorldRot = tr.rotation;
                 AttachmentModeName = OCTModularAvatarReflection.GetBoneProxyAttachmentModeName(proxy);
+
+                Applied = false;
             }
 
             public Transform ResolveTarget()
@@ -114,6 +118,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             // 4) 親->子 の順で keep-world の補正を行う（MA 1.16.2 に寄せる）
             foreach (var info in proxyInfos
+                         .Where(i => i != null && i.Applied)
                          .OrderBy(i => GetDepthFromRoot(avatarRoot.transform, i.Proxy.transform)))
             {
                 AdjustTransform(info);
@@ -146,6 +151,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (validation == ValidationResult.Ok)
             {
+                proxy.Applied = true;
                 // 実際に移動するケースだけ Prefab を Unpack する
                 // （ターゲット不正で最終的にスキップされる BoneProxy では Unpack しない）
                 UnpackPrefabIfNeeded(proxy.Proxy.gameObject, unpackedPrefabRoots, logs);
