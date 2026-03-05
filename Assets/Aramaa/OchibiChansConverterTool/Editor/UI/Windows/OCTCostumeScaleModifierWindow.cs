@@ -15,7 +15,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private const string MenuPath = "Aramaa/対応衣装スケール調整ツール (Outfit Scale Adjuster)";
         private const string HelpVideoUrl = "https://youtu.be/Zh0Z0pzjmdk";
 
-        private readonly List<GameObject> _costumes = new List<GameObject>();
         private readonly List<string> _modificationLog = new List<string>();
 
         [MenuItem(MenuPath)]
@@ -67,29 +66,30 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             DragAndDrop.AcceptDrag();
+            var costumes = new List<GameObject>();
             foreach (var draggedObject in DragAndDrop.objectReferences)
             {
-                if (draggedObject is GameObject gameObject && !_costumes.Contains(gameObject))
+                if (draggedObject is GameObject gameObject && !costumes.Contains(gameObject))
                 {
-                    _costumes.Add(gameObject);
+                    costumes.Add(gameObject);
                 }
             }
 
-            if (_costumes.Count == 0)
+            if (costumes.Count == 0)
             {
                 return;
             }
 
             Undo.IncrementCurrentGroup();
             var undoGroup = Undo.GetCurrentGroup();
-            foreach (var costume in _costumes)
+            foreach (var costume in costumes)
             {
                 Undo.RegisterCompleteObjectUndo(costume, "Modify Scale");
             }
 
             _modificationLog.Clear();
             var totalAppliedCount = 0;
-            foreach (var costume in _costumes)
+            foreach (var costume in costumes)
             {
                 if (costume == null)
                 {
@@ -111,7 +111,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             OCTConversionLogWindow.ShowLogs("衣装スケール調整ログ", _modificationLog);
 
             Undo.CollapseUndoOperations(undoGroup);
-            _costumes.Clear();
 
             Event.current.Use();
         }
