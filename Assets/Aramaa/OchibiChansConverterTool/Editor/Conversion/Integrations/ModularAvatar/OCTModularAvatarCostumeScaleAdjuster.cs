@@ -176,16 +176,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return true;
         }
 
-        internal static void ApplyRootScaleCompensation(Transform targetRoot)
-        {
-            if (targetRoot == null || targetRoot.root == null)
-            {
-                return;
-            }
-
-            targetRoot.localScale = Vector3.Scale(targetRoot.localScale, targetRoot.root.localScale);
-        }
-
         internal static bool IsNearlyOne(Vector3 scale)
         {
             return Mathf.Abs(scale.x - 1f) < ScaleEpsilon
