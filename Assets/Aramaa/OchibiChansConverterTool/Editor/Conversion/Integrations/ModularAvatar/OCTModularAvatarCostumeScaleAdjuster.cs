@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 #if CHIBI_MODULAR_AVATAR
 using nadena.dev.modular_avatar.core;
@@ -25,6 +26,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
 #if CHIBI_MODULAR_AVATAR
             int appliedCount = 0;
+            int copiedScaleAdjusterCount = 0;
             var mergers = dstRoot.GetComponentsInChildren<ModularAvatarMergeArmature>(true);
 
             foreach (var merger in mergers)
@@ -50,6 +52,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     {
                         continue;
                     }
+
+                    // Scale 値の適用有無に関係なく、必要なら ScaleAdjuster の複製を試みます。
+                    // これにより baseBone の localScale が (1,1,1) でも、設定済みコンポーネントを衣装側へ反映できます。
+                    copiedScaleAdjusterCount += CopyScaleAdjusterIfNeeded(baseBone, mergeBone, logs);
 
                     if (IsNearlyOne(baseBone.localScale))
                     {
@@ -77,6 +83,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         "ModularAvatarMergeArmature",
                         mergeBonePath
                     );
+
                 }
             }
 
@@ -85,11 +92,70 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 logs?.Add($"[MA Merge Armature] Applied scale adjustments: {appliedCount}");
             }
 
+            if (copiedScaleAdjusterCount > 0)
+            {
+                logs?.Add($"[MA Scale Adjuster] Copied components: {copiedScaleAdjusterCount}");
+            }
+
             return appliedCount;
 #else
             return 0;
 #endif
         }
+
+#if CHIBI_MODULAR_AVATAR
+        /// <summary>
+        /// マッピング元ボーンに ScaleAdjuster がある場合、マッピング先へ値ごと複製します。
+        /// 既に先に同コンポーネントが付いている場合は上書きせず安全にスキップします。
+        /// </summary>
+        private static int CopyScaleAdjusterIfNeeded(Transform baseBone, Transform mergeBone, List<string> logs)
+        {
+            if (baseBone == null || mergeBone == null)
+            {
+                return 0;
+            }
+
+            var source = baseBone.GetComponent<ModularAvatarScaleAdjuster>();
+            if (source == null)
+            {
+                return 0;
+            }
+
+            if (mergeBone.GetComponent<ModularAvatarScaleAdjuster>() != null)
+            {
+                return 0;
+            }
+
+            // ComponentUtility のコピーは内部バッファに依存するため、先にコピー可否を確認します。
+            if (!ComponentUtility.CopyComponent(source))
+            {
+                logs?.Add($"[MA Scale Adjuster] Skip copy (copy buffer failed): {OCTConversionLogFormatter.GetHierarchyPath(baseBone)}");
+                return 0;
+            }
+
+            // Paste 失敗時に中途半端な状態を残さないため、追加したコンポーネントを即座に破棄します。
+            var added = Undo.AddComponent<ModularAvatarScaleAdjuster>(mergeBone.gameObject);
+            if (added == null)
+            {
+                return 0;
+            }
+
+            if (!ComponentUtility.PasteComponentValues(added))
+            {
+                Undo.DestroyObjectImmediate(added);
+                logs?.Add($"[MA Scale Adjuster] Skip copy (paste failed): {OCTConversionLogFormatter.GetHierarchyPath(mergeBone)}");
+                return 0;
+            }
+
+            EditorUtility.SetDirty(mergeBone);
+
+            var srcPath = OCTConversionLogFormatter.GetHierarchyPath(baseBone);
+            var dstPath = OCTConversionLogFormatter.GetHierarchyPath(mergeBone);
+            logs?.Add($"[MA Scale Adjuster] Copied: {srcPath} -> {dstPath}");
+
+            return 1;
+        }
+#endif
 
         private static bool IsNearlyOne(Vector3 scale)
         {
