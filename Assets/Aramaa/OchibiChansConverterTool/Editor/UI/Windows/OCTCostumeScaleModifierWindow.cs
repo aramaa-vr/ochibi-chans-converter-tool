@@ -12,7 +12,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal sealed class OCTCostumeScaleModifierWindow : EditorWindow
     {
         private const string WindowTitle = "衣装スケール調整ツール";
-        private const string MenuPath = "Aramaa/衣装スケール調整ツール";
+        private const string MenuPath = "Aramaa/対応衣装スケール調整ツール (Outfit Scale Adjuster)";
         private const string HelpVideoUrl = "https://youtu.be/Zh0Z0pzjmdk";
 
         private readonly List<GameObject> _costumes = new List<GameObject>();
