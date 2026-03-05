@@ -44,6 +44,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             DrawCustomHelpBox(
                 "1. スケール変更したアバターをHierarchy直下に置く\n" +
+                "衣装オブジェクトを右クリックし、[ModularAvatar] Setup Outfitを選択\n" +
                 "2. 対応衣装をHierarchy直下に置く\n" +
                 "3. 対応衣装をスケール変更したアバターにドラッグ＆ドロップ\n" +
                 "4. 対応衣装をこのツールにドラッグ＆ドロップ"
