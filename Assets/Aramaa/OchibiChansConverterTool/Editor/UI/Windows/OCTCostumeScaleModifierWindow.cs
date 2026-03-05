@@ -87,7 +87,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             _modificationLog.Clear();
-            _modificationLog.AddRange(OCTModularAvatarCostumeScaleAdjuster.AdjustCostumesByAvatarArmature(_costumes));
+            var totalAppliedCount = 0;
+            foreach (var costume in _costumes)
+            {
+                if (costume == null)
+                {
+                    continue;
+                }
+
+                _modificationLog.Add($"スケール調整対象: {costume.name}");
+                var appliedCount = OCTModularAvatarCostumeScaleAdjuster.AdjustByMergeArmatureMapping(costume, _modificationLog);
+                totalAppliedCount += appliedCount;
+                _modificationLog.Add($"適用数: {appliedCount}");
+                _modificationLog.Add(string.Empty);
+            }
+
+            if (totalAppliedCount == 0)
+            {
+                _modificationLog.Add("スケール調整は 0 件でした。Modular Avatar 未導入、または Merge Armature マッピングが無い可能性があります。");
+            }
+
             OCTConversionLogWindow.ShowLogs("衣装スケール調整ログ", _modificationLog);
 
             Undo.CollapseUndoOperations(undoGroup);

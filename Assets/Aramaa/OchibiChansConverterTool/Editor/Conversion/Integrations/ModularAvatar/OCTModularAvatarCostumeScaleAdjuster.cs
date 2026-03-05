@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -156,95 +155,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
 
 
-        internal static List<string> AdjustCostumesByAvatarArmature(IReadOnlyList<GameObject> costumes)
-        {
-            var logs = new List<string>();
-            if (costumes == null || costumes.Count == 0)
-            {
-                return logs;
-            }
 
-            var firstCostume = costumes.FirstOrDefault();
-            if (firstCostume == null || firstCostume.transform == null)
-            {
-                return logs;
-            }
-
-            const string armatureName = "Armature";
-            var armatureTransform = firstCostume.transform.root.Find(armatureName);
-            if (armatureTransform == null)
-            {
-                logs.Add("Armature が見つからないため処理を終了しました。");
-                return logs;
-            }
-
-            var scaleModifiers = new Dictionary<string, Vector3>();
-            logs.Add("アバターのスケールが変更されているオブジェクト名");
-            foreach (var child in armatureTransform.GetComponentsInChildren<Transform>(true))
-            {
-                if (IsNearlyOne(child.localScale))
-                {
-                    continue;
-                }
-
-                if (!scaleModifiers.ContainsKey(child.name))
-                {
-                    scaleModifiers[child.name] = child.localScale;
-                    logs.Add(child.name);
-                }
-            }
-
-            logs.Add(string.Empty);
-            if (scaleModifiers.Count == 0)
-            {
-                logs.Add("スケール変更済みボーンが見つかりませんでした。Armature 配下の localScale を確認してください。");
-                return logs;
-            }
-
-            foreach (var costume in costumes)
-            {
-                if (costume == null)
-                {
-                    continue;
-                }
-
-                logs.Add($"スケールが調整された衣装のオブジェクト名: {costume.name}");
-                var costumeTransform = costume.transform;
-                ApplyRootScaleCompensation(costumeTransform);
-                logs.Add(OCTConversionLogFormatter.GetHierarchyPath(costumeTransform));
-
-                var remaining = costumeTransform.GetComponentsInChildren<Transform>(true).ToList();
-                foreach (var modifier in scaleModifiers)
-                {
-                    Transform matchedTransform = null;
-                    foreach (var costumeBone in remaining)
-                    {
-                        if (!costumeBone.name.Contains(modifier.Key))
-                        {
-                            continue;
-                        }
-
-                        if (!TryApplyScaleModifier(costumeBone, modifier.Value))
-                        {
-                            continue;
-                        }
-
-                        logs.Add(OCTConversionLogFormatter.GetHierarchyPath(costumeBone));
-                        matchedTransform = costumeBone;
-                        break;
-                    }
-
-                    if (matchedTransform != null)
-                    {
-                        remaining.Remove(matchedTransform);
-                    }
-                }
-
-                logs.Add(string.Empty);
-            }
-
-            return logs;
-        }
 
         internal static bool TryApplyScaleModifier(Transform targetBone, Vector3 scaleModifier)
         {
