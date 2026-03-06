@@ -104,11 +104,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (Event.current.type == EventType.DragPerform)
                 {
                     DragAndDrop.AcceptDrag();
-                    EditorUtility.DisplayDialog(
-                        L("Dialog.ToolTitle"),
-                        L("CostumeScaleWindow.ModularAvatarMissingDialog"),
-                        L("Dialog.Ok")
-                    );
+                    if (DragAndDrop.objectReferences.Length > 0)
+                    {
+                        EditorUtility.DisplayDialog(
+                            L("Dialog.ToolTitle"),
+                            L("CostumeScaleWindow.ModularAvatarMissingDialog"),
+                            L("Dialog.Ok")
+                        );
+                    }
                     Event.current.Use();
                 }
                 return;
@@ -121,7 +124,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (Event.current.type == EventType.DragPerform)
                 {
                     DragAndDrop.AcceptDrag();
-                    ShowInvalidOutfitDialog();
+                    if (DragAndDrop.objectReferences.Length > 0 && validation.HasInvalidOutfitCandidate)
+                    {
+                        ShowInvalidOutfitDialog();
+                    }
                     Event.current.Use();
                 }
                 return;
