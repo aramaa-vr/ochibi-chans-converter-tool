@@ -820,6 +820,14 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "Show processing log window"
+    },
+    {
+      "key": "Toggle.ReverseConversion",
+      "value": "Reverse conversion (Ochibi-chans -> base avatar candidates)"
+    },
+    {
+      "key": "Help.ReverseConversion",
+      "value": "When reverse conversion is enabled, the tool uses the selected avatar's face-mesh information from step 1 to automatically search base-avatar prefab candidates."
     }
   ]
 }

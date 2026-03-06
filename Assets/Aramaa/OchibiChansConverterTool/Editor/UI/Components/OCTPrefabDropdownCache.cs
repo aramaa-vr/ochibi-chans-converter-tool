@@ -149,7 +149,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// <summary>
         /// 対象アバターが変わったときのみ候補を再計算します。
         /// </summary>
-        public void RefreshIfNeeded(GameObject sourceTarget)
+        public void RefreshIfNeeded(GameObject sourceTarget, bool reverseConversion)
         {
             if (sourceTarget == null)
             {
@@ -170,6 +170,23 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (!TryGetFaceMeshSignature(sourceTarget, out var avatarFaceMeshSignature)) return;
 
+            if (reverseConversion)
+            {
+                var reverseCandidatePaths = FindReverseCandidatePrefabPaths(avatarFaceMeshSignature, sourceTarget.name);
+                foreach (var candidatePath in reverseCandidatePaths)
+                {
+                    _candidatePrefabPaths.Add(candidatePath);
+                    _candidateDisplayNames.Add(BuildReverseCandidateDisplayName(candidatePath));
+                }
+
+                if (_candidatePrefabPaths.Count > 0)
+                {
+                    ApplySelection(0);
+                }
+
+                return;
+            }
+
             var subFolders = AssetDatabase.GetSubFolders(BaseFolder);
             foreach (var folder in subFolders)
             {
@@ -186,6 +203,104 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 ApplySelection(_selectedPrefabIndex);
             }
+        }
+
+
+        private static List<string> FindReverseCandidatePrefabPaths(FaceMeshSignature avatarFaceMeshSignature, string sourceTargetName)
+        {
+            if (!avatarFaceMeshSignature.HasAnyIdentity)
+            {
+                return new List<string>();
+            }
+
+            var allPrefabGuids = AssetDatabase.FindAssets("t:Prefab");
+            if (allPrefabGuids == null || allPrefabGuids.Length == 0)
+            {
+                return new List<string>();
+            }
+
+            var matchedPaths = new List<string>();
+            foreach (var guid in allPrefabGuids)
+            {
+                var prefabPath = AssetDatabase.GUIDToAssetPath(guid);
+                if (string.IsNullOrEmpty(prefabPath) ||
+                    !prefabPath.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!PrefabHasMatchingFaceMesh(prefabPath, avatarFaceMeshSignature))
+                {
+                    continue;
+                }
+
+                matchedPaths.Add(prefabPath);
+            }
+
+            return matchedPaths
+                .OrderByDescending(path => BuildReverseCandidateScore(path, sourceTargetName))
+                .ThenBy(path => path.Length)
+                .ToList();
+        }
+
+        private static int BuildReverseCandidateScore(string prefabPath, string sourceTargetName)
+        {
+            var score = 0;
+            var prefabFileName = Path.GetFileNameWithoutExtension(prefabPath) ?? string.Empty;
+            var sourceTokens = TokenizeName(sourceTargetName);
+
+            foreach (var token in sourceTokens)
+            {
+                if (prefabFileName.IndexOf(token, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    score += 10;
+                }
+
+                if (prefabPath.IndexOf($"/{token}/", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    score += 4;
+                }
+            }
+
+            if (prefabFileName.IndexOf("kisekae", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                score += 3;
+            }
+
+            return score;
+        }
+
+        private static string BuildReverseCandidateDisplayName(string prefabPath)
+        {
+            if (string.IsNullOrEmpty(prefabPath))
+            {
+                return string.Empty;
+            }
+
+            var folderName = Path.GetFileName(Path.GetDirectoryName(prefabPath) ?? string.Empty);
+            var prefabFileName = Path.GetFileNameWithoutExtension(prefabPath);
+            if (string.IsNullOrEmpty(folderName))
+            {
+                return prefabFileName;
+            }
+
+            return $"{prefabFileName} ({folderName})";
+        }
+
+        private static List<string> TokenizeName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return new List<string>();
+            }
+
+            var separators = new[] { ' ', '_', '-', '/', '\\', '(', ')', '[', ']', '{', '}', '.' };
+            return value
+                .Split(separators, StringSplitOptions.RemoveEmptyEntries)
+                .Select(token => token.Trim())
+                .Where(token => token.Length >= 2)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
 
         private void ClearState()
