@@ -116,7 +116,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             _modificationLog.Clear();
-            var totalAppliedCount = 0;
+            var hasAnyModification = false;
             foreach (var costume in costumes)
             {
                 if (costume == null)
@@ -125,14 +125,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 _modificationLog.Add(F("CostumeScaleWindow.LogTarget", costume.name));
-                ApplyCostumeScaleByParentDescriptor(costume.transform);
-                var appliedCount = OCTModularAvatarCostumeScaleAdjuster.AdjustByMergeArmatureMapping(costume, _modificationLog);
-                totalAppliedCount += appliedCount;
+                var rootScaleChanged = ApplyCostumeScaleByParentDescriptor(costume.transform);
+                var appliedCount = OCTModularAvatarCostumeScaleAdjuster.AdjustByMergeArmatureMapping(costume, _modificationLog, out var copiedScaleAdjusterCount);
+                hasAnyModification |= rootScaleChanged || appliedCount > 0 || copiedScaleAdjusterCount > 0;
                 _modificationLog.Add(F("CostumeScaleWindow.LogAppliedCount", appliedCount));
                 _modificationLog.Add(string.Empty);
             }
 
-            if (totalAppliedCount == 0)
+            if (!hasAnyModification)
             {
                 _modificationLog.Add(L("CostumeScaleWindow.LogNoApplied"));
             }
@@ -181,20 +181,20 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return gameObject.scene.IsValid() && gameObject.scene.isLoaded;
         }
 
-        private static void ApplyCostumeScaleByParentDescriptor(Transform costumeTransform)
+        private static bool ApplyCostumeScaleByParentDescriptor(Transform costumeTransform)
         {
             if (costumeTransform == null)
             {
-                return;
+                return false;
             }
 
             var descriptorOwner = FindParentDescriptorOwner(costumeTransform.parent);
             if (descriptorOwner == null)
             {
-                return;
+                return false;
             }
 
-            costumeTransform.localScale = Vector3.Scale(costumeTransform.localScale, descriptorOwner.localScale);
+            return OCTModularAvatarCostumeScaleAdjuster.TryApplyScaleModifier(costumeTransform, descriptorOwner.localScale);
         }
 
         private static Transform FindParentDescriptorOwner(Transform from)

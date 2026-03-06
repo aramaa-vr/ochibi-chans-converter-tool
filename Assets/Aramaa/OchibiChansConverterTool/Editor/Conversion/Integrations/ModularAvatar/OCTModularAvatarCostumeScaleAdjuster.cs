@@ -19,6 +19,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         internal static int AdjustByMergeArmatureMapping(GameObject dstRoot, List<string> logs = null)
         {
+            return AdjustByMergeArmatureMapping(dstRoot, logs, out _);
+        }
+
+        internal static int AdjustByMergeArmatureMapping(GameObject dstRoot, List<string> logs, out int copiedScaleAdjusterCount)
+        {
+            copiedScaleAdjusterCount = 0;
             if (dstRoot == null)
             {
                 return 0;
@@ -26,7 +32,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
 #if CHIBI_MODULAR_AVATAR
             int appliedCount = 0;
-            int copiedScaleAdjusterCount = 0;
             var mergers = dstRoot.GetComponentsInChildren<ModularAvatarMergeArmature>(true);
 
             foreach (var merger in mergers)
