@@ -16,7 +16,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
-        private const string MenuPath = "Aramaa/対応衣装スケール調整ツール (Outfit Scale Adjuster)";
+        private const string MenuPath = "Tools/Aramaa/対応衣装スケール調整ツール (Outfit Scale Adjuster)";
         private const string HelpVideoUrl = "https://youtu.be/Zh0Z0pzjmdk";
 
         private readonly List<string> _modificationLog = new List<string>();
