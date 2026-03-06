@@ -81,6 +81,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
+            var costumes = CollectValidSceneCostumes();
+            if (costumes.Count == 0)
+            {
+                DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
+                return;
+            }
+
             DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
             if (Event.current.type != EventType.DragPerform)
             {
@@ -88,19 +95,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             DragAndDrop.AcceptDrag();
-            var costumes = new List<GameObject>();
-            foreach (var draggedObject in DragAndDrop.objectReferences)
-            {
-                if (draggedObject is GameObject gameObject && !costumes.Contains(gameObject))
-                {
-                    costumes.Add(gameObject);
-                }
-            }
-
-            if (costumes.Count == 0)
-            {
-                return;
-            }
 
             Undo.IncrementCurrentGroup();
             var undoGroup = Undo.GetCurrentGroup();
@@ -136,6 +130,27 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             Undo.CollapseUndoOperations(undoGroup);
 
             Event.current.Use();
+        }
+
+        private static List<GameObject> CollectValidSceneCostumes()
+        {
+            var costumes = new List<GameObject>();
+            foreach (var draggedObject in DragAndDrop.objectReferences)
+            {
+                if (!(draggedObject is GameObject gameObject) || EditorUtility.IsPersistent(gameObject))
+                {
+                    continue;
+                }
+
+                if (!gameObject.scene.IsValid() || !gameObject.scene.isLoaded || costumes.Contains(gameObject))
+                {
+                    continue;
+                }
+
+                costumes.Add(gameObject);
+            }
+
+            return costumes;
         }
 
         private static void ApplyCostumeScaleByParentDescriptor(Transform costumeTransform)
