@@ -29,7 +29,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             // 既存仕様に合わせて DPI スケール込みの固定サイズにします。
             var dpiScale = EditorGUIUtility.pixelsPerPoint;
-            var fixedSize = new Vector2(350, 200) * dpiScale;
+            var fixedSize = new Vector2(450, 250) * dpiScale;
             window.minSize = fixedSize;
             window.maxSize = fixedSize;
         }
@@ -241,11 +241,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var centerStyle = new GUIStyle(EditorStyles.label)
             {
                 alignment = TextAnchor.MiddleCenter,
-                fontSize = 14,
+                fontSize = 20,
                 fontStyle = FontStyle.Bold
             };
 
             EditorGUILayout.LabelField(L("CostumeScaleWindow.DropHereLine1"), centerStyle);
+            EditorGUILayout.Space();
             EditorGUILayout.LabelField(L("CostumeScaleWindow.DropHereLine2"), centerStyle);
         }
     }
