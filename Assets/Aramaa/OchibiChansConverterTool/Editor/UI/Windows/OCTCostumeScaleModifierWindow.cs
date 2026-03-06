@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -35,6 +36,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private void OnGUI()
         {
+            DrawLanguageSelector();
             EditorGUILayout.LabelField(L("CostumeScaleWindow.Description"), EditorStyles.boldLabel);
 
             HandleDragAndDrop();
@@ -48,6 +50,28 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             DrawCustomHelpBox(L("CostumeScaleWindow.HelpSteps"));
 
             DrawCenteredLabel();
+        }
+
+        private void DrawLanguageSelector()
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.PrefixLabel(L("Language.Label"));
+
+                var displayNames = OCTLocalization.GetLanguageDisplayNames() ?? Array.Empty<string>();
+                if (displayNames.Length == 0)
+                {
+                    return;
+                }
+
+                var currentIndex = Mathf.Clamp(OCTLocalization.GetLanguageIndex(), 0, displayNames.Length - 1);
+                var nextIndex = EditorGUILayout.Popup(currentIndex, displayNames);
+                if (nextIndex != currentIndex)
+                {
+                    OCTLocalization.SetLanguage(OCTLocalization.GetLanguageCodeFromIndex(nextIndex));
+                    Repaint();
+                }
+            }
         }
 
         private void HandleDragAndDrop()

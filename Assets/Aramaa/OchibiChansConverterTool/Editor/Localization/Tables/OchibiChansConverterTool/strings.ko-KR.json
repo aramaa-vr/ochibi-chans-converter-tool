@@ -763,39 +763,39 @@
     },
     {
       "key": "CostumeScaleWindow.Description",
-      "value": "スケール変更したアバターへ対応衣装を合わせるツールです。"
+      "value": "스케일이 변경된 아바타에 대응 의상을 맞추는 도구입니다."
     },
     {
       "key": "CostumeScaleWindow.VideoLink",
-      "value": "説明用動画を見る"
+      "value": "설명용 영상 보기"
     },
     {
       "key": "CostumeScaleWindow.HelpSteps",
-      "value": "1. スケール変更したアバターをHierarchy直下に置く\n2. 衣装オブジェクトを右クリックし、[ModularAvatar] Setup Outfitを選択\n3. 対応衣装をHierarchy直下に置く\n4. 対応衣装をスケール変更したアバターにドラッグ＆ドロップ\n5. 対応衣装をこのツールにドラッグ＆ドロップ"
+      "value": "1. 스케일을 변경한 아바타를 Hierarchy 최상위에 둡니다\n2. 의상 오브젝트를 우클릭하고 [ModularAvatar] Setup Outfit을 선택합니다\n3. 대응 의상을 Hierarchy 최상위에 둡니다\n4. 대응 의상을 스케일 변경된 아바타에 드래그 앤 드롭합니다\n5. 대응 의상을 이 도구로 드래그 앤 드롭합니다"
     },
     {
       "key": "CostumeScaleWindow.DropHereLine1",
-      "value": "対応衣装をここに"
+      "value": "대응 의상을 여기에"
     },
     {
       "key": "CostumeScaleWindow.DropHereLine2",
-      "value": "ドラッグ＆ドロップ"
+      "value": "드래그 앤 드롭"
     },
     {
       "key": "CostumeScaleWindow.LogTitle",
-      "value": "衣装スケール調整ログ"
+      "value": "의상 스케일 조정 로그"
     },
     {
       "key": "CostumeScaleWindow.LogTarget",
-      "value": "スケール調整対象: {0}"
+      "value": "스케일 조정 대상: {0}"
     },
     {
       "key": "CostumeScaleWindow.LogAppliedCount",
-      "value": "適用数: {0}"
+      "value": "적용 수: {0}"
     },
     {
       "key": "CostumeScaleWindow.LogNoApplied",
-      "value": "スケール調整は 0 件でした。Modular Avatar 未導入、または Merge Armature マッピングが無い可能性があります。"
+      "value": "스케일 조정이 0건이었습니다. Modular Avatar가 설치되어 있지 않거나 Merge Armature 매핑이 없을 수 있습니다."
     }
   ]
 }

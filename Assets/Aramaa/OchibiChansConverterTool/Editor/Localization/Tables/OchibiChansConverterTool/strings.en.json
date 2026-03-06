@@ -763,39 +763,39 @@
     },
     {
       "key": "CostumeScaleWindow.Description",
-      "value": "スケール変更したアバターへ対応衣装を合わせるツールです。"
+      "value": "This tool fits compatible outfits to avatars whose scale has been changed."
     },
     {
       "key": "CostumeScaleWindow.VideoLink",
-      "value": "説明用動画を見る"
+      "value": "Watch the tutorial video"
     },
     {
       "key": "CostumeScaleWindow.HelpSteps",
-      "value": "1. スケール変更したアバターをHierarchy直下に置く\n2. 衣装オブジェクトを右クリックし、[ModularAvatar] Setup Outfitを選択\n3. 対応衣装をHierarchy直下に置く\n4. 対応衣装をスケール変更したアバターにドラッグ＆ドロップ\n5. 対応衣装をこのツールにドラッグ＆ドロップ"
+      "value": "1. Place the scaled avatar at the root of the Hierarchy\n2. Right-click the outfit object and select [ModularAvatar] Setup Outfit\n3. Place the compatible outfit at the root of the Hierarchy\n4. Drag and drop the compatible outfit onto the scaled avatar\n5. Drag and drop the compatible outfit into this tool"
     },
     {
       "key": "CostumeScaleWindow.DropHereLine1",
-      "value": "対応衣装をここに"
+      "value": "Drop compatible outfits here"
     },
     {
       "key": "CostumeScaleWindow.DropHereLine2",
-      "value": "ドラッグ＆ドロップ"
+      "value": "Drag & Drop"
     },
     {
       "key": "CostumeScaleWindow.LogTitle",
-      "value": "衣装スケール調整ログ"
+      "value": "Outfit Scale Adjustment Log"
     },
     {
       "key": "CostumeScaleWindow.LogTarget",
-      "value": "スケール調整対象: {0}"
+      "value": "Scale adjustment target: {0}"
     },
     {
       "key": "CostumeScaleWindow.LogAppliedCount",
-      "value": "適用数: {0}"
+      "value": "Applied count: {0}"
     },
     {
       "key": "CostumeScaleWindow.LogNoApplied",
-      "value": "スケール調整は 0 件でした。Modular Avatar 未導入、または Merge Armature マッピングが無い可能性があります。"
+      "value": "No scale adjustments were applied. Modular Avatar may not be installed, or there may be no Merge Armature mapping."
     }
   ]
 }

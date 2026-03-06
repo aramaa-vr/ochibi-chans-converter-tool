@@ -763,39 +763,39 @@
     },
     {
       "key": "CostumeScaleWindow.Description",
-      "value": "スケール変更したアバターへ対応衣装を合わせるツールです。"
+      "value": "這是將對應服裝套用到已縮放 Avatar 的工具。"
     },
     {
       "key": "CostumeScaleWindow.VideoLink",
-      "value": "説明用動画を見る"
+      "value": "觀看說明影片"
     },
     {
       "key": "CostumeScaleWindow.HelpSteps",
-      "value": "1. スケール変更したアバターをHierarchy直下に置く\n2. 衣装オブジェクトを右クリックし、[ModularAvatar] Setup Outfitを選択\n3. 対応衣装をHierarchy直下に置く\n4. 対応衣装をスケール変更したアバターにドラッグ＆ドロップ\n5. 対応衣装をこのツールにドラッグ＆ドロップ"
+      "value": "1. 將已縮放的 Avatar 放在 Hierarchy 根層級\n2. 右鍵點擊服裝物件並選擇 [ModularAvatar] Setup Outfit\n3. 將對應服裝放在 Hierarchy 根層級\n4. 將對應服裝拖放到已縮放的 Avatar 上\n5. 將對應服裝拖放到此工具中"
     },
     {
       "key": "CostumeScaleWindow.DropHereLine1",
-      "value": "対応衣装をここに"
+      "value": "將對應服裝拖到這裡"
     },
     {
       "key": "CostumeScaleWindow.DropHereLine2",
-      "value": "ドラッグ＆ドロップ"
+      "value": "拖放"
     },
     {
       "key": "CostumeScaleWindow.LogTitle",
-      "value": "衣装スケール調整ログ"
+      "value": "服裝縮放調整日誌"
     },
     {
       "key": "CostumeScaleWindow.LogTarget",
-      "value": "スケール調整対象: {0}"
+      "value": "縮放調整對象: {0}"
     },
     {
       "key": "CostumeScaleWindow.LogAppliedCount",
-      "value": "適用数: {0}"
+      "value": "套用數: {0}"
     },
     {
       "key": "CostumeScaleWindow.LogNoApplied",
-      "value": "スケール調整は 0 件でした。Modular Avatar 未導入、または Merge Armature マッピングが無い可能性があります。"
+      "value": "縮放調整為 0 筆。可能未安裝 Modular Avatar，或沒有 Merge Armature 對應。"
     }
   ]
 }
