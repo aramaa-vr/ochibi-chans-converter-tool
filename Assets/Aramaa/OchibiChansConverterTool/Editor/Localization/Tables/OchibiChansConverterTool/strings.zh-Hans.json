@@ -760,6 +760,46 @@
     {
       "key": "Window.TitleWithVersion",
       "value": "{0} v{1}"
+    },
+    {
+      "key": "CostumeScaleWindow.Title",
+      "value": "服装缩放调整工具"
+    },
+    {
+      "key": "CostumeScaleWindow.Description",
+      "value": "这是将对应服装适配到已缩放头像的工具。"
+    },
+    {
+      "key": "CostumeScaleWindow.VideoLink",
+      "value": "查看说明视频"
+    },
+    {
+      "key": "CostumeScaleWindow.HelpSteps",
+      "value": "1. 将已缩放的头像放在 Hierarchy 根层级\n2. 右键点击服装对象并选择 [ModularAvatar] Setup Outfit\n3. 将对应服装放在 Hierarchy 根层级\n4. 将对应服装拖拽到已缩放的头像上\n5. 将对应服装拖拽到此工具中"
+    },
+    {
+      "key": "CostumeScaleWindow.DropHereLine1",
+      "value": "将对应服装拖到这里"
+    },
+    {
+      "key": "CostumeScaleWindow.DropHereLine2",
+      "value": "拖放"
+    },
+    {
+      "key": "CostumeScaleWindow.LogTitle",
+      "value": "服装缩放调整日志"
+    },
+    {
+      "key": "CostumeScaleWindow.LogTarget",
+      "value": "缩放调整目标: {0}"
+    },
+    {
+      "key": "CostumeScaleWindow.LogAppliedCount",
+      "value": "应用数量: {0}"
+    },
+    {
+      "key": "CostumeScaleWindow.LogNoApplied",
+      "value": "缩放调整为 0 项。可能未安装 Modular Avatar，或不存在 Merge Armature 映射。"
     }
   ]
 }

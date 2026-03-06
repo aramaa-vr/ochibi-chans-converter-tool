@@ -760,6 +760,46 @@
     {
       "key": "Window.TitleWithVersion",
       "value": "{0} v{1}"
+    },
+    {
+      "key": "CostumeScaleWindow.Title",
+      "value": "Outfit Scale Adjuster"
+    },
+    {
+      "key": "CostumeScaleWindow.Description",
+      "value": "This tool fits compatible outfits to avatars whose scale has been changed."
+    },
+    {
+      "key": "CostumeScaleWindow.VideoLink",
+      "value": "Watch the tutorial video"
+    },
+    {
+      "key": "CostumeScaleWindow.HelpSteps",
+      "value": "1. Place the scaled avatar at the root of the Hierarchy\n2. Right-click the outfit object and select [ModularAvatar] Setup Outfit\n3. Place the compatible outfit at the root of the Hierarchy\n4. Drag and drop the compatible outfit onto the scaled avatar\n5. Drag and drop the compatible outfit into this tool"
+    },
+    {
+      "key": "CostumeScaleWindow.DropHereLine1",
+      "value": "Drop compatible outfits here"
+    },
+    {
+      "key": "CostumeScaleWindow.DropHereLine2",
+      "value": "Drag & Drop"
+    },
+    {
+      "key": "CostumeScaleWindow.LogTitle",
+      "value": "Outfit Scale Adjustment Log"
+    },
+    {
+      "key": "CostumeScaleWindow.LogTarget",
+      "value": "Scale adjustment target: {0}"
+    },
+    {
+      "key": "CostumeScaleWindow.LogAppliedCount",
+      "value": "Applied count: {0}"
+    },
+    {
+      "key": "CostumeScaleWindow.LogNoApplied",
+      "value": "No scale adjustments were applied. Modular Avatar may not be installed, or there may be no Merge Armature mapping."
     }
   ]
 }

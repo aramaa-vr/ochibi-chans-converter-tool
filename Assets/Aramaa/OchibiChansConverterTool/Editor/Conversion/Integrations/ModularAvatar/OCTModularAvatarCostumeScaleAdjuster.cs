@@ -14,11 +14,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal static class OCTModularAvatarCostumeScaleAdjuster
     {
-        private const float ScaleEpsilon = 0.0001f;
+        internal const float ScaleEpsilon = 0.0001f;
         private static string L(string key) => OCTLocalization.Get(key);
 
         internal static int AdjustByMergeArmatureMapping(GameObject dstRoot, List<string> logs = null)
         {
+            return AdjustByMergeArmatureMapping(dstRoot, logs, out _);
+        }
+
+        internal static int AdjustByMergeArmatureMapping(GameObject dstRoot, List<string> logs, out int copiedScaleAdjusterCount)
+        {
+            copiedScaleAdjusterCount = 0;
             if (dstRoot == null)
             {
                 return 0;
@@ -26,7 +32,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
 #if CHIBI_MODULAR_AVATAR
             int appliedCount = 0;
-            int copiedScaleAdjusterCount = 0;
             var mergers = dstRoot.GetComponentsInChildren<ModularAvatarMergeArmature>(true);
 
             foreach (var merger in mergers)
@@ -62,15 +67,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         continue;
                     }
 
-                    var before = mergeBone.localScale;
-                    var adjusted = Vector3.Scale(before, baseBone.localScale);
-                    if (IsNearlyEqual(before, adjusted))
+                    if (!TryApplyScaleModifier(mergeBone, baseBone.localScale))
                     {
                         continue;
                     }
 
-                    mergeBone.localScale = adjusted;
-                    EditorUtility.SetDirty(mergeBone);
                     appliedCount++;
 
                     var baseBonePath = OCTConversionLogFormatter.GetHierarchyPath(baseBone);
@@ -157,14 +158,37 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 #endif
 
-        private static bool IsNearlyOne(Vector3 scale)
+
+
+
+
+        internal static bool TryApplyScaleModifier(Transform targetBone, Vector3 scaleModifier)
+        {
+            if (targetBone == null)
+            {
+                return false;
+            }
+
+            var before = targetBone.localScale;
+            var adjusted = Vector3.Scale(before, scaleModifier);
+            if (IsNearlyEqual(before, adjusted))
+            {
+                return false;
+            }
+
+            targetBone.localScale = adjusted;
+            EditorUtility.SetDirty(targetBone);
+            return true;
+        }
+
+        internal static bool IsNearlyOne(Vector3 scale)
         {
             return Mathf.Abs(scale.x - 1f) < ScaleEpsilon
                    && Mathf.Abs(scale.y - 1f) < ScaleEpsilon
                    && Mathf.Abs(scale.z - 1f) < ScaleEpsilon;
         }
 
-        private static bool IsNearlyEqual(Vector3 a, Vector3 b)
+        internal static bool IsNearlyEqual(Vector3 a, Vector3 b)
         {
             return Mathf.Abs(a.x - b.x) < ScaleEpsilon
                    && Mathf.Abs(a.y - b.y) < ScaleEpsilon
