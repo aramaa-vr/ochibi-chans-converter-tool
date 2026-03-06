@@ -96,8 +96,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-            // ユーザーが常にドロップできるようにし、判定結果はドロップ時にダイアログで案内します。
-            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+            // DragUpdated 時のみ visualMode を示してドロップ可能状態を UI に伝えます。
+            if (Event.current.type == EventType.DragUpdated)
+            {
+                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+            }
 
             if (!OCTModularAvatarUtility.IsModularAvatarAvailable)
             {
