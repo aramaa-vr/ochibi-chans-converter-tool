@@ -16,7 +16,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
-        private const string WindowTitle = "衣装スケール調整ツール";
         private const string MenuPath = "Aramaa/対応衣装スケール調整ツール (Outfit Scale Adjuster)";
         private const string HelpVideoUrl = "https://youtu.be/Zh0Z0pzjmdk";
 
@@ -25,13 +24,25 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         [MenuItem(MenuPath)]
         private static void ShowWindow()
         {
-            var window = GetWindow<OCTCostumeScaleModifierWindow>(WindowTitle);
+            var window = GetWindow<OCTCostumeScaleModifierWindow>(L("CostumeScaleWindow.Title"));
+            window.UpdateWindowTitle();
 
             // 既存仕様に合わせて DPI スケール込みの固定サイズにします。
             var dpiScale = EditorGUIUtility.pixelsPerPoint;
             var fixedSize = new Vector2(350, 200) * dpiScale;
             window.minSize = fixedSize;
             window.maxSize = fixedSize;
+        }
+
+
+        private void OnEnable()
+        {
+            UpdateWindowTitle();
+        }
+
+        private void UpdateWindowTitle()
+        {
+            titleContent = new GUIContent(L("CostumeScaleWindow.Title"));
         }
 
         private void OnGUI()
@@ -69,6 +80,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (nextIndex != currentIndex)
                 {
                     OCTLocalization.SetLanguage(OCTLocalization.GetLanguageCodeFromIndex(nextIndex));
+                    UpdateWindowTitle();
                     Repaint();
                 }
             }

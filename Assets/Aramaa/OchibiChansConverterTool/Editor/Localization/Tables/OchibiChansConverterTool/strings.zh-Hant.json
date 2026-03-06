@@ -762,6 +762,10 @@
       "value": "{0} v{1}"
     },
     {
+      "key": "CostumeScaleWindow.Title",
+      "value": "服裝縮放調整工具"
+    },
+    {
       "key": "CostumeScaleWindow.Description",
       "value": "這是將對應服裝套用到已縮放 Avatar 的工具。"
     },

@@ -762,6 +762,10 @@
       "value": "{0} v{1}"
     },
     {
+      "key": "CostumeScaleWindow.Title",
+      "value": "服装缩放调整工具"
+    },
+    {
       "key": "CostumeScaleWindow.Description",
       "value": "这是将对应服装适配到已缩放头像的工具。"
     },

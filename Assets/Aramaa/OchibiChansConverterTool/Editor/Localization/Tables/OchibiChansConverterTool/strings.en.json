@@ -762,6 +762,10 @@
       "value": "{0} v{1}"
     },
     {
+      "key": "CostumeScaleWindow.Title",
+      "value": "Outfit Scale Adjuster"
+    },
+    {
       "key": "CostumeScaleWindow.Description",
       "value": "This tool fits compatible outfits to avatars whose scale has been changed."
     },

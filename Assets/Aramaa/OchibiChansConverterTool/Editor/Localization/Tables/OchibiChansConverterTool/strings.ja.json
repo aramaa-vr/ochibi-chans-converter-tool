@@ -762,6 +762,10 @@
       "value": "{0} v{1}"
     },
     {
+      "key": "CostumeScaleWindow.Title",
+      "value": "衣装スケール調整ツール"
+    },
+    {
       "key": "CostumeScaleWindow.Description",
       "value": "スケール変更したアバターへ対応衣装を合わせるツールです。"
     },
