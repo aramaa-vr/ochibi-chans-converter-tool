@@ -195,13 +195,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var hasInvalidOutfitCandidate = false;
             foreach (var draggedObject in DragAndDrop.objectReferences)
             {
-                if (!(draggedObject is GameObject gameObject))
+                if (!TryGetDraggedGameObject(draggedObject, out var gameObject))
                 {
+                    hasInvalidOutfitCandidate = true;
                     continue;
                 }
 
                 if (!IsValidSceneCostume(gameObject))
                 {
+                    hasInvalidOutfitCandidate = true;
                     continue;
                 }
 
@@ -220,6 +222,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return new CostumeDragValidationResult(costumes, hasInvalidOutfitCandidate);
+        }
+
+        private static bool TryGetDraggedGameObject(UnityEngine.Object draggedObject, out GameObject gameObject)
+        {
+            switch (draggedObject)
+            {
+                case GameObject go:
+                    gameObject = go;
+                    return true;
+                case Component component:
+                    gameObject = component.gameObject;
+                    return gameObject != null;
+                default:
+                    gameObject = null;
+                    return false;
+            }
         }
 
         private static bool IsCompatibleOutfit(GameObject gameObject)
