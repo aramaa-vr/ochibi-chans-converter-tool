@@ -91,48 +91,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private void HandleDragAndDrop()
         {
-            if (Event.current.type != EventType.DragUpdated && Event.current.type != EventType.DragPerform)
-            {
-                return;
-            }
-
-            // DragUpdated 時のみ visualMode を示してドロップ可能状態を UI に伝えます。
             if (Event.current.type == EventType.DragUpdated)
             {
                 DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-            }
-
-            if (!OCTModularAvatarUtility.IsModularAvatarAvailable)
-            {
-                if (Event.current.type == EventType.DragPerform)
-                {
-                    DragAndDrop.AcceptDrag();
-                    if (DragAndDrop.objectReferences.Length > 0)
-                    {
-                        EditorUtility.DisplayDialog(
-                            L("Dialog.ToolTitle"),
-                            L("CostumeScaleWindow.ModularAvatarMissingDialog"),
-                            L("Dialog.Ok")
-                        );
-                    }
-                    Event.current.Use();
-                }
-                return;
-            }
-
-            var validation = CollectValidSceneCostumes();
-            var costumes = validation.ValidCostumes;
-            if (costumes.Count == 0)
-            {
-                if (Event.current.type == EventType.DragPerform)
-                {
-                    DragAndDrop.AcceptDrag();
-                    if (DragAndDrop.objectReferences.Length > 0 && validation.HasInvalidOutfitCandidate)
-                    {
-                        ShowInvalidOutfitDialog();
-                    }
-                    Event.current.Use();
-                }
                 return;
             }
 
@@ -142,11 +103,47 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             DragAndDrop.AcceptDrag();
+
+            if (DragAndDrop.objectReferences.Length == 0)
+            {
+                Event.current.Use();
+                return;
+            }
+
+            if (!OCTModularAvatarUtility.IsModularAvatarAvailable)
+            {
+                EditorUtility.DisplayDialog(
+                    L("Dialog.ToolTitle"),
+                    L("CostumeScaleWindow.ModularAvatarMissingDialog"),
+                    L("Dialog.Ok")
+                );
+                Event.current.Use();
+                return;
+            }
+
+            var validation = CollectValidSceneCostumes();
+            var costumes = validation.ValidCostumes;
+            if (costumes.Count == 0)
+            {
+                if (validation.HasInvalidOutfitCandidate)
+                {
+                    ShowInvalidOutfitDialog();
+                }
+                Event.current.Use();
+                return;
+            }
+
             if (validation.HasInvalidOutfitCandidate)
             {
                 ShowInvalidOutfitDialog();
             }
 
+            ApplyScaleAdjustments(costumes);
+            Event.current.Use();
+        }
+
+        private void ApplyScaleAdjustments(List<GameObject> costumes)
+        {
             Undo.IncrementCurrentGroup();
             var undoGroup = Undo.GetCurrentGroup();
             foreach (var costume in costumes)
@@ -195,8 +192,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             Undo.CollapseUndoOperations(undoGroup);
-
-            Event.current.Use();
         }
 
         private static CostumeDragValidationResult CollectValidSceneCostumes()
