@@ -135,14 +135,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static List<GameObject> CollectValidSceneCostumes()
         {
             var costumes = new List<GameObject>();
+            var addedCostumes = new HashSet<GameObject>();
             foreach (var draggedObject in DragAndDrop.objectReferences)
             {
-                if (!(draggedObject is GameObject gameObject) || EditorUtility.IsPersistent(gameObject))
+                if (!(draggedObject is GameObject gameObject) || !IsValidSceneCostume(gameObject))
                 {
                     continue;
                 }
 
-                if (!gameObject.scene.IsValid() || !gameObject.scene.isLoaded || costumes.Contains(gameObject))
+                if (!addedCostumes.Add(gameObject))
                 {
                     continue;
                 }
@@ -151,6 +152,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return costumes;
+        }
+
+        private static bool IsValidSceneCostume(GameObject gameObject)
+        {
+            if (gameObject == null)
+            {
+                return false;
+            }
+
+            if (EditorUtility.IsPersistent(gameObject) || PrefabUtility.IsPartOfPrefabAsset(gameObject))
+            {
+                return false;
+            }
+
+            return gameObject.scene.IsValid() && gameObject.scene.isLoaded;
         }
 
         private static void ApplyCostumeScaleByParentDescriptor(Transform costumeTransform)
