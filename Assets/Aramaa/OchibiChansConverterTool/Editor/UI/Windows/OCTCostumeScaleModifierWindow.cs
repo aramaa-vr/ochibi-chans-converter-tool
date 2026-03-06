@@ -22,7 +22,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private const string MenuPath = "Aramaa/対応衣装スケール調整ツール (Outfit Scale Adjuster)";
         private const string HelpVideoUrl = "https://youtu.be/Zh0Z0pzjmdk";
         private readonly List<string> _modificationLog = new List<string>();
-        private bool _showLogWindow = true;
+        private bool _showLogWindow = false;
 
         [MenuItem(MenuPath)]
         private static void ShowWindow()
