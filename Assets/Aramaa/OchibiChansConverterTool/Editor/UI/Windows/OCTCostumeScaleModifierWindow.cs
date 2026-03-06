@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
@@ -97,6 +98,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 _modificationLog.Add($"スケール調整対象: {costume.name}");
+                ApplyCostumeScaleByParentDescriptor(costume.transform);
                 var appliedCount = OCTModularAvatarCostumeScaleAdjuster.AdjustByMergeArmatureMapping(costume, _modificationLog);
                 totalAppliedCount += appliedCount;
                 _modificationLog.Add($"適用数: {appliedCount}");
@@ -114,6 +116,39 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             Event.current.Use();
         }
+
+        private static void ApplyCostumeScaleByParentDescriptor(Transform costumeTransform)
+        {
+            if (costumeTransform == null)
+            {
+                return;
+            }
+
+            var descriptorOwner = FindParentDescriptorOwner(costumeTransform.parent);
+            if (descriptorOwner == null)
+            {
+                return;
+            }
+
+            costumeTransform.localScale = Vector3.Scale(costumeTransform.localScale, descriptorOwner.localScale);
+        }
+
+        private static Transform FindParentDescriptorOwner(Transform from)
+        {
+            var current = from;
+            while (current != null)
+            {
+                if (current.GetComponent<VRCAvatarDescriptor>() != null)
+                {
+                    return current;
+                }
+
+                current = current.parent;
+            }
+
+            return null;
+        }
+
 
         private static void DrawCustomHelpBox(string message)
         {
