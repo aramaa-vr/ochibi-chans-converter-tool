@@ -12,6 +12,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal sealed class OCTCostumeScaleModifierWindow : EditorWindow
     {
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
         private const string WindowTitle = "衣装スケール調整ツール";
         private const string MenuPath = "Aramaa/対応衣装スケール調整ツール (Outfit Scale Adjuster)";
         private const string HelpVideoUrl = "https://youtu.be/Zh0Z0pzjmdk";
@@ -32,23 +35,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private void OnGUI()
         {
-            EditorGUILayout.LabelField("スケール変更したアバターへ対応衣装を合わせるツールです。", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(L("CostumeScaleWindow.Description"), EditorStyles.boldLabel);
 
             HandleDragAndDrop();
 
             EditorGUILayout.Space();
-            if (GUILayout.Button("説明用動画を見る", EditorStyles.linkLabel))
+            if (GUILayout.Button(L("CostumeScaleWindow.VideoLink"), EditorStyles.linkLabel))
             {
                 Application.OpenURL(HelpVideoUrl);
             }
 
-            DrawCustomHelpBox(
-                "1. スケール変更したアバターをHierarchy直下に置く\n" +
-                "2. 衣装オブジェクトを右クリックし、[ModularAvatar] Setup Outfitを選択\n" +
-                "3. 対応衣装をHierarchy直下に置く\n" +
-                "4. 対応衣装をスケール変更したアバターにドラッグ＆ドロップ\n" +
-                "5. 対応衣装をこのツールにドラッグ＆ドロップ"
-            );
+            DrawCustomHelpBox(L("CostumeScaleWindow.HelpSteps"));
 
             DrawCenteredLabel();
         }
@@ -97,20 +94,20 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                _modificationLog.Add($"スケール調整対象: {costume.name}");
+                _modificationLog.Add(F("CostumeScaleWindow.LogTarget", costume.name));
                 ApplyCostumeScaleByParentDescriptor(costume.transform);
                 var appliedCount = OCTModularAvatarCostumeScaleAdjuster.AdjustByMergeArmatureMapping(costume, _modificationLog);
                 totalAppliedCount += appliedCount;
-                _modificationLog.Add($"適用数: {appliedCount}");
+                _modificationLog.Add(F("CostumeScaleWindow.LogAppliedCount", appliedCount));
                 _modificationLog.Add(string.Empty);
             }
 
             if (totalAppliedCount == 0)
             {
-                _modificationLog.Add("スケール調整は 0 件でした。Modular Avatar 未導入、または Merge Armature マッピングが無い可能性があります。");
+                _modificationLog.Add(L("CostumeScaleWindow.LogNoApplied"));
             }
 
-            OCTConversionLogWindow.ShowLogs("衣装スケール調整ログ", _modificationLog);
+            OCTConversionLogWindow.ShowLogs(L("CostumeScaleWindow.LogTitle"), _modificationLog);
 
             Undo.CollapseUndoOperations(undoGroup);
 
@@ -181,8 +178,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 fontStyle = FontStyle.Bold
             };
 
-            EditorGUILayout.LabelField("対応衣装をここに", centerStyle);
-            EditorGUILayout.LabelField("ドラッグ＆ドロップ", centerStyle);
+            EditorGUILayout.LabelField(L("CostumeScaleWindow.DropHereLine1"), centerStyle);
+            EditorGUILayout.LabelField(L("CostumeScaleWindow.DropHereLine2"), centerStyle);
         }
     }
 }
