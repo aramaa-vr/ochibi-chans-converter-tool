@@ -96,11 +96,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
+            // ユーザーが常にドロップできるようにし、判定結果はドロップ時にダイアログで案内します。
+            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+
             if (!OCTModularAvatarUtility.IsModularAvatarAvailable)
             {
-                DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
                 if (Event.current.type == EventType.DragPerform)
                 {
+                    DragAndDrop.AcceptDrag();
                     EditorUtility.DisplayDialog(
                         L("Dialog.ToolTitle"),
                         L("CostumeScaleWindow.ModularAvatarMissingDialog"),
@@ -115,16 +118,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var costumes = validation.ValidCostumes;
             if (costumes.Count == 0)
             {
-                DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
-                if (Event.current.type == EventType.DragPerform && validation.HasInvalidOutfitCandidate)
+                if (Event.current.type == EventType.DragPerform)
                 {
+                    DragAndDrop.AcceptDrag();
                     ShowInvalidOutfitDialog();
                     Event.current.Use();
                 }
                 return;
             }
 
-            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
             if (Event.current.type != EventType.DragPerform)
             {
                 return;
