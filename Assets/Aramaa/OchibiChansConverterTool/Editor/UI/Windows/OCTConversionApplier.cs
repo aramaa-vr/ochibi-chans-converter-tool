@@ -634,9 +634,19 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
-                using (new EditorGUI.DisabledScope(true))
+                EditorGUI.BeginChangeCheck();
+                var nextPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                if (EditorGUI.EndChangeCheck())
                 {
-                    _sourcePrefabAsset = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                    if (nextPrefab == null || IsPrefabAsset(nextPrefab))
+                    {
+                        _prefabDropdownCache.ApplyManualSelection(nextPrefab);
+                        _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
+                    }
+                    else
+                    {
+                        _sourcePrefabAsset = nextPrefab;
+                    }
                 }
 
                 if (_sourcePrefabAsset == null)

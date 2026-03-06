@@ -92,6 +92,41 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
+        /// 手動入力された Prefab を反映します。
+        /// 候補一覧に同一 Prefab がある場合は選択状態も同期します。
+        /// </summary>
+        public void ApplyManualSelection(GameObject manualPrefab)
+        {
+            if (manualPrefab == null)
+            {
+                _sourcePrefabAsset = null;
+                return;
+            }
+
+            var manualPath = AssetDatabase.GetAssetPath(manualPrefab);
+            if (string.IsNullOrEmpty(manualPath))
+            {
+                _sourcePrefabAsset = manualPrefab;
+                return;
+            }
+
+            // 同一パスを再ロードして参照を正規化しておく（SubAsset混在時の揺れ防止）
+            _sourcePrefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(manualPath) ?? manualPrefab;
+
+            if (_candidatePrefabPaths.Count == 0)
+            {
+                return;
+            }
+
+            var matchedIndex = _candidatePrefabPaths.FindIndex(path =>
+                string.Equals(path, manualPath, StringComparison.Ordinal));
+            if (matchedIndex >= 0)
+            {
+                _selectedPrefabIndex = matchedIndex;
+            }
+        }
+
+        /// <summary>
         /// 対象アバターが変わったときのみ候補を再計算します。
         /// </summary>
         public void RefreshIfNeeded(GameObject sourceTarget)
