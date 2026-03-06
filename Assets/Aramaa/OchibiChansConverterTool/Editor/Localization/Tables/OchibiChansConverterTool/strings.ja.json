@@ -775,7 +775,7 @@
     },
     {
       "key": "CostumeScaleWindow.HelpSteps",
-      "value": "1. スケール変更したアバターをHierarchy直下に置く\n2. 衣装オブジェクトを右クリックし、[ModularAvatar] Setup Outfitを選択\n3. 対応衣装をHierarchy直下に置く\n4. 対応衣装をスケール変更したアバターにドラッグ＆ドロップ\n5. 対応衣装をこのツールにドラッグ＆ドロップ"
+      "value": "1. スケール変更したアバターをHierarchy直下に置く\n2. 対応衣装をHierarchy直下に置く\n3. 対応衣装をスケール変更したアバターにドラッグ＆ドロップ\n4. 対応衣装を右クリックし、[ModularAvatar] Setup Outfitを選択\n5. 対応衣装をこのツールにドラッグ＆ドロップ"
     },
     {
       "key": "CostumeScaleWindow.DropHereLine1",
