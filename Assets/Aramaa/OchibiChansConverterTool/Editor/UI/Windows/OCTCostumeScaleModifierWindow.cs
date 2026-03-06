@@ -21,10 +21,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private const string MenuPath = "Aramaa/対応衣装スケール調整ツール (Outfit Scale Adjuster)";
         private const string HelpVideoUrl = "https://youtu.be/Zh0Z0pzjmdk";
-        private const string ShowLogTogglePrefsKey = "Aramaa.OCT.CostumeScale.ShowLogs";
-
         private readonly List<string> _modificationLog = new List<string>();
-        private bool _showLogWindow;
+        private bool _showLogWindow = true;
 
         [MenuItem(MenuPath)]
         private static void ShowWindow()
@@ -43,7 +41,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private void OnEnable()
         {
             UpdateWindowTitle();
-            _showLogWindow = EditorPrefs.GetBool(ShowLogTogglePrefsKey, true);
         }
 
         private void UpdateWindowTitle()
@@ -96,25 +93,31 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         /// <summary>
         /// Drag&Drop の入口。
-        /// DragUpdated: カーソル表示だけ更新 / DragPerform: ドロップ確定後に検証と処理を実行。
+        /// イベント種別ごとに責務を分けるため、switch で分岐します。
         /// </summary>
         private void HandleDragAndDrop()
         {
-            if (Event.current.type == EventType.DragUpdated)
+            switch (Event.current.type)
             {
-                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-                return;
+                case EventType.DragUpdated:
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                    return;
+                case EventType.DragPerform:
+                    HandleDragPerform();
+                    return;
+                default:
+                    return;
             }
+        }
 
-            if (Event.current.type != EventType.DragPerform)
-            {
-                return;
-            }
-
-            // ここから先は「ドロップ確定後」の処理です。
+        /// <summary>
+        /// ドロップ確定時の処理。
+        /// 受理 → 前提チェック → バリデーション → 適用 の順で進めます。
+        /// </summary>
+        private void HandleDragPerform()
+        {
             DragAndDrop.AcceptDrag();
 
-            // 空ドロップは何もしません。
             if (DragAndDrop.objectReferences.Length == 0)
             {
                 Event.current.Use();
@@ -132,7 +135,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-            // ドロップ済みオブジェクトを「有効衣装」と「無効候補」に分類します。
             var validation = CollectValidSceneCostumes();
             var costumes = validation.ValidCostumes;
             if (costumes.Count == 0)
@@ -141,6 +143,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     ShowInvalidOutfitDialog();
                 }
+
                 Event.current.Use();
                 return;
             }
@@ -358,7 +361,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             _showLogWindow = nextValue;
-            EditorPrefs.SetBool(ShowLogTogglePrefsKey, _showLogWindow);
         }
 
         private static void DrawCustomHelpBox(string message)
