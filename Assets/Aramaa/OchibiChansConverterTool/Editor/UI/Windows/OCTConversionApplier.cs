@@ -658,6 +658,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (!IsPrefabAsset(_sourcePrefabAsset))
                 {
                     EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
+                    return;
+                }
+
+                if (!_prefabDropdownCache.ContainsCandidate(_sourcePrefabAsset))
+                {
+                    EditorGUILayout.HelpBox(L("Help.ManualPrefabWarning"), MessageType.Warning);
                 }
             }
 

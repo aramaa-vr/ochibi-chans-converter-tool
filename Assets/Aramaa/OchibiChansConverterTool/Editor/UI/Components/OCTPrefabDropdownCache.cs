@@ -62,6 +62,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         public int SelectedIndex => _selectedPrefabIndex;
         public GameObject SourcePrefabAsset => _sourcePrefabAsset;
 
+        /// <summary>
+        /// 指定した Prefab が候補一覧に含まれるかを判定します。
+        /// </summary>
+        public bool ContainsCandidate(GameObject prefab)
+        {
+            if (prefab == null || _candidatePrefabPaths.Count == 0)
+            {
+                return false;
+            }
+
+            var prefabPath = AssetDatabase.GetAssetPath(prefab);
+            if (string.IsNullOrEmpty(prefabPath))
+            {
+                return false;
+            }
+
+            return _candidatePrefabPaths.Any(path =>
+                string.Equals(path, prefabPath, StringComparison.Ordinal));
+        }
+
         public static void SaveCacheToDisk()
         {
             SaveFaceMeshCacheToLibrary();
