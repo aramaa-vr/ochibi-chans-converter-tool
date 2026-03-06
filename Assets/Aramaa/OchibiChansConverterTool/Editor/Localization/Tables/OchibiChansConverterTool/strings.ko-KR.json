@@ -816,6 +816,10 @@
     {
       "key": "CostumeScaleWindow.MissingDescriptorDialog",
       "value": "다음 의상의 부모 계층에서 VRCAvatarDescriptor를 찾을 수 없었습니다:\n\n{0}\n\nHierarchy에서 의상이 아바타 하위에 있는지 확인해 주세요."
+    },
+    {
+      "key": "CostumeScaleWindow.ShowLogToggle",
+      "value": "처리 로그 창 표시"
     }
   ]
 }
