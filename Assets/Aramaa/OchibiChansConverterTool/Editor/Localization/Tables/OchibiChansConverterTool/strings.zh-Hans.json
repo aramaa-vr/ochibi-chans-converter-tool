@@ -775,7 +775,7 @@
     },
     {
       "key": "CostumeScaleWindow.HelpSteps",
-      "value": "1. 将已缩放的头像放在 Hierarchy 根层级\n2. 右键点击服装对象并选择 [ModularAvatar] Setup Outfit\n3. 将对应服装放在 Hierarchy 根层级\n4. 将对应服装拖拽到已缩放的头像上\n5. 将对应服装拖拽到此工具中"
+      "value": "1. 将已缩放的头像放在 Hierarchy 根层级\n2. 将对应服装放在 Hierarchy 根层级\n3. 将对应服装拖拽到已缩放的头像上\n4. 右键点击对应服装并选择 [ModularAvatar] Setup Outfit\n5. 将对应服装拖拽到此工具中"
     },
     {
       "key": "CostumeScaleWindow.DropHereLine1",

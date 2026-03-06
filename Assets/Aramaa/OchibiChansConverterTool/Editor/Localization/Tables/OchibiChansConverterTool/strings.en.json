@@ -775,7 +775,7 @@
     },
     {
       "key": "CostumeScaleWindow.HelpSteps",
-      "value": "1. Place the scaled avatar at the root of the Hierarchy\n2. Right-click the outfit object and select [ModularAvatar] Setup Outfit\n3. Place the compatible outfit at the root of the Hierarchy\n4. Drag and drop the compatible outfit onto the scaled avatar\n5. Drag and drop the compatible outfit into this tool"
+      "value": "1. Place the scaled avatar at the root of the Hierarchy\n2. Place the compatible outfit at the root of the Hierarchy\n3. Drag and drop the compatible outfit onto the scaled avatar\n4. Right-click the compatible outfit and select [ModularAvatar] Setup Outfit\n5. Drag and drop the compatible outfit into this tool"
     },
     {
       "key": "CostumeScaleWindow.DropHereLine1",
