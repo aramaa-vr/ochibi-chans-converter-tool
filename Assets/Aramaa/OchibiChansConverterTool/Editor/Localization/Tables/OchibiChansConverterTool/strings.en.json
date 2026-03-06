@@ -800,6 +800,22 @@
     {
       "key": "CostumeScaleWindow.LogNoApplied",
       "value": "No scale adjustments were applied. Modular Avatar may not be installed, or there may be no Merge Armature mapping."
+    },
+    {
+      "key": "CostumeScaleWindow.ModularAvatarMissingDialog",
+      "value": "Modular Avatar is not installed.\n\nPlease install Modular Avatar first, then try again."
+    },
+    {
+      "key": "CostumeScaleWindow.InvalidOutfitDialog",
+      "value": "This is not a compatible outfit.\n\nRight-click the outfit object, select [ModularAvatar] Setup Outfit, then drag and drop it again."
+    },
+    {
+      "key": "CostumeScaleWindow.LogDescriptorNotFound",
+      "value": "No VRCAvatarDescriptor was found in parent hierarchy, so root scale adjustment was skipped."
+    },
+    {
+      "key": "CostumeScaleWindow.MissingDescriptorDialog",
+      "value": "No VRCAvatarDescriptor was found in parent hierarchy for the following outfits:\n\n{0}\n\nPlease make sure the outfit is under the avatar in the hierarchy."
     }
   ]
 }

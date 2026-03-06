@@ -800,6 +800,22 @@
     {
       "key": "CostumeScaleWindow.LogNoApplied",
       "value": "缩放调整为 0 项。可能未安装 Modular Avatar，或不存在 Merge Armature 映射。"
+    },
+    {
+      "key": "CostumeScaleWindow.ModularAvatarMissingDialog",
+      "value": "未安装 Modular Avatar。\n\n请先安装 Modular Avatar 后再试。"
+    },
+    {
+      "key": "CostumeScaleWindow.InvalidOutfitDialog",
+      "value": "这不是目标服装。\n\n请先右键点击服装对象，选择 [ModularAvatar] Setup Outfit，然后再拖放。"
+    },
+    {
+      "key": "CostumeScaleWindow.LogDescriptorNotFound",
+      "value": "父级层级中未找到 VRCAvatarDescriptor，因此跳过了服装根节点的缩放补正。"
+    },
+    {
+      "key": "CostumeScaleWindow.MissingDescriptorDialog",
+      "value": "以下服装在父级层级中未找到 VRCAvatarDescriptor：\n\n{0}\n\n请确认服装位于 Avatar 层级之下。"
     }
   ]
 }

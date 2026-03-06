@@ -800,6 +800,22 @@
     {
       "key": "CostumeScaleWindow.LogNoApplied",
       "value": "スケール調整は 0 件でした。Modular Avatar 未導入、または Merge Armature マッピングが無い可能性があります。"
+    },
+    {
+      "key": "CostumeScaleWindow.ModularAvatarMissingDialog",
+      "value": "Modular Avatar がインストールされていません。\n\n先に Modular Avatar を導入してからお試しください。"
+    },
+    {
+      "key": "CostumeScaleWindow.InvalidOutfitDialog",
+      "value": "対象の衣装ではありません。\n\n衣装オブジェクトを右クリックし、[ModularAvatar] Setup Outfitを選択してからドラッグ＆ドロップしてください。"
+    },
+    {
+      "key": "CostumeScaleWindow.LogDescriptorNotFound",
+      "value": "親階層に VRCAvatarDescriptor が見つからないため、衣装ルートのスケール補正をスキップしました。"
+    },
+    {
+      "key": "CostumeScaleWindow.MissingDescriptorDialog",
+      "value": "以下の衣装で親階層に VRCAvatarDescriptor が見つかりませんでした。\n\n{0}\n\nアバター配下に衣装があるか確認してください。"
     }
   ]
 }
