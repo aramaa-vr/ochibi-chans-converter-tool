@@ -816,6 +816,10 @@
     {
       "key": "CostumeScaleWindow.MissingDescriptorDialog",
       "value": "No VRCAvatarDescriptor was found in parent hierarchy for the following outfits:\n\n{0}\n\nPlease make sure the outfit is under the avatar in the hierarchy."
+    },
+    {
+      "key": "CostumeScaleWindow.ShowLogToggle",
+      "value": "Show processing log window"
     }
   ]
 }

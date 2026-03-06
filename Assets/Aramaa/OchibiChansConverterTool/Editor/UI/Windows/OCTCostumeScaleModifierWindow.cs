@@ -21,8 +21,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private const string MenuPath = "Aramaa/対応衣装スケール調整ツール (Outfit Scale Adjuster)";
         private const string HelpVideoUrl = "https://youtu.be/Zh0Z0pzjmdk";
-
         private readonly List<string> _modificationLog = new List<string>();
+        private bool _showLogWindow = true;
 
         [MenuItem(MenuPath)]
         private static void ShowWindow()
@@ -64,6 +64,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             DrawCustomHelpBox(L("CostumeScaleWindow.HelpSteps"));
 
             DrawCenteredLabel();
+            GUILayout.FlexibleSpace();
+            DrawShowLogToggle();
         }
 
         private void DrawLanguageSelector()
@@ -89,25 +91,47 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// Drag&Drop の入口。
+        /// イベント種別ごとに責務を分けるため、switch で分岐します。
+        /// </summary>
         private void HandleDragAndDrop()
         {
-            if (Event.current.type != EventType.DragUpdated && Event.current.type != EventType.DragPerform)
+            switch (Event.current.type)
             {
+                case EventType.DragUpdated:
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                    return;
+                case EventType.DragPerform:
+                    HandleDragPerform();
+                    return;
+                default:
+                    return;
+            }
+        }
+
+        /// <summary>
+        /// ドロップ確定時の処理。
+        /// 受理 → 前提チェック → バリデーション → 適用 の順で進めます。
+        /// </summary>
+        private void HandleDragPerform()
+        {
+            DragAndDrop.AcceptDrag();
+
+            if (DragAndDrop.objectReferences.Length == 0)
+            {
+                Event.current.Use();
                 return;
             }
 
             if (!OCTModularAvatarUtility.IsModularAvatarAvailable)
             {
-                DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
-                if (Event.current.type == EventType.DragPerform)
-                {
-                    EditorUtility.DisplayDialog(
-                        L("Dialog.ToolTitle"),
-                        L("CostumeScaleWindow.ModularAvatarMissingDialog"),
-                        L("Dialog.Ok")
-                    );
-                    Event.current.Use();
-                }
+                EditorUtility.DisplayDialog(
+                    L("Dialog.ToolTitle"),
+                    L("CostumeScaleWindow.ModularAvatarMissingDialog"),
+                    L("Dialog.Ok")
+                );
+                Event.current.Use();
                 return;
             }
 
@@ -115,27 +139,29 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var costumes = validation.ValidCostumes;
             if (costumes.Count == 0)
             {
-                DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
-                if (Event.current.type == EventType.DragPerform && validation.HasInvalidOutfitCandidate)
+                if (validation.HasInvalidOutfitCandidate)
                 {
                     ShowInvalidOutfitDialog();
-                    Event.current.Use();
                 }
+
+                Event.current.Use();
                 return;
             }
 
-            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-            if (Event.current.type != EventType.DragPerform)
-            {
-                return;
-            }
-
-            DragAndDrop.AcceptDrag();
             if (validation.HasInvalidOutfitCandidate)
             {
                 ShowInvalidOutfitDialog();
             }
 
+            ApplyScaleAdjustments(costumes);
+            Event.current.Use();
+        }
+
+        /// <summary>
+        /// 有効な衣装群に対してスケール調整を適用し、必要に応じてログ/警告を表示します。
+        /// </summary>
+        private void ApplyScaleAdjustments(List<GameObject> costumes)
+        {
             Undo.IncrementCurrentGroup();
             var undoGroup = Undo.GetCurrentGroup();
             foreach (var costume in costumes)
@@ -172,7 +198,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 _modificationLog.Add(L("CostumeScaleWindow.LogNoApplied"));
             }
 
-            OCTConversionLogWindow.ShowLogs(L("CostumeScaleWindow.LogTitle"), _modificationLog);
+            if (_showLogWindow)
+            {
+                OCTConversionLogWindow.ShowLogs(L("CostumeScaleWindow.LogTitle"), _modificationLog);
+            }
 
             if (costumesWithoutDescriptor.Count > 0)
             {
@@ -184,8 +213,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             Undo.CollapseUndoOperations(undoGroup);
-
-            Event.current.Use();
         }
 
         private static CostumeDragValidationResult CollectValidSceneCostumes()
@@ -321,6 +348,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             );
         }
 
+        /// <summary>
+        /// 処理ログウィンドウを表示するかどうかの切り替え。
+        /// 設定は EditorPrefs に保存し、次回起動時も引き継ぎます。
+        /// </summary>
+        private void DrawShowLogToggle()
+        {
+            var nextValue = EditorGUILayout.ToggleLeft(L("CostumeScaleWindow.ShowLogToggle"), _showLogWindow);
+            if (nextValue == _showLogWindow)
+            {
+                return;
+            }
+
+            _showLogWindow = nextValue;
+        }
+
         private static void DrawCustomHelpBox(string message)
         {
             var originalColor = GUI.backgroundColor;
@@ -341,8 +383,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private static void DrawCenteredLabel()
         {
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
             EditorGUILayout.Space();
 
             var centerStyle = new GUIStyle(EditorStyles.label)

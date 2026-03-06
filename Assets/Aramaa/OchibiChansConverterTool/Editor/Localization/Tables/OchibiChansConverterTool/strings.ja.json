@@ -816,6 +816,10 @@
     {
       "key": "CostumeScaleWindow.MissingDescriptorDialog",
       "value": "以下の衣装で親階層に VRCAvatarDescriptor が見つかりませんでした。\n\n{0}\n\nアバター配下に衣装があるか確認してください。"
+    },
+    {
+      "key": "CostumeScaleWindow.ShowLogToggle",
+      "value": "処理ログを表示する"
     }
   ]
 }

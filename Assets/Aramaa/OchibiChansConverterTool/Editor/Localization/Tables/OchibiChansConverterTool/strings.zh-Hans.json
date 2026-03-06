@@ -816,6 +816,10 @@
     {
       "key": "CostumeScaleWindow.MissingDescriptorDialog",
       "value": "以下服装在父级层级中未找到 VRCAvatarDescriptor：\n\n{0}\n\n请确认服装位于 Avatar 层级之下。"
+    },
+    {
+      "key": "CostumeScaleWindow.ShowLogToggle",
+      "value": "显示处理日志窗口"
     }
   ]
 }
