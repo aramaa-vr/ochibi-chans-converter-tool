@@ -231,6 +231,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
+                if (!HasAvatarDescriptorOnPrefabRoot(prefabPath))
+                {
+                    continue;
+                }
+
                 if (!TryGetCachedFaceMeshSignature(prefabPath, out var candidateSignature))
                 {
                     continue;
@@ -364,6 +369,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 return false;
             }
+        }
+
+        private static bool HasAvatarDescriptorOnPrefabRoot(string prefabPath)
+        {
+            if (string.IsNullOrEmpty(prefabPath))
+            {
+                return false;
+            }
+
+            var prefab = AssetDatabase.LoadMainAssetAtPath(prefabPath) as GameObject;
+            if (prefab == null)
+            {
+                return false;
+            }
+
+#if VRC_SDK_VRCSDK3
+            return prefab.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>() != null;
+#else
+            return false;
+#endif
         }
 
         private static string BuildReverseCandidateDisplayName(string prefabPath)
