@@ -213,20 +213,60 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return new List<string>();
             }
 
-            var allPrefabGuids = AssetDatabase.FindAssets("t:Prefab");
-            if (allPrefabGuids == null || allPrefabGuids.Length == 0)
+            var sourceMeshIdentity = BuildMeshIdentitySetFromAvatar(sourceTarget);
+            var visitedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // まず FaceMeshSignature の資産パスに近い階層から探索し、
+            // 見つからなければ 1 つ上の階層へ段階的に広げる。
+            var searchFolders = BuildReverseSearchFolders(avatarFaceMeshSignature);
+            foreach (var folder in searchFolders)
             {
-                return new List<string>();
+                var scopedCandidates = CollectReverseCandidatesInScope(
+                    avatarFaceMeshSignature,
+                    sourceMeshIdentity,
+                    visitedPaths,
+                    new[] { folder });
+                if (scopedCandidates.Count > 0)
+                {
+                    return SortReverseCandidates(scopedCandidates);
+                }
             }
 
-            var sourceMeshIdentity = BuildMeshIdentitySetFromAvatar(sourceTarget);
-            var scoredCandidates = new List<(string Path, int Score)>();
+            // 最後のフォールバックとしてプロジェクト全体を探索。
+            var projectWideCandidates = CollectReverseCandidatesInScope(
+                avatarFaceMeshSignature,
+                sourceMeshIdentity,
+                visitedPaths,
+                null);
+            return SortReverseCandidates(projectWideCandidates);
+        }
 
-            foreach (var guid in allPrefabGuids)
+        private static List<(string Path, int Score)> CollectReverseCandidatesInScope(
+            FaceMeshSignature avatarFaceMeshSignature,
+            MeshIdentitySet sourceMeshIdentity,
+            HashSet<string> visitedPaths,
+            string[] searchFolders)
+        {
+            var queryGuids = searchFolders == null || searchFolders.Length == 0
+                ? AssetDatabase.FindAssets("t:Prefab")
+                : AssetDatabase.FindAssets("t:Prefab", searchFolders);
+
+            var scoredCandidates = new List<(string Path, int Score)>();
+            if (queryGuids == null || queryGuids.Length == 0)
+            {
+                return scoredCandidates;
+            }
+
+            foreach (var guid in queryGuids)
             {
                 var prefabPath = AssetDatabase.GUIDToAssetPath(guid);
                 if (string.IsNullOrEmpty(prefabPath) ||
                     !prefabPath.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!visitedPaths.Add(prefabPath))
                 {
                     continue;
                 }
@@ -254,6 +294,49 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 scoredCandidates.Add((prefabPath, score));
             }
 
+            return scoredCandidates;
+        }
+
+        private static List<string> BuildReverseSearchFolders(FaceMeshSignature avatarFaceMeshSignature)
+        {
+            var folders = new List<string>();
+
+            AddPathAndParentFolders(avatarFaceMeshSignature.FaceMeshAssetPath, folders);
+            AddPathAndParentFolders(avatarFaceMeshSignature.FbxName, folders);
+            AddPathAndParentFolders(avatarFaceMeshSignature.PrefabName, folders);
+
+            return folders;
+        }
+
+        private static void AddPathAndParentFolders(string assetPath, List<string> folders)
+        {
+            if (string.IsNullOrWhiteSpace(assetPath) || folders == null)
+            {
+                return;
+            }
+
+            var current = Path.GetDirectoryName(assetPath)?.Replace("\\", "/");
+            while (!string.IsNullOrEmpty(current) && current.StartsWith("Assets", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!folders.Any(folder => string.Equals(folder, current, StringComparison.OrdinalIgnoreCase)))
+                {
+                    folders.Add(current);
+                }
+
+                var parent = Path.GetDirectoryName(current)?.Replace("\\", "/");
+                if (string.IsNullOrEmpty(parent) ||
+                    string.Equals(parent, current, StringComparison.OrdinalIgnoreCase) ||
+                    !parent.StartsWith("Assets", StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+
+                current = parent;
+            }
+        }
+
+        private static List<string> SortReverseCandidates(List<(string Path, int Score)> scoredCandidates)
+        {
             return scoredCandidates
                 .OrderByDescending(candidate => candidate.Score)
                 .ThenBy(candidate => candidate.Path.Length)
