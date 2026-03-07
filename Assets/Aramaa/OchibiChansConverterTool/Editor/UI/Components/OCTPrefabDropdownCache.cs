@@ -225,7 +225,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     avatarFaceMeshSignature,
                     sourceMeshIdentity,
                     visitedPaths,
-                    new[] { folder });
+                    new[] { folder },
+                    folderScopeBonus: 120);
                 if (scopedCandidates.Count > 0)
                 {
                     return SortReverseCandidates(scopedCandidates);
@@ -237,7 +238,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 avatarFaceMeshSignature,
                 sourceMeshIdentity,
                 visitedPaths,
-                null);
+                null,
+                folderScopeBonus: 0);
             return SortReverseCandidates(projectWideCandidates);
         }
 
@@ -245,7 +247,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             FaceMeshSignature avatarFaceMeshSignature,
             MeshIdentitySet sourceMeshIdentity,
             HashSet<string> visitedPaths,
-            string[] searchFolders)
+            string[] searchFolders,
+            int folderScopeBonus)
         {
             var queryGuids = searchFolders == null || searchFolders.Length == 0
                 ? AssetDatabase.FindAssets("t:Prefab")
@@ -284,7 +287,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var score = CalculateReverseCandidateScore(
                     avatarFaceMeshSignature,
                     candidateSignature,
-                    sourceMeshIdentity);
+                    prefabPath,
+                    sourceMeshIdentity,
+                    folderScopeBonus);
 
                 if (score <= 0)
                 {
@@ -348,7 +353,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static int CalculateReverseCandidateScore(
             FaceMeshSignature avatarFaceMeshSignature,
             FaceMeshSignature candidateSignature,
-            MeshIdentitySet sourceMeshIdentity)
+            string candidatePrefabPath,
+            MeshIdentitySet sourceMeshIdentity,
+            int folderScopeBonus)
         {
             var score = 0;
 
@@ -370,6 +377,87 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (sourceMeshIdentity.Contains(candidateSignature.MeshId.Guid, candidateSignature.FaceMeshAssetPath))
             {
                 score += 300;
+            }
+
+            score += folderScopeBonus;
+            score += CalculatePathProximityScore(avatarFaceMeshSignature, candidatePrefabPath);
+            score += CalculateFilenamePatternScore(avatarFaceMeshSignature, candidatePrefabPath);
+
+            return score;
+        }
+
+        private static int CalculatePathProximityScore(FaceMeshSignature avatarFaceMeshSignature, string candidatePrefabPath)
+        {
+            var candidateDir = Path.GetDirectoryName(candidatePrefabPath)?.Replace("\\", "/") ?? string.Empty;
+            if (string.IsNullOrEmpty(candidateDir))
+            {
+                return 0;
+            }
+
+            var score = 0;
+            score += CalculateSharedPrefixDepthScore(avatarFaceMeshSignature.FaceMeshAssetPath, candidateDir, 60);
+            score += CalculateSharedPrefixDepthScore(avatarFaceMeshSignature.FbxName, candidateDir, 45);
+            score += CalculateSharedPrefixDepthScore(avatarFaceMeshSignature.PrefabName, candidateDir, 30);
+            return score;
+        }
+
+        private static int CalculateSharedPrefixDepthScore(string referenceAssetPath, string candidateDir, int weightPerLevel)
+        {
+            if (string.IsNullOrWhiteSpace(referenceAssetPath) || string.IsNullOrWhiteSpace(candidateDir))
+            {
+                return 0;
+            }
+
+            var referenceDir = Path.GetDirectoryName(referenceAssetPath)?.Replace("\\", "/");
+            if (string.IsNullOrEmpty(referenceDir))
+            {
+                return 0;
+            }
+
+            var referenceParts = referenceDir.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var candidateParts = candidateDir.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            var shared = 0;
+            var limit = Math.Min(referenceParts.Length, candidateParts.Length);
+            for (var i = 0; i < limit; i++)
+            {
+                if (!string.Equals(referenceParts[i], candidateParts[i], StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+
+                shared++;
+            }
+
+            return shared * weightPerLevel;
+        }
+
+        private static int CalculateFilenamePatternScore(FaceMeshSignature avatarFaceMeshSignature, string candidatePrefabPath)
+        {
+            if (string.IsNullOrEmpty(candidatePrefabPath))
+            {
+                return 0;
+            }
+
+            var score = 0;
+            var candidateFileName = Path.GetFileNameWithoutExtension(candidatePrefabPath) ?? string.Empty;
+            var candidatePathLower = candidatePrefabPath.ToLowerInvariant();
+
+            var fbxName = Path.GetFileNameWithoutExtension(avatarFaceMeshSignature.FbxName) ?? string.Empty;
+            if (!string.IsNullOrEmpty(fbxName) &&
+                candidateFileName.IndexOf(fbxName, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                score += 220;
+            }
+
+            if (candidatePathLower.Contains("kaihen"))
+            {
+                score += 120;
+            }
+
+            if (candidatePathLower.Contains("kisekae"))
+            {
+                score += 120;
             }
 
             return score;
