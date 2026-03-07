@@ -172,7 +172,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (reverseConversion)
             {
-                var reverseCandidatePaths = FindReverseCandidatePrefabPaths(avatarFaceMeshSignature, sourceTarget.name);
+                var reverseCandidatePaths = FindReverseCandidatePrefabPaths(sourceTarget, avatarFaceMeshSignature);
                 foreach (var candidatePath in reverseCandidatePaths)
                 {
                     _candidatePrefabPaths.Add(candidatePath);
@@ -206,9 +206,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
 
-        private static List<string> FindReverseCandidatePrefabPaths(FaceMeshSignature avatarFaceMeshSignature, string sourceTargetName)
+        private static List<string> FindReverseCandidatePrefabPaths(GameObject sourceTarget, FaceMeshSignature avatarFaceMeshSignature)
         {
-            if (!avatarFaceMeshSignature.HasAnyIdentity)
+            if (sourceTarget == null)
             {
                 return new List<string>();
             }
@@ -219,7 +219,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return new List<string>();
             }
 
-            var matchedPaths = new List<string>();
+            var sourceMeshIdentity = BuildMeshIdentitySetFromAvatar(sourceTarget);
+            var scoredCandidates = new List<(string Path, int Score)>();
+
             foreach (var guid in allPrefabGuids)
             {
                 var prefabPath = AssetDatabase.GUIDToAssetPath(guid);
@@ -229,45 +231,139 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                if (!PrefabHasMatchingFaceMesh(prefabPath, avatarFaceMeshSignature))
+                if (!TryGetCachedFaceMeshSignature(prefabPath, out var candidateSignature))
                 {
                     continue;
                 }
 
-                matchedPaths.Add(prefabPath);
+                var score = CalculateReverseCandidateScore(
+                    avatarFaceMeshSignature,
+                    candidateSignature,
+                    sourceMeshIdentity);
+
+                if (score <= 0)
+                {
+                    continue;
+                }
+
+                scoredCandidates.Add((prefabPath, score));
             }
 
-            return matchedPaths
-                .OrderByDescending(path => BuildReverseCandidateScore(path, sourceTargetName))
-                .ThenBy(path => path.Length)
+            return scoredCandidates
+                .OrderByDescending(candidate => candidate.Score)
+                .ThenBy(candidate => candidate.Path.Length)
+                .ThenBy(candidate => candidate.Path, StringComparer.OrdinalIgnoreCase)
+                .Select(candidate => candidate.Path)
                 .ToList();
         }
 
-        private static int BuildReverseCandidateScore(string prefabPath, string sourceTargetName)
+        private static int CalculateReverseCandidateScore(
+            FaceMeshSignature avatarFaceMeshSignature,
+            FaceMeshSignature candidateSignature,
+            MeshIdentitySet sourceMeshIdentity)
         {
             var score = 0;
-            var prefabFileName = Path.GetFileNameWithoutExtension(prefabPath) ?? string.Empty;
-            var sourceTokens = TokenizeName(sourceTargetName);
 
-            foreach (var token in sourceTokens)
+            // 最優先: 変換元アバターの Viseme 顔メッシュと同一（GUID+LocalId）。
+            if (MeshIdMatches(avatarFaceMeshSignature.MeshId, candidateSignature.MeshId))
             {
-                if (prefabFileName.IndexOf(token, StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    score += 10;
-                }
-
-                if (prefabPath.IndexOf($"/{token}/", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    score += 4;
-                }
+                score += avatarFaceMeshSignature.MeshId.HasLocalId && candidateSignature.MeshId.HasLocalId ? 1000 : 700;
             }
 
-            if (prefabFileName.IndexOf("kisekae", StringComparison.OrdinalIgnoreCase) >= 0)
+            // GUID/パス一致は、改変でLocalIdが変わっていても比較的安全な一致条件。
+            if (FbxGuidMatches(avatarFaceMeshSignature, candidateSignature)) score += 500;
+            if (AssetPathMatches(avatarFaceMeshSignature, candidateSignature)) score += 350;
+            if (FbxNameMatches(avatarFaceMeshSignature, candidateSignature)) score += 250;
+            if (PrefabGuidMatches(avatarFaceMeshSignature, candidateSignature)) score += 150;
+            if (PrefabNameMatches(avatarFaceMeshSignature, candidateSignature)) score += 100;
+
+            // フェイス差し替え改変へのフォールバック:
+            // 変換元アバター全体のメッシュ集合に候補の顔メッシュが含まれていれば加点。
+            if (sourceMeshIdentity.Contains(candidateSignature.MeshId.Guid, candidateSignature.FaceMeshAssetPath))
             {
-                score += 3;
+                score += 300;
             }
 
             return score;
+        }
+
+        private static MeshIdentitySet BuildMeshIdentitySetFromAvatar(GameObject sourceTarget)
+        {
+            var result = new MeshIdentitySet();
+            if (sourceTarget == null)
+            {
+                return result;
+            }
+
+            var renderers = sourceTarget.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            foreach (var renderer in renderers)
+            {
+                if (renderer == null || renderer.sharedMesh == null)
+                {
+                    continue;
+                }
+
+                var mesh = renderer.sharedMesh;
+                if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(mesh, out var guid, out long _))
+                {
+                    result.AddGuid(guid);
+                }
+
+                var meshPath = AssetDatabase.GetAssetPath(mesh);
+                if (!string.IsNullOrEmpty(meshPath))
+                {
+                    result.AddPath(meshPath);
+                }
+            }
+
+            return result;
+        }
+
+        private readonly struct MeshIdentitySet
+        {
+            private readonly HashSet<string> _meshGuids;
+            private readonly HashSet<string> _meshPaths;
+
+            public MeshIdentitySet()
+            {
+                _meshGuids = new HashSet<string>(StringComparer.Ordinal);
+                _meshPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            }
+
+            public void AddGuid(string guid)
+            {
+                if (string.IsNullOrEmpty(guid))
+                {
+                    return;
+                }
+
+                _meshGuids.Add(guid);
+            }
+
+            public void AddPath(string path)
+            {
+                if (string.IsNullOrEmpty(path))
+                {
+                    return;
+                }
+
+                _meshPaths.Add(path);
+            }
+
+            public bool Contains(string meshGuid, string meshPath)
+            {
+                if (!string.IsNullOrEmpty(meshGuid) && _meshGuids.Contains(meshGuid))
+                {
+                    return true;
+                }
+
+                if (!string.IsNullOrEmpty(meshPath) && _meshPaths.Contains(meshPath))
+                {
+                    return true;
+                }
+
+                return false;
+            }
         }
 
         private static string BuildReverseCandidateDisplayName(string prefabPath)
@@ -285,22 +381,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return $"{prefabFileName} ({folderName})";
-        }
-
-        private static List<string> TokenizeName(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return new List<string>();
-            }
-
-            var separators = new[] { ' ', '_', '-', '/', '\\', '(', ')', '[', ']', '{', '}', '.' };
-            return value
-                .Split(separators, StringSplitOptions.RemoveEmptyEntries)
-                .Select(token => token.Trim())
-                .Where(token => token.Length >= 2)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
         }
 
         private void ClearState()

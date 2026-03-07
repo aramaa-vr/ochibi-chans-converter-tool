@@ -827,7 +827,7 @@
     },
     {
       "key": "Help.ReverseConversion",
-      "value": "When reverse conversion is enabled, the tool uses the selected avatar's face-mesh information from step 1 to automatically search base-avatar prefab candidates."
+      "value": "When reverse conversion is enabled, candidates are searched using the selected avatar's FaceMeshSignature (GUID/path, etc.). Even if the face mesh was replaced by customization, fallback matching uses mesh identity from the whole avatar."
     }
   ]
 }
