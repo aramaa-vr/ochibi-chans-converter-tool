@@ -84,7 +84,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     cacheEntries.Add(new FaceMeshCacheEntry
                     {
                         PrefabPath = pair.Key,
-                        PrefabVariantPathChain = BuildPrefabVariantPathChain(pair.Key),
+                        PrefabVariantPath = FindFirstVariantPrefabPathForCache(pair.Key),
                         DependencyHash = cached.DependencyHash.ToString(),
                         FaceMeshGuid = cached.FaceMeshSignature.MeshId.Guid,
                         FaceMeshLocalId = cached.FaceMeshSignature.MeshId.LocalId,
@@ -138,17 +138,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
-        /// 指定した PrefabPath がバリアントのとき、元のプレハブまでの .prefab パスを順に返します。
-        /// 通常プレハブのときは空リストを返します。
+        /// 指定した PrefabPath がバリアントのとき、
+        /// BaseFolder を含まない .prefab かつルートに VRCAvatarDescriptor がある最初の1件を返します。
+        /// 条件を満たさない場合は空文字列を返します。
         /// </summary>
-        private static List<string> BuildPrefabVariantPathChain(string prefabPath)
+        private static string FindFirstVariantPrefabPathForCache(string prefabPath)
         {
-            var paths = new List<string>();
-            if (!IsPrefabAssetPath(prefabPath)) return paths;
+            if (!IsPrefabAssetPath(prefabPath)) return string.Empty;
 
             var prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-            if (prefabAsset == null) return paths;
-            if (PrefabUtility.GetPrefabAssetType(prefabAsset) != PrefabAssetType.Variant) return paths;
+            if (prefabAsset == null) return string.Empty;
+            if (PrefabUtility.GetPrefabAssetType(prefabAsset) != PrefabAssetType.Variant) return string.Empty;
 
             var visitedPaths = new HashSet<string>(StringComparer.Ordinal);
             var current = prefabAsset;
@@ -158,15 +158,16 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (!IsPrefabAssetPath(currentPath)) break;
                 if (!visitedPaths.Add(currentPath)) break;
 
-                if (HasVrcAvatarDescriptorOnRoot(current))
+                var isUnderBaseFolder = currentPath.Contains(BaseFolder, StringComparison.Ordinal);
+                if (!isUnderBaseFolder && HasVrcAvatarDescriptorOnRoot(current))
                 {
-                    paths.Add(currentPath);
+                    return currentPath;
                 }
 
                 current = PrefabUtility.GetCorrespondingObjectFromSource(current);
             }
 
-            return paths;
+            return string.Empty;
         }
 
         private static bool IsPrefabAssetPath(string assetPath)
@@ -199,7 +200,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private sealed class FaceMeshCacheEntry
         {
             public string PrefabPath;
-            public List<string> PrefabVariantPathChain;
+            public string PrefabVariantPath;
             public string DependencyHash;
             public string FaceMeshGuid;
             public long FaceMeshLocalId;
