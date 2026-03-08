@@ -187,9 +187,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (!TryGetFaceMeshSignature(sourceTarget, out var avatarFaceMeshSignature)) return;
 
             var subFolders = AssetDatabase.GetSubFolders(BaseFolder);
+            var preferredPrefabByFolder = BuildPreferredPrefabPathBySubFolder(subFolders);
             foreach (var folder in subFolders)
             {
-                var prefabPath = FindPreferredPrefabPathUnder(folder);
+                if (!preferredPrefabByFolder.TryGetValue(folder, out var prefabPath)) continue;
                 if (string.IsNullOrEmpty(prefabPath)) continue;
 
                 if (!PrefabHasMatchingFaceMesh(prefabPath, avatarFaceMeshSignature)) continue;
@@ -214,17 +215,31 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             _needsRefreshPrefabs = false;
         }
 
-        /// <summary>
-        /// 指定フォルダ配下の Prefab から、優先順位に従って候補を1つ選びます。
-        /// </summary>
-        private static string FindPreferredPrefabPathUnder(string folder)
+        private static Dictionary<string, string> BuildPreferredPrefabPathBySubFolder(string[] subFolders)
         {
-            var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { folder });
-            if (prefabGuids == null || prefabGuids.Length == 0) return null;
+            var preferredByFolder = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (subFolders == null || subFolders.Length == 0)
+            {
+                return preferredByFolder;
+            }
 
-            string firstCandidate = null;
-            string bestCandidate = null;
-            var bestPriority = int.MaxValue;
+            var statesByFolder = new Dictionary<string, PreferredPrefabState>(subFolders.Length, StringComparer.Ordinal);
+            foreach (var folder in subFolders)
+            {
+                if (string.IsNullOrEmpty(folder)) continue;
+                statesByFolder[folder] = default;
+            }
+
+            if (statesByFolder.Count == 0)
+            {
+                return preferredByFolder;
+            }
+
+            var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { BaseFolder });
+            if (prefabGuids == null || prefabGuids.Length == 0)
+            {
+                return preferredByFolder;
+            }
 
             foreach (var guid in prefabGuids)
             {
@@ -232,25 +247,73 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (string.IsNullOrEmpty(path)) continue;
                 if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) continue;
 
-                if (firstCandidate == null)
+                if (!TryGetImmediateSubFolder(path, out var folder)) continue;
+                if (!statesByFolder.TryGetValue(folder, out var state)) continue;
+
+                state.RegisterCandidate(path);
+                statesByFolder[folder] = state;
+            }
+
+            foreach (var pair in statesByFolder)
+            {
+                var preferred = pair.Value.GetPreferredPath();
+                if (!string.IsNullOrEmpty(preferred))
                 {
-                    firstCandidate = path;
-                }
-
-                var fileName = Path.GetFileNameWithoutExtension(path);
-                var currentPriority = GetPrefabNamePriority(fileName);
-                if (currentPriority >= bestPriority) continue;
-
-                bestPriority = currentPriority;
-                bestCandidate = path;
-
-                if (bestPriority == 0)
-                {
-                    break;
+                    preferredByFolder[pair.Key] = preferred;
                 }
             }
 
-            return bestCandidate ?? firstCandidate;
+            return preferredByFolder;
+        }
+
+        private static bool TryGetImmediateSubFolder(string assetPath, out string subFolderPath)
+        {
+            subFolderPath = null;
+            if (string.IsNullOrEmpty(assetPath)) return false;
+            if (string.IsNullOrEmpty(BaseFolder)) return false;
+
+            var prefix = BaseFolder + "/";
+            if (!assetPath.StartsWith(prefix, StringComparison.Ordinal)) return false;
+
+            var relative = assetPath.Substring(prefix.Length);
+            var slashIndex = relative.IndexOf('/');
+            if (slashIndex <= 0) return false;
+
+            var subFolderName = relative.Substring(0, slashIndex);
+            subFolderPath = prefix + subFolderName;
+            return true;
+        }
+
+        private struct PreferredPrefabState
+        {
+            private string _firstCandidate;
+            private string _bestCandidate;
+            private int _bestPriority;
+
+            public void RegisterCandidate(string path)
+            {
+                if (string.IsNullOrEmpty(path)) return;
+
+                if (string.IsNullOrEmpty(_firstCandidate))
+                {
+                    _firstCandidate = path;
+                    _bestPriority = int.MaxValue;
+                }
+
+                if (_bestPriority == 0) return;
+
+                var fileName = Path.GetFileNameWithoutExtension(path);
+                var currentPriority = GetPrefabNamePriority(fileName);
+                if (currentPriority >= _bestPriority) return;
+
+                _bestPriority = currentPriority;
+                _bestCandidate = path;
+            }
+
+            public string GetPreferredPath()
+            {
+                return _bestCandidate ?? _firstCandidate;
+            }
         }
 
         private static int GetPrefabNamePriority(string fileNameWithoutExtension)
