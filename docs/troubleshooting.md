@@ -42,7 +42,7 @@ nav_order: 6
 3. キャッシュを削除して再生成
 
 キャッシュ:
-- `Library/Aramaa/OchibiChansConverterTool/FaceMeshCache.v7.json`
+- `Library/Aramaa/OchibiChansConverterTool/FaceMeshCache.v8.json`
 
 ---
 
