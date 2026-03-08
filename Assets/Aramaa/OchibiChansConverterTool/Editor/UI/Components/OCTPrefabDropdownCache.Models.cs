@@ -42,7 +42,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
-        /// 顔メッシュの識別情報（GUID/LocalId + Prefab/FBX 識別子）です。
+        /// 顔メッシュの識別情報（GUID/LocalId + Prefab/AnimatorAvatar/FBX 識別子）です。
         /// </summary>
         // NOTE: 比較に使う値を1箇所で持つための不変オブジェクトです。
         // 比較キーの追加は FaceMeshSignatureMatches 側とセットで見直してください。
@@ -52,6 +52,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 MeshId meshId,
                 string prefabGuid,
                 string prefabName,
+                MeshId animatorAvatarId,
+                string animatorAvatarAssetPath,
                 string fbxGuid,
                 string fbxName,
                 string faceMeshAssetPath)
@@ -59,6 +61,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 MeshId = meshId;
                 PrefabGuid = prefabGuid;
                 PrefabName = prefabName;
+                AnimatorAvatarId = animatorAvatarId;
+                AnimatorAvatarAssetPath = animatorAvatarAssetPath;
                 FbxGuid = fbxGuid;
                 FbxName = fbxName;
                 FaceMeshAssetPath = faceMeshAssetPath;
@@ -67,6 +71,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             public MeshId MeshId { get; }
             public string PrefabGuid { get; }
             public string PrefabName { get; }
+            // ルート Animator.avatar の識別子です（FaceMesh が近いモデルの補助一致用）。
+            public MeshId AnimatorAvatarId { get; }
+            public string AnimatorAvatarAssetPath { get; }
             public string FbxGuid { get; }
             public string FbxName { get; }
             public string FaceMeshAssetPath { get; }
@@ -75,13 +82,23 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 !string.IsNullOrEmpty(MeshId.Guid) ||
                 !string.IsNullOrEmpty(PrefabGuid) ||
                 !string.IsNullOrEmpty(PrefabName) ||
+                !string.IsNullOrEmpty(AnimatorAvatarId.Guid) ||
+                !string.IsNullOrEmpty(AnimatorAvatarAssetPath) ||
                 !string.IsNullOrEmpty(FbxGuid) ||
                 !string.IsNullOrEmpty(FbxName) ||
                 !string.IsNullOrEmpty(FaceMeshAssetPath);
 
             public FaceMeshSignature WithPrefabInfo(string prefabGuid, string prefabName)
             {
-                return new FaceMeshSignature(MeshId, prefabGuid, prefabName, FbxGuid, FbxName, FaceMeshAssetPath);
+                return new FaceMeshSignature(
+                    MeshId,
+                    prefabGuid,
+                    prefabName,
+                    AnimatorAvatarId,
+                    AnimatorAvatarAssetPath,
+                    FbxGuid,
+                    FbxName,
+                    FaceMeshAssetPath);
             }
         }
 

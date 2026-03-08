@@ -60,7 +60,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 prefabName = string.Empty;
             }
 
-            return TryBuildFaceMeshSignature(mesh, prefabGuid, prefabName, out signature);
+            TryGetRootAnimatorAvatarIdentity(root, out var animatorAvatarId, out var animatorAvatarAssetPath);
+
+            return TryBuildFaceMeshSignature(
+                mesh,
+                prefabGuid,
+                prefabName,
+                animatorAvatarId,
+                animatorAvatarAssetPath,
+                out signature);
 #else
             return false;
 #endif
@@ -133,6 +141,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return true;
             }
 
+            // 比較優先度: FaceMesh 本体IDが最優先。
+            // Animator Avatar は「同一アバター由来の顔差分」を拾う補助キーとして使います。
+            if (AnimatorAvatarMatches(a, b)) return true;
             if (PrefabGuidMatches(a, b)) return true;
             if (PrefabNameMatches(a, b)) return true;
             if (FbxGuidMatches(a, b)) return true;
@@ -153,6 +164,23 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return true;
+        }
+
+        // NOTE: 誤マッチ抑制のため、まず GUID/LocalId で厳密比較します。
+        // AssetPath 比較はフォールバックで、GUID が取れない環境のみを救済します。
+        private static bool AnimatorAvatarMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            if (MeshIdMatches(a.AnimatorAvatarId, b.AnimatorAvatarId))
+            {
+                return true;
+            }
+
+            if (string.IsNullOrEmpty(a.AnimatorAvatarAssetPath) || string.IsNullOrEmpty(b.AnimatorAvatarAssetPath))
+            {
+                return false;
+            }
+
+            return string.Equals(a.AnimatorAvatarAssetPath, b.AnimatorAvatarAssetPath, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool PrefabGuidMatches(FaceMeshSignature a, FaceMeshSignature b)
@@ -210,6 +238,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             Mesh mesh,
             string prefabGuid,
             string prefabName,
+            MeshId animatorAvatarId,
+            string animatorAvatarAssetPath,
             out FaceMeshSignature signature)
         {
             signature = default;
@@ -223,6 +253,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (!hasMeshId &&
                 string.IsNullOrEmpty(prefabGuid) &&
                 string.IsNullOrEmpty(prefabName) &&
+                string.IsNullOrEmpty(animatorAvatarId.Guid) &&
+                string.IsNullOrEmpty(animatorAvatarAssetPath) &&
                 string.IsNullOrEmpty(fbxGuid) &&
                 string.IsNullOrEmpty(fbxName) &&
                 string.IsNullOrEmpty(assetPath))
@@ -230,7 +262,54 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
-            signature = new FaceMeshSignature(meshId, prefabGuid, prefabName, fbxGuid, fbxName, assetPath);
+            signature = new FaceMeshSignature(
+                meshId,
+                prefabGuid,
+                prefabName,
+                animatorAvatarId,
+                animatorAvatarAssetPath,
+                fbxGuid,
+                fbxName,
+                assetPath);
+            return true;
+        }
+
+        // ルート Animator の Avatar だけを取得します（子階層の Animator は対象外）。
+        private static void TryGetRootAnimatorAvatarIdentity(
+            GameObject root,
+            out MeshId animatorAvatarId,
+            out string animatorAvatarAssetPath)
+        {
+            animatorAvatarId = default;
+            animatorAvatarAssetPath = string.Empty;
+            if (root == null) return;
+
+            var animator = root.GetComponent<Animator>();
+            if (animator == null || animator.avatar == null) return;
+
+            var avatar = animator.avatar;
+            TryBuildAssetId(avatar, out animatorAvatarId);
+            animatorAvatarAssetPath = AssetDatabase.GetAssetPath(avatar);
+        }
+
+        private static bool TryBuildAssetId(UnityEngine.Object asset, out MeshId meshId)
+        {
+            meshId = default;
+            if (asset == null) return false;
+
+            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out var guid, out long localId))
+            {
+                meshId = new MeshId(guid, localId, hasLocalId: true);
+                return true;
+            }
+
+            var assetPath = AssetDatabase.GetAssetPath(asset);
+            if (string.IsNullOrEmpty(assetPath)) return false;
+
+            var fallbackGuid = AssetDatabase.AssetPathToGUID(assetPath);
+            if (string.IsNullOrEmpty(fallbackGuid)) return false;
+
+            meshId = new MeshId(fallbackGuid, 0, hasLocalId: false);
             return true;
         }
 
@@ -239,20 +318,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             meshId = default;
             if (mesh == null) return false;
 
-            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(mesh, out var guid, out long localId))
-            {
-                meshId = new MeshId(guid, localId, hasLocalId: true);
-                return true;
-            }
-
-            var meshPath = AssetDatabase.GetAssetPath(mesh);
-            if (string.IsNullOrEmpty(meshPath)) return false;
-
-            var fallbackGuid = AssetDatabase.AssetPathToGUID(meshPath);
-            if (string.IsNullOrEmpty(fallbackGuid)) return false;
-
-            meshId = new MeshId(fallbackGuid, 0, hasLocalId: false);
-            return true;
+            return TryBuildAssetId(mesh, out meshId);
         }
 
 #if VRC_SDK_VRCSDK3
