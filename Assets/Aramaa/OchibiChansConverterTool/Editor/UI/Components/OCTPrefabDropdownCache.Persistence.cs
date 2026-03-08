@@ -150,11 +150,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (prefabAsset == null) return paths;
             if (PrefabUtility.GetPrefabAssetType(prefabAsset) != PrefabAssetType.Variant) return paths;
 
+            var visitedPaths = new HashSet<string>(StringComparer.Ordinal);
             var current = prefabAsset;
             while (current != null)
             {
                 var currentPath = AssetDatabase.GetAssetPath(current);
-                if (IsPrefabAssetPath(currentPath) && HasVrcAvatarDescriptorOnRoot(current))
+                if (!IsPrefabAssetPath(currentPath)) break;
+                if (!visitedPaths.Add(currentPath)) break;
+
+                if (HasVrcAvatarDescriptorOnRoot(current))
                 {
                     paths.Add(currentPath);
                 }
