@@ -187,10 +187,16 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (!TryGetFaceMeshSignature(sourceTarget, out var avatarFaceMeshSignature)) return;
 
             var subFolders = AssetDatabase.GetSubFolders(BaseFolder);
-            var preferredPrefabByFolder = BuildPreferredPrefabPathBySubFolder(subFolders);
+            if (subFolders == null || subFolders.Length == 0) return;
+
+            EnsureCandidateListCapacity(subFolders.Length);
+
+            var preferredPrefabStateByFolder = BuildPreferredPrefabStateBySubFolder(subFolders);
             foreach (var folder in subFolders)
             {
-                if (!preferredPrefabByFolder.TryGetValue(folder, out var prefabPath)) continue;
+                if (!preferredPrefabStateByFolder.TryGetValue(folder, out var state)) continue;
+
+                var prefabPath = state.GetPreferredPath();
                 if (string.IsNullOrEmpty(prefabPath)) continue;
 
                 if (!PrefabHasMatchingFaceMesh(prefabPath, avatarFaceMeshSignature)) continue;
@@ -215,12 +221,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             _needsRefreshPrefabs = false;
         }
 
-        private static Dictionary<string, string> BuildPreferredPrefabPathBySubFolder(string[] subFolders)
+        private void EnsureCandidateListCapacity(int expectedCount)
         {
-            var preferredByFolder = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (expectedCount <= 0) return;
+
+            if (_candidatePrefabPaths.Capacity < expectedCount)
+            {
+                _candidatePrefabPaths.Capacity = expectedCount;
+            }
+
+            if (_candidateDisplayNames.Capacity < expectedCount)
+            {
+                _candidateDisplayNames.Capacity = expectedCount;
+            }
+        }
+
+        private static Dictionary<string, PreferredPrefabState> BuildPreferredPrefabStateBySubFolder(string[] subFolders)
+        {
             if (subFolders == null || subFolders.Length == 0)
             {
-                return preferredByFolder;
+                return new Dictionary<string, PreferredPrefabState>(StringComparer.Ordinal);
             }
 
             var statesByFolder = new Dictionary<string, PreferredPrefabState>(subFolders.Length, StringComparer.Ordinal);
@@ -232,13 +252,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (statesByFolder.Count == 0)
             {
-                return preferredByFolder;
+                return statesByFolder;
             }
 
             var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { BaseFolder });
             if (prefabGuids == null || prefabGuids.Length == 0)
             {
-                return preferredByFolder;
+                return statesByFolder;
             }
 
             foreach (var guid in prefabGuids)
@@ -254,16 +274,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 statesByFolder[folder] = state;
             }
 
-            foreach (var pair in statesByFolder)
-            {
-                var preferred = pair.Value.GetPreferredPath();
-                if (!string.IsNullOrEmpty(preferred))
-                {
-                    preferredByFolder[pair.Key] = preferred;
-                }
-            }
-
-            return preferredByFolder;
+            return statesByFolder;
         }
 
         private static bool TryGetImmediateSubFolder(string assetPath, out string subFolderPath)
