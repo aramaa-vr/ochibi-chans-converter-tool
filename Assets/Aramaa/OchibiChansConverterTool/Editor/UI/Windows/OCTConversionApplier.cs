@@ -138,7 +138,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private bool _showLogs;
             private bool _applyMaboneProxyProcessing = true;
             private bool _useReverseConversionFromCandidateDropdown;
-            private int _lastSelectedCandidateIndexForReverseMode;
+            private string _lastSelectedCandidatePathForReverseMode;
             private Vector2 _scrollPosition;
             private bool _versionCheckRequested;
             private bool _versionCheckInProgress;
@@ -634,14 +634,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     {
                         _useReverseConversionFromCandidateDropdown = false;
                         _prefabDropdownCache.ApplySelection(nextIndex);
-                        _lastSelectedCandidateIndexForReverseMode = nextIndex;
+                        _lastSelectedCandidatePathForReverseMode = _prefabDropdownCache.GetSelectedCandidatePath();
                     }
                 }
 
                 if (_useReverseConversionFromCandidateDropdown)
                 {
-                    // 復元モードで使う一致候補を固定するため、最後に選ばれていた候補を再適用する。
-                    _prefabDropdownCache.ApplySelection(Mathf.Clamp(_lastSelectedCandidateIndexForReverseMode, 0, candidateDisplayNames.Length - 1));
+                    // 復元モードで使う一致候補を固定するため、
+                    // 位置依存のインデックスではなく候補パスで再適用する。
+                    if (!_prefabDropdownCache.TryApplySelectionByPath(_lastSelectedCandidatePathForReverseMode))
+                    {
+                        ResetReverseModeToggleState();
+                        _prefabDropdownCache.ApplySelection(Mathf.Clamp(_prefabDropdownCache.SelectedIndex, 0, candidateDisplayNames.Length - 1));
+                        _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
+                        return;
+                    }
+
                     DrawSourcePrefabObjectFieldForRestoreMode();
                     return;
                 }
@@ -699,7 +707,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private void ResetReverseModeToggleState()
             {
                 _useReverseConversionFromCandidateDropdown = false;
-                _lastSelectedCandidateIndexForReverseMode = 0;
+                _lastSelectedCandidatePathForReverseMode = string.Empty;
             }
 
             /// <summary>
@@ -709,7 +717,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private void EnterReverseMode(int candidateIndex)
             {
                 _useReverseConversionFromCandidateDropdown = true;
-                _lastSelectedCandidateIndexForReverseMode = candidateIndex;
+                _prefabDropdownCache.ApplySelection(Mathf.Clamp(candidateIndex, 0, Mathf.Max(0, _prefabDropdownCache.CandidateDisplayNames.Count - 1)));
+                _lastSelectedCandidatePathForReverseMode = _prefabDropdownCache.GetSelectedCandidatePath();
                 _sourcePrefabAsset = null;
             }
 

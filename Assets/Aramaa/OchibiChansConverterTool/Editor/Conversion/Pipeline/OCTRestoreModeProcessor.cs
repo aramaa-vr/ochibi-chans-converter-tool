@@ -81,7 +81,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                if (IsExAddMenuNameMatch(go.name))
+                if (IsStandaloneExAddMenuObject(go))
                 {
                     // 単体オブジェクトとして配置されている AddMenu を削除対象にする
                     removalTargets.Add(go);
@@ -91,7 +91,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (nearestPrefabRoot != null && nearestPrefabRoot != avatarRoot)
                 {
                     var prefabAssetPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(nearestPrefabRoot);
-                    if (IsExAddMenuPrefabPath(prefabAssetPath) || IsExAddMenuNameMatch(nearestPrefabRoot.name))
+                    if (IsExAddMenuPrefabPath(prefabAssetPath))
                     {
                         // ネストPrefabとして配置されている AddMenu は、インスタンスルート単位で削除する
                         removalTargets.Add(nearestPrefabRoot);
@@ -153,10 +153,27 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
-        private static bool IsExAddMenuNameMatch(string objectName)
+        private static bool IsStandaloneExAddMenuObject(GameObject gameObject)
         {
-            return !string.IsNullOrEmpty(objectName)
-                && objectName.IndexOf(OCTEditorConstants.AddMenuNameKeyword, StringComparison.OrdinalIgnoreCase) >= 0;
+            if (gameObject == null)
+            {
+                return false;
+            }
+
+            // 誤削除防止のため、単純な「部分一致」は使わず、
+            // AddMenu のルート名（Clone付き含む）に一致する場合のみ削除対象にする。
+            var objectName = gameObject.name;
+            if (string.IsNullOrEmpty(objectName))
+            {
+                return false;
+            }
+
+            if (string.Equals(objectName, OCTEditorConstants.AddMenuNameKeyword, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return objectName.StartsWith(OCTEditorConstants.AddMenuNameKeyword + " ", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsExAddMenuPrefabPath(string prefabAssetPath)

@@ -62,9 +62,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static readonly string ExcludedSearchFolderPrefix = ExcludedSearchFolder + "/";
 
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
-        // 末尾の v9 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
-        // 互換が壊れる変更を入れたら v9 へ更新する（JSON構造が同じでも上げてよい）。
-        private const string FaceMeshCacheFileName = "FaceMeshCache.v9.json";
+        // 末尾の v10 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
+        // 互換が壊れる変更を入れたら v10 へ更新する（JSON構造が同じでも上げてよい）。
+        private const string FaceMeshCacheFileName = "FaceMeshCache.v10.json";
 
         private static readonly Dictionary<string, CachedFaceMesh> CachedFaceMeshByPrefab =
             new Dictionary<string, CachedFaceMesh>();
@@ -81,6 +81,41 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         public IReadOnlyList<string> CandidateDisplayNames => _candidateDisplayNames;
         public int SelectedIndex => _selectedPrefabIndex;
         public GameObject SourcePrefabAsset => _sourcePrefabAsset;
+
+        /// <summary>
+        /// 現在選択中候補の Prefab パスを返します。候補が無い場合は空文字列です。
+        /// </summary>
+        public string GetSelectedCandidatePath()
+        {
+            if (_candidatePrefabPaths.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var selectedIndex = Mathf.Clamp(_selectedPrefabIndex, 0, _candidatePrefabPaths.Count - 1);
+            return _candidatePrefabPaths[selectedIndex] ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 指定パスの候補が存在する場合のみ選択を更新します。
+        /// </summary>
+        public bool TryApplySelectionByPath(string prefabPath)
+        {
+            if (string.IsNullOrEmpty(prefabPath) || _candidatePrefabPaths.Count == 0)
+            {
+                return false;
+            }
+
+            var index = _candidatePrefabPaths.FindIndex(path =>
+                string.Equals(path, prefabPath, StringComparison.Ordinal));
+            if (index < 0)
+            {
+                return false;
+            }
+
+            ApplySelection(index);
+            return true;
+        }
 
         /// <summary>
         /// 指定した Prefab が候補一覧に含まれるかを判定します。
