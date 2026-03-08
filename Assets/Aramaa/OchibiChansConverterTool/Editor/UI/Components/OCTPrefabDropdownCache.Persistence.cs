@@ -55,8 +55,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     if (!TryParseHash128(entry.DependencyHash, out var hash)) continue;
 
                     var meshId = new MeshId(entry.FaceMeshGuid ?? string.Empty, entry.FaceMeshLocalId, entry.HasLocalId);
+                    var animatorAvatarId = new MeshId(entry.AnimatorAvatarGuid ?? string.Empty, entry.AnimatorAvatarLocalId, entry.HasAnimatorAvatarLocalId);
                     var signature = new FaceMeshSignature(
                         meshId,
+                        animatorAvatarId,
+                        entry.AnimatorAvatarAssetPath ?? string.Empty,
                         entry.PrefabGuid ?? string.Empty,
                         entry.PrefabName ?? string.Empty,
                         entry.FbxGuid ?? string.Empty,
@@ -95,6 +98,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         FaceMeshGuid = cached.FaceMeshSignature.MeshId.Guid,
                         FaceMeshLocalId = cached.FaceMeshSignature.MeshId.LocalId,
                         HasLocalId = cached.FaceMeshSignature.MeshId.HasLocalId,
+                        AnimatorAvatarGuid = cached.FaceMeshSignature.AnimatorAvatarId.Guid,
+                        AnimatorAvatarLocalId = cached.FaceMeshSignature.AnimatorAvatarId.LocalId,
+                        HasAnimatorAvatarLocalId = cached.FaceMeshSignature.AnimatorAvatarId.HasLocalId,
+                        AnimatorAvatarAssetPath = cached.FaceMeshSignature.AnimatorAvatarAssetPath,
                         PrefabGuid = cached.FaceMeshSignature.PrefabGuid,
                         PrefabName = cached.FaceMeshSignature.PrefabName,
                         FbxGuid = cached.FaceMeshSignature.FbxGuid,
@@ -212,6 +219,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             public long FaceMeshLocalId;
             public bool HasLocalId;
             public bool HasFaceMesh;
+            public string AnimatorAvatarGuid;
+            public long AnimatorAvatarLocalId;
+            public bool HasAnimatorAvatarLocalId;
+            public string AnimatorAvatarAssetPath;
             public string PrefabGuid;
             public string PrefabName;
             public string FbxGuid;
