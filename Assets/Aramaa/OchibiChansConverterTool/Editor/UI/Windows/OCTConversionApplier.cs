@@ -581,6 +581,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     EditorGUILayout.HelpBox(L("Help.SourceAvatarAssetInvalid"), MessageType.Error);
                     _sourceTarget = null;
                     _prefabDropdownCache.MarkNeedsRefresh();
+                    ResetReverseModeSelectionState();
                 }
             }
 
