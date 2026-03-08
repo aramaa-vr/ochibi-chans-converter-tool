@@ -189,6 +189,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 3) （任意）MA BoneProxy 補正
                 // --------------------------------------------------------
+                // 仕様メモ:
+                // - MA BoneProxy は通常処理 / 逆変換処理のどちらでも、チェックが ON なら実行します。
+                // - 逆変換時もこの挙動は変更しません。
                 if (applyMaboneProxyProcessing)
                 {
                     log.AddStep(

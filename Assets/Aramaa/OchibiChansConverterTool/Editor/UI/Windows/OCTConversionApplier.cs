@@ -581,6 +581,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     EditorGUILayout.HelpBox(L("Help.SourceAvatarAssetInvalid"), MessageType.Error);
                     _sourceTarget = null;
                     _prefabDropdownCache.MarkNeedsRefresh();
+                    ResetReverseModeSelectionState();
                 }
             }
 
@@ -915,6 +916,30 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 EditorApplication.delayCall += () =>
                 {
                     var logs = new List<string>();
+
+                    var isCapturedTargetValid =
+                        capturedTarget != null &&
+                        !EditorUtility.IsPersistent(capturedTarget) &&
+                        capturedTarget.scene.IsValid() &&
+                        capturedTarget.scene.isLoaded;
+                    var isCapturedSourcePrefabValid = capturedSourcePrefab != null && IsPrefabAsset(capturedSourcePrefab);
+                    if (!isCapturedTargetValid || !isCapturedSourcePrefabValid)
+                    {
+                        logs.Add("Invalid queued input. Please re-select source avatar / prefab and retry.");
+                        _applyQueued = false;
+
+                        if (_showLogs)
+                        {
+                            OCTConversionLogWindow.ShowLogs(LogWindowTitle, logs);
+                        }
+
+                        if (_isWindowActive && _opened == this)
+                        {
+                            Repaint();
+                        }
+
+                        return;
+                    }
 
                     try
                     {
