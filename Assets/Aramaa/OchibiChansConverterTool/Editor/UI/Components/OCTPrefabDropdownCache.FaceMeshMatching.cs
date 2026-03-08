@@ -100,8 +100,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             EnsureFaceMeshCacheLoaded();
 
             var hash = AssetDatabase.GetAssetDependencyHash(prefabPath);
-            if (CachedFaceMeshByPrefab.TryGetValue(prefabPath, out var cached) &&
-                cached.DependencyHash == hash)
+            var hasCachedEntry = CachedFaceMeshByPrefab.TryGetValue(prefabPath, out var cached);
+            var needsVariantPathBackfill = hasCachedEntry && string.IsNullOrEmpty(cached.PrefabVariantPath);
+
+            if (hasCachedEntry &&
+                cached.DependencyHash == hash &&
+                !needsVariantPathBackfill)
             {
                 if (cached.HasFaceMesh)
                 {
@@ -113,7 +117,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             var hasFaceMesh = TryGetFaceMeshSignatureFromPrefabPath(prefabPath, out var cachedSignature);
-            CachedFaceMeshByPrefab[prefabPath] = new CachedFaceMesh(hash, cachedSignature, hasFaceMesh);
+            CachedFaceMeshByPrefab[prefabPath] = new CachedFaceMesh(
+                hash,
+                cachedSignature,
+                hasFaceMesh,
+                FindFirstVariantPrefabPathForCache(prefabPath));
             MarkFaceMeshCacheDirty();
             // ここでは即時保存しません。
             // - OnDisable でまとめて保存される

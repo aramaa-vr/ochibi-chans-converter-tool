@@ -820,6 +820,58 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "顯示處理日誌視窗"
+    },
+    {
+      "key": "Help.RestoreModeNeedSourceAvatar",
+      "value": "在「逆向改造」模式下，請先在 Hierarchy 選擇小隻醬 Avatar。"
+    },
+    {
+      "key": "Label.RestoreModeResolvedPrefab",
+      "value": "自動解析的原始 Avatar Prefab"
+    },
+    {
+      "key": "Help.RestoreModeResolvedPrefab",
+      "value": "這是「逆向改造」模式下自動解析到的原始 Avatar Prefab，會作為轉換來源使用。"
+    },
+    {
+      "key": "Log.RestoreMode.Enabled",
+      "value": "已啟用還原模式：同步前會先移除逆轉換輔助元件。"
+    },
+    {
+      "key": "Log.RestoreMode.ArmatureNotFound",
+      "value": "還原模式：找不到 Armature。target={0}"
+    },
+    {
+      "key": "Log.RestoreMode.ComponentRemoved",
+      "value": "還原模式：已從 Armature 移除 '{0}' 共 {1} 個。"
+    },
+    {
+      "key": "Log.RestoreMode.ComponentNotFound",
+      "value": "還原模式：Armature 上找不到 '{0}'。"
+    },
+    {
+      "key": "Log.RestoreMode.SkipAddMenuAttach",
+      "value": "還原模式：不會附加 Ochibichans_Addmenu。"
+    },
+    {
+      "key": "Log.RestoreMode.ExAddMenuNotFound",
+      "value": "還原模式：在複製 Avatar 上找不到既有的 Ochibichans_Addmenu。"
+    },
+    {
+      "key": "Log.RestoreMode.ExAddMenuRemovedObject",
+      "value": "還原模式：已移除 AddMenu 物件：{0}"
+    },
+    {
+      "key": "Log.RestoreMode.ExAddMenuRemovedCount",
+      "value": "還原模式：已移除 Ochibichans_Addmenu 數量={0}"
+    },
+    {
+      "key": "Help.RestoreModeManualPrefabWarning",
+      "value": "在「逆向改造」模式下，請先確認手動選擇的 Prefab 確實是正確的原始 Avatar 再執行。"
+    },
+    {
+      "key": "Label.CandidateReverseOption",
+      "value": "↩ 逆向改造（小隻醬 -> 原始 Avatar）"
     }
   ]
 }

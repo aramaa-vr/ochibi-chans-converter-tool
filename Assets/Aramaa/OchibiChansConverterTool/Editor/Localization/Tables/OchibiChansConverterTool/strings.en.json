@@ -820,6 +820,58 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "Show processing log window"
+    },
+    {
+      "key": "Help.RestoreModeNeedSourceAvatar",
+      "value": "In \"Reverse conversion\" mode, select an Ochibi-chans avatar in the Hierarchy first."
+    },
+    {
+      "key": "Label.RestoreModeResolvedPrefab",
+      "value": "Auto-resolved original avatar prefab"
+    },
+    {
+      "key": "Help.RestoreModeResolvedPrefab",
+      "value": "In \"Reverse conversion\" mode, this original-avatar prefab was resolved automatically and will be used as the source."
+    },
+    {
+      "key": "Log.RestoreMode.Enabled",
+      "value": "Restore mode enabled: Removing reverse-conversion helper components before sync."
+    },
+    {
+      "key": "Log.RestoreMode.ArmatureNotFound",
+      "value": "Restore mode: Armature not found. target={0}"
+    },
+    {
+      "key": "Log.RestoreMode.ComponentRemoved",
+      "value": "Restore mode: removed '{0}' x{1} from Armature."
+    },
+    {
+      "key": "Log.RestoreMode.ComponentNotFound",
+      "value": "Restore mode: '{0}' was not found on Armature."
+    },
+    {
+      "key": "Log.RestoreMode.SkipAddMenuAttach",
+      "value": "Restore mode: Skip attaching Ochibichans_Addmenu."
+    },
+    {
+      "key": "Log.RestoreMode.ExAddMenuNotFound",
+      "value": "Restore mode: No existing Ochibichans_Addmenu found on duplicate avatar."
+    },
+    {
+      "key": "Log.RestoreMode.ExAddMenuRemovedObject",
+      "value": "Restore mode: Removed add-menu object: {0}"
+    },
+    {
+      "key": "Log.RestoreMode.ExAddMenuRemovedCount",
+      "value": "Restore mode: Removed Ochibichans_Addmenu objects={0}"
+    },
+    {
+      "key": "Help.RestoreModeManualPrefabWarning",
+      "value": "In \"Reverse conversion\" mode, ensure the manually selected prefab is the correct original avatar before running."
+    },
+    {
+      "key": "Label.CandidateReverseOption",
+      "value": "↩ Reverse conversion (Ochibi-chans -> original avatar)"
     }
   ]
 }
