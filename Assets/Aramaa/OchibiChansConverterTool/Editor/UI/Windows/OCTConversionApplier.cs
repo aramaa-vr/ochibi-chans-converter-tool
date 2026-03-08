@@ -688,7 +688,28 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     return;
                 }
 
-                if (_prefabDropdownCache.TryResolveOriginalAvatarPrefab(_sourceTarget, out var resolvedPrefab))
+                // 逆変換の元Prefab解決ルール（重要）:
+                // - まず通常と同じ一致候補（プルダウン）を生成する
+                // - ユーザーが選択した候補の PrefabVariantPath を使って元アバターを解決する
+                // これにより「どの一致データを使ったか」が UI 上で明確になります。
+                _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
+
+                var candidateDisplayNames = _prefabDropdownCache.CandidateDisplayNames?.ToArray() ?? Array.Empty<string>();
+                if (candidateDisplayNames.Length == 0)
+                {
+                    _sourcePrefabAsset = null;
+                    EditorGUILayout.HelpBox(L("Help.RestoreModeCacheNotFound"), MessageType.Warning);
+                    return;
+                }
+
+                var currentIndex = Mathf.Clamp(_prefabDropdownCache.SelectedIndex, 0, candidateDisplayNames.Length - 1);
+                var nextIndex = EditorGUILayout.Popup(L("Label.CandidateList"), currentIndex, candidateDisplayNames);
+                if (nextIndex != currentIndex)
+                {
+                    _prefabDropdownCache.ApplySelection(nextIndex);
+                }
+
+                if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromSelectedCandidate(out var resolvedPrefab))
                 {
                     _sourcePrefabAsset = resolvedPrefab;
                 }

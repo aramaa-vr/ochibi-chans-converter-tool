@@ -158,6 +158,54 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
+        /// 候補プルダウンで現在選択中の「一致データ」から、PrefabVariantPath を使って元アバター Prefab を解決します。
+        /// 逆変換ではこのメソッドを優先し、辞書全走査の曖昧さを避けます。
+        /// </summary>
+        public bool TryResolveOriginalAvatarPrefabFromSelectedCandidate(out GameObject originalAvatarPrefab)
+        {
+            originalAvatarPrefab = null;
+
+            if (_candidatePrefabPaths.Count == 0)
+            {
+                return false;
+            }
+
+            var selectedIndex = Mathf.Clamp(_selectedPrefabIndex, 0, _candidatePrefabPaths.Count - 1);
+            var selectedCandidatePath = _candidatePrefabPaths[selectedIndex];
+            if (string.IsNullOrEmpty(selectedCandidatePath))
+            {
+                return false;
+            }
+
+            EnsureFaceMeshCacheLoaded();
+
+            // キャッシュ未登録でも、ここで署名解決を1回走らせれば CachedFaceMeshByPrefab が更新されます。
+            if (!CachedFaceMeshByPrefab.ContainsKey(selectedCandidatePath))
+            {
+                TryGetCachedFaceMeshSignature(selectedCandidatePath, out _);
+            }
+
+            if (!CachedFaceMeshByPrefab.TryGetValue(selectedCandidatePath, out var cached))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(cached.PrefabVariantPath))
+            {
+                return false;
+            }
+
+            var resolved = AssetDatabase.LoadAssetAtPath<GameObject>(cached.PrefabVariantPath);
+            if (resolved == null)
+            {
+                return false;
+            }
+
+            originalAvatarPrefab = resolved;
+            return true;
+        }
+
+        /// <summary>
         /// 対象アバターの変更に備えて、次回の候補再構築を予約します。
         /// </summary>
         public void MarkNeedsRefresh()
