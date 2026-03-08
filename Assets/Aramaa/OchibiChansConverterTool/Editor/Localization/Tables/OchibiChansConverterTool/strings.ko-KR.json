@@ -820,14 +820,6 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "처리 로그 창 표시"
-    },
-    {
-      "key": "Toggle.ReverseConversion",
-      "value": "역변환 (오치비짱즈 -> 원본 아바타 후보)"
-    },
-    {
-      "key": "Help.ReverseConversion",
-      "value": "역변환을 켜면 ①에서 선택한 아바타의 FaceMeshSignature(GUID/경로 등)를 기준으로 후보를 자동 검색합니다. 개변으로 얼굴 메쉬가 교체된 경우에도 아바타 전체 메쉬 식별 정보를 사용해 후보를 보완합니다."
     }
   ]
 }

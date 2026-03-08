@@ -820,14 +820,6 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "処理ログを表示する"
-    },
-    {
-      "key": "Toggle.ReverseConversion",
-      "value": "逆変換（おちびちゃんズ→元アバター候補）"
-    },
-    {
-      "key": "Help.ReverseConversion",
-      "value": "逆変換をONにすると、①で選択したアバターのFaceMeshSignature（GUID/パスなど）を基準に候補を自動検索します。改変で顔メッシュが差し替えられている場合も、アバター全体のメッシュ情報を使って候補を補完します。"
     }
   ]
 }

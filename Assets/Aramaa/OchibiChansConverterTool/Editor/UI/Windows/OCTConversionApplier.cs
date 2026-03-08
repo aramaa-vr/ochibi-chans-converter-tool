@@ -137,7 +137,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             private bool _showLogs;
             private bool _applyMaboneProxyProcessing = true;
-            private bool _reverseConversion;
             private Vector2 _scrollPosition;
             private bool _versionCheckRequested;
             private bool _versionCheckInProgress;
@@ -264,8 +263,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     DrawCard(() =>
                     {
                         DrawSectionHeader("2", L("Section.TargetPrefabLabel"));
-                        DrawReverseConversionToggle();
-                        EditorGUILayout.Space(2);
                         DrawSourcePrefabObjectField();
                     });
 
@@ -590,7 +587,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             /// </summary>
             private void DrawSourcePrefabObjectField()
             {
-                _prefabDropdownCache.RefreshIfNeeded(_sourceTarget, _reverseConversion);
+                _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
 
                 var hasCandidates = _prefabDropdownCache.CandidateDisplayNames.Count > 0;
 
@@ -667,23 +664,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (!_prefabDropdownCache.ContainsCandidate(_sourcePrefabAsset))
                 {
                     EditorGUILayout.HelpBox(L("Help.ManualPrefabWarning"), MessageType.Warning);
-                }
-            }
-
-            private void DrawReverseConversionToggle()
-            {
-                EditorGUI.BeginChangeCheck();
-                var nextReverse = EditorGUILayout.ToggleLeft(L("Toggle.ReverseConversion"), _reverseConversion);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    _reverseConversion = nextReverse;
-                    _prefabDropdownCache.MarkNeedsRefresh();
-                    _sourcePrefabAsset = null;
-                }
-
-                if (_reverseConversion)
-                {
-                    EditorGUILayout.HelpBox(L("Help.ReverseConversion"), MessageType.Info);
                 }
             }
 

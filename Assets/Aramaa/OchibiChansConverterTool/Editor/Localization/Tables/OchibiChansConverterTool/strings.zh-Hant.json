@@ -820,14 +820,6 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "顯示處理日誌視窗"
-    },
-    {
-      "key": "Toggle.ReverseConversion",
-      "value": "逆向轉換（小隻版 -> 原始模型候選）"
-    },
-    {
-      "key": "Help.ReverseConversion",
-      "value": "啟用逆向轉換後，將基於步驟①所選模型的 FaceMeshSignature（GUID/路徑等）自動搜尋候選。即使改裝導致臉部網格被替換，也會使用整體模型的網格識別資訊進行補充比對。"
     }
   ]
 }

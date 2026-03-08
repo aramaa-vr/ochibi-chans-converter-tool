@@ -820,14 +820,6 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "显示处理日志窗口"
-    },
-    {
-      "key": "Toggle.ReverseConversion",
-      "value": "逆向转换（小只版 -> 原始模型候选）"
-    },
-    {
-      "key": "Help.ReverseConversion",
-      "value": "启用逆向转换后，将基于步骤①所选模型的 FaceMeshSignature（GUID/路径等）自动检索候选。即使改装导致面部网格被替换，也会使用整套模型的网格标识信息进行补充匹配。"
     }
   ]
 }
