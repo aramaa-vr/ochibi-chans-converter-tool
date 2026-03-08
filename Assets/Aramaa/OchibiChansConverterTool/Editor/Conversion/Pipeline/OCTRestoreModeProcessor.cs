@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,6 +26,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal static class OCTRestoreModeProcessor
     {
+        private static readonly Regex AddMenuDuplicateSuffixPattern = new Regex(
+            "^" + OCTEditorConstants.AddMenuNameKeyword + @" \(\d+\)$",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
@@ -179,7 +184,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return true;
             }
 
-            return objectName.StartsWith(OCTEditorConstants.AddMenuNameKeyword + " (", StringComparison.OrdinalIgnoreCase);
+            return AddMenuDuplicateSuffixPattern.IsMatch(objectName);
         }
 
         private static bool IsExAddMenuPrefabPath(string prefabAssetPath)
