@@ -2,7 +2,7 @@
 
 ## [0.5.6-beta.2]（Pre-release）
 ### 主な変更点
-- **FaceMeshキャッシュ互換バージョンを更新**：保存ファイル名を `FaceMeshCache.v8.json` に更新し、バリアント系譜の保存条件（`.prefab` かつルート `VRCAvatarDescriptor`）に合わせてキャッシュを再生成しやすくしました
+- **FaceMeshキャッシュ互換バージョンを更新**：保存ファイル名を `FaceMeshCache.v9.json` に更新し、バリアント系譜の保存条件（`.prefab` かつルート `VRCAvatarDescriptor`）に合わせてキャッシュを再生成しやすくしました
 
 ## [0.5.6-beta.1]（Pre-release）
 ### 主な変更点
