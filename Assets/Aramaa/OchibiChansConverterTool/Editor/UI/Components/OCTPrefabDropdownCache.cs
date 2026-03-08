@@ -94,7 +94,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
-            return _candidatePrefabPaths.Any(path =>
+            return _candidatePrefabPaths.Exists(path =>
                 string.Equals(path, prefabPath, StringComparison.Ordinal));
         }
 
