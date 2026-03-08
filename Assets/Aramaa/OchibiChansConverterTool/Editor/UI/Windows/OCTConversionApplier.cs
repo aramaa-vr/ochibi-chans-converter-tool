@@ -566,9 +566,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     _sourceTarget = nextTarget;
                     _prefabDropdownCache.MarkNeedsRefresh();
-                    _sourcePrefabAsset = null;
-                    _useReverseConversionFromCandidateDropdown = false;
-                    _lastSelectedCandidateIndexForReverseMode = 0;
+                    ResetReverseModeSelectionState();
                 }
 
                 if (_sourceTarget == null)
@@ -600,7 +598,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 if (!hasCandidates)
                 {
-                    _useReverseConversionFromCandidateDropdown = false;
+                    ResetReverseModeSelectionState();
                     EditorGUILayout.HelpBox(L("Help.NoPrefabCandidates"), MessageType.Info);
                     DrawManualPrefabField("Help.ManualPrefabWarning");
                     return;
@@ -609,7 +607,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var candidateDisplayNames = _prefabDropdownCache.CandidateDisplayNames?.ToArray() ?? Array.Empty<string>();
                 if (candidateDisplayNames.Length == 0)
                 {
-                    EditorGUILayout.HelpBox(L("Help.SelectPrefabFromProject"), MessageType.Info);
+                    // 基本的には到達しない想定だが、キャッシュ更新タイミングの競合に備えて
+                    // 手動入力へフォールバックし、実行不能なUI状態を作らない。
+                    ResetReverseModeSelectionState();
+                    EditorGUILayout.HelpBox(L("Help.NoPrefabCandidates"), MessageType.Info);
+                    DrawManualPrefabField("Help.ManualPrefabWarning");
                     return;
                 }
 
@@ -626,9 +628,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     if (nextIndex >= candidateDisplayNames.Length)
                     {
-                        _useReverseConversionFromCandidateDropdown = true;
-                        _lastSelectedCandidateIndexForReverseMode = candidateIndex;
-                        _sourcePrefabAsset = null;
+                        EnterReverseMode(candidateIndex);
                     }
                     else
                     {
@@ -678,6 +678,29 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     EditorGUILayout.HelpBox(L("Help.ManualPrefabWarning"), MessageType.Warning);
                 }
+            }
+
+            /// <summary>
+            /// 逆改変モードの一時状態を初期化します。
+            /// 「候補が無いのに逆改変が残る」状態を防ぐため、
+            /// ターゲット変更時・候補消失時に必ずここを通します。
+            /// </summary>
+            private void ResetReverseModeSelectionState()
+            {
+                _sourcePrefabAsset = null;
+                _useReverseConversionFromCandidateDropdown = false;
+                _lastSelectedCandidateIndexForReverseMode = 0;
+            }
+
+            /// <summary>
+            /// 候補プルダウンで「逆改変」を選んだ時の遷移をまとめます。
+            /// 逆改変の基準候補を固定し、手動入力が必要なら下段UIに任せます。
+            /// </summary>
+            private void EnterReverseMode(int candidateIndex)
+            {
+                _useReverseConversionFromCandidateDropdown = true;
+                _lastSelectedCandidateIndexForReverseMode = candidateIndex;
+                _sourcePrefabAsset = null;
             }
 
             /// <summary>
