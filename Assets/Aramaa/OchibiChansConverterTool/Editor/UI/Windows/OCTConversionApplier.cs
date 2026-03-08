@@ -581,6 +581,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     EditorGUILayout.HelpBox(L("Help.SourceAvatarAssetInvalid"), MessageType.Error);
                     _sourceTarget = null;
                     _prefabDropdownCache.MarkNeedsRefresh();
+                    ResetReverseModeSelectionState();
                 }
             }
 
@@ -701,8 +702,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             /// <summary>
             /// 逆改変のUI状態のみを初期化します。
-            /// 候補無しフォールバックでは手動Prefab入力を保持するため、
-            /// _sourcePrefabAsset はこのメソッドでは変更しません。
+            /// 候補がある状態で通常モードへ戻す時に使います。
             /// </summary>
             private void ResetReverseModeToggleState()
             {
@@ -916,6 +916,30 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 EditorApplication.delayCall += () =>
                 {
                     var logs = new List<string>();
+
+                    var isCapturedTargetValid =
+                        capturedTarget != null &&
+                        !EditorUtility.IsPersistent(capturedTarget) &&
+                        capturedTarget.scene.IsValid() &&
+                        capturedTarget.scene.isLoaded;
+                    var isCapturedSourcePrefabValid = capturedSourcePrefab != null && IsPrefabAsset(capturedSourcePrefab);
+                    if (!isCapturedTargetValid || !isCapturedSourcePrefabValid)
+                    {
+                        logs.Add("Invalid queued input. Please re-select source avatar / prefab and retry.");
+                        _applyQueued = false;
+
+                        if (_showLogs)
+                        {
+                            OCTConversionLogWindow.ShowLogs(LogWindowTitle, logs);
+                        }
+
+                        if (_isWindowActive && _opened == this)
+                        {
+                            Repaint();
+                        }
+
+                        return;
+                    }
 
                     try
                     {
