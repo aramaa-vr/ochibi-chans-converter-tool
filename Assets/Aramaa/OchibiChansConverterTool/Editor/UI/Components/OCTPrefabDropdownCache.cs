@@ -129,8 +129,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             EnsureFaceMeshCacheLoaded();
 
-            // キャッシュ未登録でも、ここで署名解決を1回走らせれば CachedFaceMeshByPrefab が更新されます。
-            if (!CachedFaceMeshByPrefab.ContainsKey(selectedCandidatePath))
+            // 旧キャッシュ（PrefabVariantPath 未格納）にも追従できるよう、
+            // エントリ未登録「または」VariantPath未設定なら再解決を1回走らせて更新します。
+            var shouldRefreshSignature =
+                !CachedFaceMeshByPrefab.TryGetValue(selectedCandidatePath, out var cachedBeforeResolve) ||
+                string.IsNullOrEmpty(cachedBeforeResolve.PrefabVariantPath);
+            if (shouldRefreshSignature)
             {
                 TryGetCachedFaceMeshSignature(selectedCandidatePath, out _);
             }
