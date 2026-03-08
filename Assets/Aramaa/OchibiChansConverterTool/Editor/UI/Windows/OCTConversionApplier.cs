@@ -597,8 +597,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private void DrawSourcePrefabObjectField()
             {
                 // 初めて使う人向けメモ:
-                // - 通常モード: 元アバター -> おちびちゃんズへ変換するため、候補一覧からおちびちゃんズ Prefab を選ぶ
-                // - 復元モード: おちびちゃんズ -> 元アバターへ戻すため、FaceMeshCache の PrefabVariantPath を自動利用する
+                // - 変換モード「通常変換」: 候補一覧からおちびちゃんズ Prefab を選ぶ
+                // - 変換モード「逆改変」: 復元向けUI（候補選択 + 自動解決 + 手動指定）を使う
                 if (IsRestoreModeSelected())
                 {
                     DrawSourcePrefabObjectFieldForRestoreMode();

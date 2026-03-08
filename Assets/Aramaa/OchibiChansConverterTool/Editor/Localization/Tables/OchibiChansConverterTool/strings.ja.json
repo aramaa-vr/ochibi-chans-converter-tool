@@ -822,12 +822,8 @@
       "value": "処理ログを表示する"
     },
     {
-      "key": "Toggle.RestoreOriginalAvatar",
-      "value": "復元モード：おちびちゃんズ → 元アバター"
-    },
-    {
       "key": "Help.RestoreModeNeedSourceAvatar",
-      "value": "先に Hierarchy でおちびちゃんズのアバターを選択してください。"
+      "value": "「逆改変」モードでは、先に Hierarchy でおちびちゃんズのアバターを選択してください。"
     },
     {
       "key": "Label.RestoreModeResolvedPrefab",
@@ -835,11 +831,11 @@
     },
     {
       "key": "Help.RestoreModeResolvedPrefab",
-      "value": "アバター情報から自動で一致した Prefab です。この Prefab が変換元として使われます。"
+      "value": "「逆改変」モードで自動解決された元アバター Prefab です。この Prefab が変換元として使われます。"
     },
     {
       "key": "Help.RestoreModeCacheNotFound",
-      "value": "元アバターを自動で見つけられませんでした。通常モードで一度アバターを開く・選択してから、復元モードを再実行してください。"
+      "value": "「逆改変」モードで自動解決できませんでした。プルダウン候補を選ぶか、元アバター Prefab を手動指定してください。"
     },
     {
       "key": "Log.RestoreMode.Enabled",
@@ -875,7 +871,7 @@
     },
     {
       "key": "Help.RestoreModeManualPrefabWarning",
-      "value": "復元モードでは、手動で選んだ Prefab が正しい元アバターであることを確認して実行してください。"
+      "value": "「逆改変」モードでは、手動で選んだ Prefab が正しい元アバターであることを確認して実行してください。"
     },
     {
       "key": "Mode.Label",

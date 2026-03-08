@@ -822,12 +822,8 @@
       "value": "显示处理日志窗口"
     },
     {
-      "key": "Toggle.RestoreOriginalAvatar",
-      "value": "还原模式：小只酱 → 原始头像"
-    },
-    {
       "key": "Help.RestoreModeNeedSourceAvatar",
-      "value": "请先在 Hierarchy 中选择小只酱头像。"
+      "value": "在“逆向改造”模式下，请先在 Hierarchy 中选择小只酱头像。"
     },
     {
       "key": "Label.RestoreModeResolvedPrefab",
@@ -835,11 +831,11 @@
     },
     {
       "key": "Help.RestoreModeResolvedPrefab",
-      "value": "已根据头像信息自动匹配到 Prefab，该 Prefab 将作为转换源使用。"
+      "value": "这是“逆向改造”模式下自动解析到的原始头像 Prefab，将作为转换源使用。"
     },
     {
       "key": "Help.RestoreModeCacheNotFound",
-      "value": "未能自动找到原始头像。请先在普通模式下打开或选择一次头像，再重新执行还原模式。"
+      "value": "在“逆向改造”模式下自动解析失败。请选择下拉候选，或手动指定原始头像 Prefab。"
     },
     {
       "key": "Log.RestoreMode.Enabled",
@@ -875,7 +871,7 @@
     },
     {
       "key": "Help.RestoreModeManualPrefabWarning",
-      "value": "在还原模式下，请确认手动选择的 Prefab 确实是正确的原始头像后再执行。"
+      "value": "在“逆向改造”模式下，请确认手动选择的 Prefab 确实是正确的原始头像后再执行。"
     },
     {
       "key": "Mode.Label",

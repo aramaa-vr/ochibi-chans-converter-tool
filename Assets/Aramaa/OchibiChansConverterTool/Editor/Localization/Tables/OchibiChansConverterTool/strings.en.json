@@ -822,12 +822,8 @@
       "value": "Show processing log window"
     },
     {
-      "key": "Toggle.RestoreOriginalAvatar",
-      "value": "Restore mode: Ochibi-chans → original avatar"
-    },
-    {
       "key": "Help.RestoreModeNeedSourceAvatar",
-      "value": "Select an Ochibi-chans avatar in the Hierarchy first."
+      "value": "In \"Reverse conversion\" mode, select an Ochibi-chans avatar in the Hierarchy first."
     },
     {
       "key": "Label.RestoreModeResolvedPrefab",
@@ -835,11 +831,11 @@
     },
     {
       "key": "Help.RestoreModeResolvedPrefab",
-      "value": "Matched automatically from avatar data. This prefab will be used as the conversion source."
+      "value": "In \"Reverse conversion\" mode, this original-avatar prefab was resolved automatically and will be used as the source."
     },
     {
       "key": "Help.RestoreModeCacheNotFound",
-      "value": "Could not find a matching original avatar automatically. Open/select the avatar once in normal mode, then try restore mode again."
+      "value": "In \"Reverse conversion\" mode, auto resolution failed. Select a candidate from the dropdown or specify the original-avatar prefab manually."
     },
     {
       "key": "Log.RestoreMode.Enabled",
@@ -875,7 +871,7 @@
     },
     {
       "key": "Help.RestoreModeManualPrefabWarning",
-      "value": "In restore mode, ensure the manually selected prefab is the correct original avatar before running."
+      "value": "In \"Reverse conversion\" mode, ensure the manually selected prefab is the correct original avatar before running."
     },
     {
       "key": "Mode.Label",

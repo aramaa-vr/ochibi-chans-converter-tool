@@ -822,12 +822,8 @@
       "value": "顯示處理日誌視窗"
     },
     {
-      "key": "Toggle.RestoreOriginalAvatar",
-      "value": "還原模式：小隻醬 → 原始 Avatar"
-    },
-    {
       "key": "Help.RestoreModeNeedSourceAvatar",
-      "value": "請先在 Hierarchy 選擇小隻醬 Avatar。"
+      "value": "在「逆向改造」模式下，請先在 Hierarchy 選擇小隻醬 Avatar。"
     },
     {
       "key": "Label.RestoreModeResolvedPrefab",
@@ -835,11 +831,11 @@
     },
     {
       "key": "Help.RestoreModeResolvedPrefab",
-      "value": "已依 Avatar 資訊自動配對 Prefab，該 Prefab 會作為轉換來源使用。"
+      "value": "這是「逆向改造」模式下自動解析到的原始 Avatar Prefab，會作為轉換來源使用。"
     },
     {
       "key": "Help.RestoreModeCacheNotFound",
-      "value": "無法自動找到原始 Avatar。請先在一般模式開啟或選取一次 Avatar，再重新執行還原模式。"
+      "value": "在「逆向改造」模式下自動解析失敗。請先選擇下拉候選，或手動指定原始 Avatar Prefab。"
     },
     {
       "key": "Log.RestoreMode.Enabled",
@@ -875,7 +871,7 @@
     },
     {
       "key": "Help.RestoreModeManualPrefabWarning",
-      "value": "在還原模式下，請先確認手動選擇的 Prefab 確實是正確的原始 Avatar 再執行。"
+      "value": "在「逆向改造」模式下，請先確認手動選擇的 Prefab 確實是正確的原始 Avatar 再執行。"
     },
     {
       "key": "Mode.Label",
