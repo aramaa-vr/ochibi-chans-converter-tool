@@ -22,7 +22,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -57,6 +56,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         private const string BaseFolder = OCTEditorConstants.BaseFolder;
+        // BaseFolder 配下のうち、候補検索から外すサブフォルダ名。
+        private const string ExcludedSearchSubFolderName = "缶バッジ";
+        private const string ExcludedSearchFolder = BaseFolder + "/" + ExcludedSearchSubFolderName;
+        private static readonly string ExcludedSearchFolderPrefix = ExcludedSearchFolder + "/";
 
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
         // 末尾の v7 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
@@ -95,7 +98,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
-            return _candidatePrefabPaths.Any(path =>
+            return _candidatePrefabPaths.Exists(path =>
                 string.Equals(path, prefabPath, StringComparison.Ordinal));
         }
 
@@ -187,10 +190,23 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (!TryGetFaceMeshSignature(sourceTarget, out var avatarFaceMeshSignature)) return;
 
+            // 候補生成フロー（高コスト箇所をまとめて最適化）:
+            // 1) BaseFolder直下のサブフォルダ一覧を取得
+            // 2) BaseFolder全体を1回だけ走査して「各サブフォルダの優先Prefab」を集約
+            // 3) その結果を使って FaceMesh 一致判定を行い、最終候補へ追加
             var subFolders = AssetDatabase.GetSubFolders(BaseFolder);
+            if (subFolders == null || subFolders.Length == 0) return;
+
+            // サブフォルダ数を上限目安にして容量を確保。
+            // List の再確保を減らし、候補追加時の GC 発生を抑える。
+            EnsureCandidateListCapacity(subFolders.Length);
+
+            var preferredPrefabStateByFolder = BuildPreferredPrefabStateBySubFolder(subFolders);
             foreach (var folder in subFolders)
             {
-                var prefabPath = FindPreferredPrefabPathUnder(folder);
+                if (!preferredPrefabStateByFolder.TryGetValue(folder, out var state)) continue;
+
+                var prefabPath = state.GetPreferredPath();
                 if (string.IsNullOrEmpty(prefabPath)) continue;
 
                 if (!PrefabHasMatchingFaceMesh(prefabPath, avatarFaceMeshSignature)) continue;
@@ -216,47 +232,172 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
-        /// 指定フォルダ配下の Prefab から、優先順位に従って候補を1つ選びます。
+        /// ドロップダウン候補リストの内部容量を事前確保します。
+        /// 候補追加時の再割り当てを減らし、GC 負荷を抑えるための補助メソッドです。
         /// </summary>
-        private static string FindPreferredPrefabPathUnder(string folder)
+        private void EnsureCandidateListCapacity(int expectedCount)
         {
-            var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { folder });
-            if (prefabGuids == null || prefabGuids.Length == 0) return null;
+            if (expectedCount <= 0) return;
 
-            var candidates = new List<string>();
+            if (_candidatePrefabPaths.Capacity < expectedCount)
+            {
+                _candidatePrefabPaths.Capacity = expectedCount;
+            }
+
+            if (_candidateDisplayNames.Capacity < expectedCount)
+            {
+                _candidateDisplayNames.Capacity = expectedCount;
+            }
+        }
+
+        /// <summary>
+        /// BaseFolder 配下の Prefab を1回だけ走査し、
+        /// 「サブフォルダごとの優先Prefab候補状態」を構築します。
+        ///
+        /// 以前のようにサブフォルダごとに FindAssets を呼ばず、
+        /// 走査回数を抑えて候補生成の負荷を下げることが目的です。
+        /// </summary>
+        private static Dictionary<string, PreferredPrefabState> BuildPreferredPrefabStateBySubFolder(string[] subFolders)
+        {
+            if (subFolders == null || subFolders.Length == 0)
+            {
+                return new Dictionary<string, PreferredPrefabState>(StringComparer.Ordinal);
+            }
+
+            var statesByFolder = new Dictionary<string, PreferredPrefabState>(subFolders.Length, StringComparer.Ordinal);
+            foreach (var folder in subFolders)
+            {
+                if (string.IsNullOrEmpty(folder)) continue;
+                if (IsPathExcludedFromSearch(folder)) continue;
+                statesByFolder[folder] = default;
+            }
+
+            if (statesByFolder.Count == 0)
+            {
+                return statesByFolder;
+            }
+
+            var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { BaseFolder });
+            if (prefabGuids == null || prefabGuids.Length == 0)
+            {
+                return statesByFolder;
+            }
+
             foreach (var guid in prefabGuids)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 if (string.IsNullOrEmpty(path)) continue;
                 if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) continue;
+                if (IsPathExcludedFromSearch(path)) continue;
 
-                candidates.Add(path);
+                if (!TryGetImmediateSubFolder(path, out var folder)) continue;
+                if (!statesByFolder.TryGetValue(folder, out var state)) continue;
+
+                state.RegisterCandidate(path);
+                statesByFolder[folder] = state;
             }
 
-            if (candidates.Count == 0) return null;
-
-            var preferred = PickPrefabByFilenamePattern(candidates, "Kisekae Variant");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, "Kaihen_Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, "Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            return candidates[0];
+            return statesByFolder;
         }
 
-        private static string PickPrefabByFilenamePattern(IEnumerable<string> paths, string pattern)
+        private static bool IsPathExcludedFromSearch(string assetPath)
         {
-            if (paths == null) return null;
-            if (string.IsNullOrEmpty(pattern)) return null;
+            if (string.IsNullOrEmpty(assetPath)) return false;
 
-            var match = paths.FirstOrDefault(path =>
-                Path.GetFileNameWithoutExtension(path)
-                    .IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
+            return string.Equals(assetPath, ExcludedSearchFolder, StringComparison.Ordinal) ||
+                   assetPath.StartsWith(ExcludedSearchFolderPrefix, StringComparison.Ordinal);
+        }
 
-            return match;
+        /// <summary>
+        /// Asset パスから BaseFolder 直下のサブフォルダパスを取り出します。
+        /// 例: Assets/.../Base/CharA/Model.prefab -> Assets/.../Base/CharA
+        /// </summary>
+        private static bool TryGetImmediateSubFolder(string assetPath, out string subFolderPath)
+        {
+            subFolderPath = null;
+            if (string.IsNullOrEmpty(assetPath)) return false;
+            if (string.IsNullOrEmpty(BaseFolder)) return false;
+
+            var prefix = BaseFolder + "/";
+            if (!assetPath.StartsWith(prefix, StringComparison.Ordinal)) return false;
+
+            var relative = assetPath.Substring(prefix.Length);
+            var slashIndex = relative.IndexOf('/');
+            if (slashIndex <= 0) return false;
+
+            var subFolderName = relative.Substring(0, slashIndex);
+            subFolderPath = prefix + subFolderName;
+            return true;
+        }
+
+        /// <summary>
+        /// サブフォルダ内での「優先Prefab選定状態」を保持します。
+        /// - first: どの優先条件にも当てはまらない場合のフォールバック
+        /// - best: 優先順位に基づく現在の最有力候補
+        /// </summary>
+        private struct PreferredPrefabState
+        {
+            private string _firstCandidate;
+            private string _bestCandidate;
+            private int _bestPriority;
+
+            public void RegisterCandidate(string path)
+            {
+                if (string.IsNullOrEmpty(path)) return;
+
+                // 最初に見つかった Prefab は常にフォールバックとして保持する。
+
+                if (string.IsNullOrEmpty(_firstCandidate))
+                {
+                    _firstCandidate = path;
+                    _bestPriority = int.MaxValue;
+                }
+
+                // 優先度0（Kisekae Variant）は最良値なので、以降の比較は不要。
+                if (_bestPriority == 0) return;
+
+                var fileName = Path.GetFileNameWithoutExtension(path);
+                var currentPriority = GetPrefabNamePriority(fileName);
+                if (currentPriority >= _bestPriority) return;
+
+                _bestPriority = currentPriority;
+                _bestCandidate = path;
+            }
+
+            public string GetPreferredPath()
+            {
+                return _bestCandidate ?? _firstCandidate;
+            }
+        }
+
+        /// <summary>
+        /// ファイル名ベースの優先度を返します（値が小さいほど優先）。
+        /// 既存仕様:
+        ///   0: "Kisekae Variant"
+        ///   1: "Kaihen_Kisekae"
+        ///   2: "Kisekae"
+        ///   3: その他
+        /// </summary>
+        private static int GetPrefabNamePriority(string fileNameWithoutExtension)
+        {
+            if (string.IsNullOrEmpty(fileNameWithoutExtension)) return 3;
+
+            if (fileNameWithoutExtension.IndexOf("Kisekae Variant", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return 0;
+            }
+
+            if (fileNameWithoutExtension.IndexOf("Kaihen_Kisekae", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return 1;
+            }
+
+            if (fileNameWithoutExtension.IndexOf("Kisekae", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return 2;
+            }
+
+            return 3;
         }
 
     }
