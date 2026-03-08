@@ -25,9 +25,6 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-#if VRC_SDK_VRCSDK3
-using VRC.SDK3.Avatars.Components;
-#endif
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
@@ -36,6 +33,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal sealed partial class OCTPrefabDropdownCache
     {
+        // --------------------------------------------------------------------
+        // partial ファイル構成（初見の人向け）
+        // --------------------------------------------------------------------
+        // - OCTPrefabDropdownCache.cs
+        //   候補一覧の状態管理・公開API・基本フロー。
+        // - OCTPrefabDropdownCache.FaceMeshMatching.cs
+        //   FaceMeshSignature の抽出/一致判定（比較ロジック本体）。
+        // - OCTPrefabDropdownCache.Persistence.cs
+        //   Library 配下キャッシュの読み書き（JSON）。
+        // - OCTPrefabDropdownCache.Models.cs
+        //   判定と保存で共有する値オブジェクト定義。
+        // --------------------------------------------------------------------
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
