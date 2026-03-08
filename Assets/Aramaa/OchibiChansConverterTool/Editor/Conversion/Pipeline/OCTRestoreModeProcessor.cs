@@ -173,7 +173,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return true;
             }
 
-            return objectName.StartsWith(OCTEditorConstants.AddMenuNameKeyword + " ", StringComparison.OrdinalIgnoreCase);
+            // UnityのInstantiate名（"(Clone)"）や、Hierarchy上の重複名（" (1)" など）を許可。
+            if (string.Equals(objectName, OCTEditorConstants.AddMenuNameKeyword + "(Clone)", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return objectName.StartsWith(OCTEditorConstants.AddMenuNameKeyword + " (", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsExAddMenuPrefabPath(string prefabAssetPath)
