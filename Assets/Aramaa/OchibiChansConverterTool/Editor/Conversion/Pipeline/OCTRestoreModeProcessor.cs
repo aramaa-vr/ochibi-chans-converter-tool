@@ -33,20 +33,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
-        // 既知コンポーネント型は初回解決後にキャッシュし、以降の探索コストを抑えます。
-        private static readonly Dictionary<string, Type> ResolvedTypeCache = new Dictionary<string, Type>(StringComparer.Ordinal);
-
-        private static readonly string[] FloorAdjusterTypeCandidates =
-        {
-            "FloorAdjuster"
-        };
-
-        private static readonly string[] ModularAvatarScaleAdjusterTypeCandidates =
-        {
-            "nadena.dev.modular_avatar.core.ModularAvatarScaleAdjuster",
-            "ModularAvatarScaleAdjuster"
-        };
-
         /// <summary>
         /// おちびちゃんズから元アバターへ戻す際に不要な調整コンポーネントを削除します。
         /// </summary>
@@ -66,8 +52,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-            RemoveComponentByKnownType(armature.gameObject, "FloorAdjuster", FloorAdjusterTypeCandidates, logs);
-            RemoveComponentByKnownType(armature.gameObject, "ModularAvatarScaleAdjuster", ModularAvatarScaleAdjusterTypeCandidates, logs);
+            RemoveComponentByTypeName(armature.gameObject, "FloorAdjuster", logs);
+            RemoveComponentByTypeName(armature.gameObject, "ModularAvatarScaleAdjuster", logs);
         }
 
         /// <summary>
@@ -138,14 +124,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs.Add(F("Log.RestoreMode.ExAddMenuRemovedCount", removalTargets.Count));
         }
 
-        private static void RemoveComponentByKnownType(GameObject target, string componentLabel, IReadOnlyList<string> typeCandidates, List<string> logs)
+        private static void RemoveComponentByTypeName(GameObject target, string typeName, List<string> logs)
         {
-            if (target == null || string.IsNullOrEmpty(componentLabel))
+            if (target == null || string.IsNullOrEmpty(typeName))
             {
                 return;
             }
 
-            var resolvedType = ResolveKnownType(typeCandidates);
+            // TODO: 型参照ベースのより厳密な削除判定は別PRで対応予定。
+            // 今回はリスク最小化のため、既存の Name 一致ロジックを維持します。
             var removedCount = 0;
             foreach (var component in target.GetComponents<Component>())
             {
@@ -154,11 +141,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                var componentType = component.GetType();
-                var typeMatched = resolvedType != null
-                    ? componentType == resolvedType
-                    : string.Equals(componentType.Name, componentLabel, StringComparison.Ordinal);
-                if (!typeMatched)
+                if (!string.Equals(component.GetType().Name, typeName, StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -169,67 +152,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (removedCount > 0)
             {
-                logs.Add(F("Log.RestoreMode.ComponentRemoved", componentLabel, removedCount));
+                logs.Add(F("Log.RestoreMode.ComponentRemoved", typeName, removedCount));
             }
             else
             {
-                logs.Add(F("Log.RestoreMode.ComponentNotFound", componentLabel));
+                logs.Add(F("Log.RestoreMode.ComponentNotFound", typeName));
             }
-        }
-
-        private static Type ResolveKnownType(IReadOnlyList<string> typeCandidates)
-        {
-            if (typeCandidates == null || typeCandidates.Count == 0)
-            {
-                return null;
-            }
-
-            foreach (var candidate in typeCandidates)
-            {
-                if (string.IsNullOrEmpty(candidate))
-                {
-                    continue;
-                }
-
-                if (!ResolvedTypeCache.TryGetValue(candidate, out var resolved))
-                {
-                    resolved = FindType(candidate);
-                    ResolvedTypeCache[candidate] = resolved;
-                }
-
-                if (resolved != null)
-                {
-                    return resolved;
-                }
-            }
-
-            return null;
-        }
-
-        private static Type FindType(string typeName)
-        {
-            if (string.IsNullOrEmpty(typeName))
-            {
-                return null;
-            }
-
-            // UnityEditor.TypeCache は Editor での型探索向けに最適化されており、
-            // AppDomain 全走査より安定して低コストに扱えます。
-            foreach (var type in TypeCache.GetTypesDerivedFrom<Component>())
-            {
-                if (type == null)
-                {
-                    continue;
-                }
-
-                if (string.Equals(type.FullName, typeName, StringComparison.Ordinal)
-                    || string.Equals(type.Name, typeName, StringComparison.Ordinal))
-                {
-                    return type;
-                }
-            }
-
-            return null;
         }
 
         private static bool IsStandaloneExAddMenuObject(GameObject gameObject)
