@@ -44,6 +44,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// <summary>
         /// 顔メッシュの識別情報（GUID/LocalId + Prefab/FBX 識別子）です。
         /// </summary>
+        // NOTE: 比較に使う値を1箇所で持つための不変オブジェクトです。
+        // 比較キーの追加は FaceMeshSignatureMatches 側とセットで見直してください。
         private readonly struct FaceMeshSignature
         {
             public FaceMeshSignature(

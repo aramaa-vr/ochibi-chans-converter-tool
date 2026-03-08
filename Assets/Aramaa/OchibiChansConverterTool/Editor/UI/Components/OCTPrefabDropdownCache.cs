@@ -45,6 +45,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         // - OCTPrefabDropdownCache.Models.cs
         //   判定と保存で共有する値オブジェクト定義。
         // --------------------------------------------------------------------
+        // 呼び出しフロー（概要）:
+        // RefreshIfNeeded
+        //   -> PrefabHasMatchingFaceMesh
+        //     -> TryGetCachedFaceMeshSignature
+        //       -> (cache miss時) TryGetFaceMeshSignatureFromPrefabPath
+        //          -> TryGetFaceMeshSignature / TryBuildFaceMeshSignature
+        // OnDisable時の SaveCacheToDisk -> SaveFaceMeshCacheToLibrary
+        // ※ 上記の実体は partial 先ファイルに分割されています。
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 

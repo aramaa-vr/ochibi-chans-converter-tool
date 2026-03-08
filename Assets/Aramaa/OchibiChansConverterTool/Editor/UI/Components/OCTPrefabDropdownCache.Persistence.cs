@@ -26,6 +26,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 {
     internal sealed partial class OCTPrefabDropdownCache
     {
+        // NOTE: 永続化層は「失敗しても継続」方針です。
+        // 読み込み/保存失敗は Warning ログのみを出して、候補検索自体は続行します。
         private static void LoadFaceMeshCacheFromLibrary()
         {
             try

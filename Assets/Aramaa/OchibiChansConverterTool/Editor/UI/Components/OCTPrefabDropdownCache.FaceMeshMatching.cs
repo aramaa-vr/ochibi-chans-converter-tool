@@ -29,6 +29,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 {
     internal sealed partial class OCTPrefabDropdownCache
     {
+        // NOTE: このファイルは「比較ロジック専用」。
+        // ここでは候補一覧の状態（_candidatePrefabPaths など）は直接変更しません。
         private static bool PrefabHasMatchingFaceMesh(string prefabPath, FaceMeshSignature targetFaceMeshSignature)
         {
             if (string.IsNullOrEmpty(prefabPath)) return false;
