@@ -131,6 +131,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
+            // TODO: 型参照ベースのより厳密な削除判定は別PRで対応予定。
+            // 今回はリスク最小化のため、既存の Name 一致ロジックを維持します。
             var removedCount = 0;
             foreach (var component in target.GetComponents<Component>())
             {
