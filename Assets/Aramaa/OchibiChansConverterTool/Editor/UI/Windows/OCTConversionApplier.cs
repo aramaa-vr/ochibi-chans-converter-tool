@@ -602,28 +602,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     _useReverseConversionFromCandidateDropdown = false;
                     EditorGUILayout.HelpBox(L("Help.NoPrefabCandidates"), MessageType.Info);
-
-                    EditorGUILayout.LabelField(L("Section.ManualPrefabLabel"), EditorStyles.boldLabel);
-                    EditorGUI.BeginChangeCheck();
-                    var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        _sourcePrefabAsset = manualPrefab;
-                    }
-
-                    if (_sourcePrefabAsset == null)
-                    {
-                        EditorGUILayout.HelpBox(L("Help.SelectPrefabFromProject"), MessageType.Info);
-                        return;
-                    }
-
-                    if (!IsPrefabAsset(_sourcePrefabAsset))
-                    {
-                        EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
-                        return;
-                    }
-
-                    EditorGUILayout.HelpBox(L("Help.ManualPrefabWarning"), MessageType.Warning);
+                    DrawManualPrefabField("Help.ManualPrefabWarning");
                     return;
                 }
 
@@ -701,6 +680,41 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
             }
 
+            /// <summary>
+            /// 手動 Prefab 指定 UI を共通化します。
+            /// 通常変換/逆改変の両方で同じ入力検証（null / 非Prefab）を使うことで、
+            /// 不具合時の挙動を揃えて安全に保守できるようにします。
+            /// </summary>
+            private bool DrawManualPrefabField(string warningLocalizationKey)
+            {
+                EditorGUILayout.LabelField(L("Section.ManualPrefabLabel"), EditorStyles.boldLabel);
+                EditorGUI.BeginChangeCheck();
+                var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _sourcePrefabAsset = manualPrefab;
+                }
+
+                if (_sourcePrefabAsset == null)
+                {
+                    EditorGUILayout.HelpBox(L("Help.SelectPrefabFromProject"), MessageType.Info);
+                    return false;
+                }
+
+                if (!IsPrefabAsset(_sourcePrefabAsset))
+                {
+                    EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(warningLocalizationKey))
+                {
+                    EditorGUILayout.HelpBox(L(warningLocalizationKey), MessageType.Warning);
+                }
+
+                return true;
+            }
+
             private void DrawSourcePrefabObjectFieldForRestoreMode()
             {
                 if (_sourceTarget == null)
@@ -737,27 +751,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 EditorGUILayout.HelpBox(L("Help.RestoreModeCacheNotFound"), MessageType.Warning);
-                EditorGUILayout.LabelField(L("Section.ManualPrefabLabel"), EditorStyles.boldLabel);
-                EditorGUI.BeginChangeCheck();
-                var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    _sourcePrefabAsset = manualPrefab;
-                }
-
-                if (_sourcePrefabAsset == null)
-                {
-                    EditorGUILayout.HelpBox(L("Help.SelectPrefabFromProject"), MessageType.Info);
-                    return;
-                }
-
-                if (!IsPrefabAsset(_sourcePrefabAsset))
-                {
-                    EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
-                    return;
-                }
-
-                EditorGUILayout.HelpBox(L("Help.RestoreModeManualPrefabWarning"), MessageType.Warning);
+                DrawManualPrefabField("Help.RestoreModeManualPrefabWarning");
             }
 
             /// <summary>
