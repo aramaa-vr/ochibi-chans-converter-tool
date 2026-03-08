@@ -62,9 +62,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static readonly string ExcludedSearchFolderPrefix = ExcludedSearchFolder + "/";
 
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
-        // 末尾の v7 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
-        // 互換が壊れる変更を入れたら v7 に上げる（JSON構造が同じでも上げてよい）。
-        private const string FaceMeshCacheFileName = "FaceMeshCache.v7.json";
+        // 末尾の v9 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
+        // 互換が壊れる変更を入れたら v9 へ更新する（JSON構造が同じでも上げてよい）。
+        private const string FaceMeshCacheFileName = "FaceMeshCache.v9.json";
 
         private static readonly Dictionary<string, CachedFaceMesh> CachedFaceMeshByPrefab =
             new Dictionary<string, CachedFaceMesh>();

@@ -20,7 +20,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
+#if VRC_SDK_VRCSDK3
+using VRC.SDK3.Avatars.Components;
+#endif
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
@@ -80,6 +84,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     cacheEntries.Add(new FaceMeshCacheEntry
                     {
                         PrefabPath = pair.Key,
+                        PrefabVariantPath = FindFirstVariantPrefabPathForCache(pair.Key),
                         DependencyHash = cached.DependencyHash.ToString(),
                         FaceMeshGuid = cached.FaceMeshSignature.MeshId.Guid,
                         FaceMeshLocalId = cached.FaceMeshSignature.MeshId.LocalId,
@@ -132,6 +137,56 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// 指定した PrefabPath がバリアントのとき、
+        /// BaseFolder を含まない .prefab かつルートに VRCAvatarDescriptor がある最初の1件を返します。
+        /// 条件を満たさない場合は空文字列を返します。
+        /// </summary>
+        private static string FindFirstVariantPrefabPathForCache(string prefabPath)
+        {
+            if (!IsPrefabAssetPath(prefabPath)) return string.Empty;
+
+            var prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (prefabAsset == null) return string.Empty;
+            if (PrefabUtility.GetPrefabAssetType(prefabAsset) != PrefabAssetType.Variant) return string.Empty;
+
+            var visitedPaths = new HashSet<string>(StringComparer.Ordinal);
+            var current = prefabAsset;
+            while (current != null)
+            {
+                var currentPath = AssetDatabase.GetAssetPath(current);
+                if (!IsPrefabAssetPath(currentPath)) break;
+                if (!visitedPaths.Add(currentPath)) break;
+
+                var isUnderBaseFolder = currentPath.Contains(BaseFolder, StringComparison.Ordinal);
+                if (!isUnderBaseFolder && HasVrcAvatarDescriptorOnRoot(current))
+                {
+                    return currentPath;
+                }
+
+                current = PrefabUtility.GetCorrespondingObjectFromSource(current);
+            }
+
+            return string.Empty;
+        }
+
+        private static bool IsPrefabAssetPath(string assetPath)
+        {
+            return !string.IsNullOrEmpty(assetPath) &&
+                assetPath.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool HasVrcAvatarDescriptorOnRoot(GameObject prefabAsset)
+        {
+            if (prefabAsset == null) return false;
+
+#if VRC_SDK_VRCSDK3
+            return prefabAsset.GetComponent<VRCAvatarDescriptor>() != null;
+#else
+            return false;
+#endif
+        }
+
         [Serializable]
         private sealed class FaceMeshCacheFile
         {
@@ -145,6 +200,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private sealed class FaceMeshCacheEntry
         {
             public string PrefabPath;
+            public string PrefabVariantPath;
             public string DependencyHash;
             public string FaceMeshGuid;
             public long FaceMeshLocalId;
