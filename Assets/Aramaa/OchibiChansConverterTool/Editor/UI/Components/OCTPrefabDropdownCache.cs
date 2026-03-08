@@ -56,8 +56,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         private const string BaseFolder = OCTEditorConstants.BaseFolder;
-        // 特定の外部アセット配下は候補検索対象から除外する。
-        private const string ExcludedSearchFolder = "Assets/夕時茶屋/缶バッジ";
+        // BaseFolder 配下のうち、候補検索から外すサブフォルダ名。
+        private const string ExcludedSearchSubFolderName = "缶バッジ";
+        private const string ExcludedSearchFolder = BaseFolder + "/" + ExcludedSearchSubFolderName;
+        private static readonly string ExcludedSearchFolderPrefix = ExcludedSearchFolder + "/";
 
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
         // 末尾の v7 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
@@ -302,10 +304,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static bool IsPathExcludedFromSearch(string assetPath)
         {
             if (string.IsNullOrEmpty(assetPath)) return false;
-            if (string.IsNullOrEmpty(ExcludedSearchFolder)) return false;
 
             return string.Equals(assetPath, ExcludedSearchFolder, StringComparison.Ordinal) ||
-                   assetPath.StartsWith(ExcludedSearchFolder + "/", StringComparison.Ordinal);
+                   assetPath.StartsWith(ExcludedSearchFolderPrefix, StringComparison.Ordinal);
         }
 
         /// <summary>
