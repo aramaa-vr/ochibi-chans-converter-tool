@@ -56,6 +56,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         private const string BaseFolder = OCTEditorConstants.BaseFolder;
+        // 特定の外部アセット配下は候補検索対象から除外する。
+        private const string ExcludedSearchFolder = "Assets/夕時茶屋/缶バッジ";
 
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
         // 末尾の v7 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
@@ -200,6 +202,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var preferredPrefabStateByFolder = BuildPreferredPrefabStateBySubFolder(subFolders);
             foreach (var folder in subFolders)
             {
+                if (IsPathExcludedFromSearch(folder)) continue;
                 if (!preferredPrefabStateByFolder.TryGetValue(folder, out var state)) continue;
 
                 var prefabPath = state.GetPreferredPath();
@@ -264,6 +267,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             foreach (var folder in subFolders)
             {
                 if (string.IsNullOrEmpty(folder)) continue;
+                if (IsPathExcludedFromSearch(folder)) continue;
                 statesByFolder[folder] = default;
             }
 
@@ -283,6 +287,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 if (string.IsNullOrEmpty(path)) continue;
                 if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) continue;
+                if (IsPathExcludedFromSearch(path)) continue;
 
                 if (!TryGetImmediateSubFolder(path, out var folder)) continue;
                 if (!statesByFolder.TryGetValue(folder, out var state)) continue;
@@ -292,6 +297,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return statesByFolder;
+        }
+
+        private static bool IsPathExcludedFromSearch(string assetPath)
+        {
+            if (string.IsNullOrEmpty(assetPath)) return false;
+            if (string.IsNullOrEmpty(ExcludedSearchFolder)) return false;
+
+            return string.Equals(assetPath, ExcludedSearchFolder, StringComparison.Ordinal) ||
+                   assetPath.StartsWith(ExcludedSearchFolder + "/", StringComparison.Ordinal);
         }
 
         /// <summary>
