@@ -398,8 +398,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     out var expressionParameters
                 );
 
-                // Ochibichans_Addmenu は sourceChibiPrefab の内部にある想定
-                TryResolveExAddMenuPlacementFromSourcePrefab(basePrefabRoot, out var exAddMenuPlacement);
+                // 初見向けメモ:
+                // - 通常変換: sourceChibiPrefab から AddMenu 配置を取得して、複製先へ追加する
+                // - 逆変換   : AddMenu は追加しないため、ここでの解決処理はスキップする
+                var exAddMenuPlacement = default(ExPrefabPlacement);
+                if (!restoreOriginalAvatarFromOchibi)
+                {
+                    // Ochibichans_Addmenu は sourceChibiPrefab の内部にある想定
+                    TryResolveExAddMenuPlacementFromSourcePrefab(basePrefabRoot, out exAddMenuPlacement);
+                }
 
                 // --------------------------------------------------------
                 // 変換対象へ反映
@@ -1128,6 +1135,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             logs ??= new List<string>();
 
+            // 収集→削除の2段構成にしている理由:
+            // - 走査中に Destroy すると列挙対象が変わって取りこぼしやすい
+            // - 一旦候補を集めてから削除すると、処理順とログが安定する
             var removalTargets = new HashSet<GameObject>();
             var transforms = avatarRoot.GetComponentsInChildren<Transform>(includeInactive: true);
             foreach (var transform in transforms)
@@ -1143,22 +1153,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
+                if (IsExAddMenuNameMatch(go.name))
+                {
+                    // 単体オブジェクトとして配置されている AddMenu を削除対象にする
+                    removalTargets.Add(go);
+                }
+
                 var nearestPrefabRoot = PrefabUtility.GetNearestPrefabInstanceRoot(go);
                 if (nearestPrefabRoot != null && nearestPrefabRoot != avatarRoot)
                 {
                     var prefabAssetPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(nearestPrefabRoot);
-                    if (!string.IsNullOrEmpty(prefabAssetPath) &&
-                        (prefabAssetPath.EndsWith(OCTEditorConstants.AddMenuPrefabFileName, StringComparison.OrdinalIgnoreCase) ||
-                         nearestPrefabRoot.name.IndexOf(OCTEditorConstants.AddMenuNameKeyword, StringComparison.OrdinalIgnoreCase) >= 0))
+                    if (IsExAddMenuPrefabPath(prefabAssetPath) || IsExAddMenuNameMatch(nearestPrefabRoot.name))
                     {
+                        // ネストPrefabとして配置されている AddMenu は、インスタンスルート単位で削除する
                         removalTargets.Add(nearestPrefabRoot);
-                        continue;
                     }
-                }
-
-                if (go.name.IndexOf(OCTEditorConstants.AddMenuNameKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    removalTargets.Add(go);
                 }
             }
 
@@ -1180,6 +1189,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             logs.Add(F("Log.RestoreMode.ExAddMenuRemovedCount", removalTargets.Count));
+        }
+
+        private static bool IsExAddMenuNameMatch(string objectName)
+        {
+            return !string.IsNullOrEmpty(objectName)
+                && objectName.IndexOf(OCTEditorConstants.AddMenuNameKeyword, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool IsExAddMenuPrefabPath(string prefabAssetPath)
+        {
+            return !string.IsNullOrEmpty(prefabAssetPath)
+                && prefabAssetPath.EndsWith(OCTEditorConstants.AddMenuPrefabFileName, StringComparison.OrdinalIgnoreCase);
         }
 
         // ログ用ユーティリティは OCTConversionLogFormatter に切り出し
