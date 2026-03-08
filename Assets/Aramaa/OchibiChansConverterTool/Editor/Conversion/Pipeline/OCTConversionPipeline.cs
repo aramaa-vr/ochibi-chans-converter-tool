@@ -180,7 +180,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     logs.Add(L("Log.RestoreMode.Enabled"));
                     foreach (var duplicated in duplicatedTargets.Where(x => x != null))
                     {
-                        RemoveReverseConversionAdjusters(duplicated, logs);
+                        OCTRestoreModeProcessor.RemoveReverseConversionAdjusters(duplicated, logs);
                     }
 
                     logs.Add("");
@@ -270,61 +270,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return normalizedSourceName + DuplicatedNameSuffix;
-        }
-
-        /// <summary>
-        /// おちびちゃんズから元アバターへ戻す際に不要な調整コンポーネントを削除します。
-        /// </summary>
-        private static void RemoveReverseConversionAdjusters(GameObject avatarRoot, List<string> logs)
-        {
-            if (avatarRoot == null)
-            {
-                return;
-            }
-
-            var armature = OCTEditorUtility.FindAvatarMainArmature(avatarRoot.transform);
-            if (armature == null)
-            {
-                logs.Add(F("Log.RestoreMode.ArmatureNotFound", OCTConversionLogFormatter.GetHierarchyPath(avatarRoot.transform)));
-                return;
-            }
-
-            RemoveComponentByTypeName(armature.gameObject, "FloorAdjuster", logs);
-            RemoveComponentByTypeName(armature.gameObject, "ModularAvatarScaleAdjuster", logs);
-        }
-
-        private static void RemoveComponentByTypeName(GameObject target, string typeName, List<string> logs)
-        {
-            if (target == null || string.IsNullOrEmpty(typeName))
-            {
-                return;
-            }
-
-            var removedCount = 0;
-            foreach (var component in target.GetComponents<Component>())
-            {
-                if (component == null)
-                {
-                    continue;
-                }
-
-                if (!string.Equals(component.GetType().Name, typeName, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                Undo.DestroyObjectImmediate(component);
-                removedCount++;
-            }
-
-            if (removedCount > 0)
-            {
-                logs.Add(F("Log.RestoreMode.ComponentRemoved", typeName, removedCount));
-            }
-            else
-            {
-                logs.Add(F("Log.RestoreMode.ComponentNotFound", typeName));
-            }
         }
 
         /// <summary>
@@ -444,7 +389,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     if (restoreOriginalAvatarFromOchibi)
                     {
                         logs.Add(L("Log.ExPrefabHeader"));
-                        RemoveExAddMenuObjectsIfExists(dstRoot, logs);
+                        OCTRestoreModeProcessor.RemoveExAddMenuObjectsIfExists(dstRoot, logs);
                         logs.Add(L("Log.RestoreMode.SkipAddMenuAttach"));
                         logs.Add("");
                     }
@@ -1121,86 +1066,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// 逆変換時に、複製先アバターに残っている Ochibichans_Addmenu を削除します。
-        /// </summary>
-        private static void RemoveExAddMenuObjectsIfExists(GameObject avatarRoot, List<string> logs)
-        {
-            if (avatarRoot == null)
-            {
-                return;
-            }
-
-            logs ??= new List<string>();
-
-            // 収集→削除の2段構成にしている理由:
-            // - 走査中に Destroy すると列挙対象が変わって取りこぼしやすい
-            // - 一旦候補を集めてから削除すると、処理順とログが安定する
-            var removalTargets = new HashSet<GameObject>();
-            var transforms = avatarRoot.GetComponentsInChildren<Transform>(includeInactive: true);
-            foreach (var transform in transforms)
-            {
-                if (transform == null || transform == avatarRoot.transform)
-                {
-                    continue;
-                }
-
-                var go = transform.gameObject;
-                if (go == null)
-                {
-                    continue;
-                }
-
-                if (IsExAddMenuNameMatch(go.name))
-                {
-                    // 単体オブジェクトとして配置されている AddMenu を削除対象にする
-                    removalTargets.Add(go);
-                }
-
-                var nearestPrefabRoot = PrefabUtility.GetNearestPrefabInstanceRoot(go);
-                if (nearestPrefabRoot != null && nearestPrefabRoot != avatarRoot)
-                {
-                    var prefabAssetPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(nearestPrefabRoot);
-                    if (IsExAddMenuPrefabPath(prefabAssetPath) || IsExAddMenuNameMatch(nearestPrefabRoot.name))
-                    {
-                        // ネストPrefabとして配置されている AddMenu は、インスタンスルート単位で削除する
-                        removalTargets.Add(nearestPrefabRoot);
-                    }
-                }
-            }
-
-            if (removalTargets.Count == 0)
-            {
-                logs.Add(L("Log.RestoreMode.ExAddMenuNotFound"));
-                return;
-            }
-
-            foreach (var target in removalTargets)
-            {
-                if (target == null)
-                {
-                    continue;
-                }
-
-                logs.Add(F("Log.RestoreMode.ExAddMenuRemovedObject", OCTConversionLogFormatter.GetHierarchyPath(target.transform)));
-                Undo.DestroyObjectImmediate(target);
-            }
-
-            logs.Add(F("Log.RestoreMode.ExAddMenuRemovedCount", removalTargets.Count));
-        }
-
-        private static bool IsExAddMenuNameMatch(string objectName)
-        {
-            return !string.IsNullOrEmpty(objectName)
-                && objectName.IndexOf(OCTEditorConstants.AddMenuNameKeyword, StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
-        private static bool IsExAddMenuPrefabPath(string prefabAssetPath)
-        {
-            return !string.IsNullOrEmpty(prefabAssetPath)
-                && prefabAssetPath.EndsWith(OCTEditorConstants.AddMenuPrefabFileName, StringComparison.OrdinalIgnoreCase);
         }
 
         // ログ用ユーティリティは OCTConversionLogFormatter に切り出し
