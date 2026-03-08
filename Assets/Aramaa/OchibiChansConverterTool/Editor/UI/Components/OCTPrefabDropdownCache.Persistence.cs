@@ -171,7 +171,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (!IsPrefabAssetPath(currentPath)) break;
                 if (!visitedPaths.Add(currentPath)) break;
 
-                var isUnderBaseFolder = currentPath.Contains(BaseFolder, StringComparison.Ordinal);
+                var baseFolderPrefix = BaseFolder + "/";
+                var isUnderBaseFolder = string.Equals(currentPath, BaseFolder, StringComparison.Ordinal) ||
+                    currentPath.StartsWith(baseFolderPrefix, StringComparison.Ordinal);
                 if (!isUnderBaseFolder && HasVrcAvatarDescriptorOnRoot(current))
                 {
                     return currentPath;
