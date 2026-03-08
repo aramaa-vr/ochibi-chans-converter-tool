@@ -54,13 +54,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (faceRenderer == null || faceRenderer.sharedMesh == null) return false;
 
             var mesh = faceRenderer.sharedMesh;
+            TryGetAnimatorAvatarIdentity(root, out var animatorAvatarId, out var animatorAvatarAssetPath);
+
             if (!TryGetPrefabInfo(root, out var prefabGuid, out var prefabName))
             {
                 prefabGuid = string.Empty;
                 prefabName = string.Empty;
             }
 
-            return TryBuildFaceMeshSignature(mesh, prefabGuid, prefabName, out signature);
+            return TryBuildFaceMeshSignature(
+                mesh,
+                animatorAvatarId,
+                animatorAvatarAssetPath,
+                prefabGuid,
+                prefabName,
+                out signature);
 #else
             return false;
 #endif
@@ -141,6 +149,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return true;
             }
 
+            // NOTE: 顔メッシュだけでは区別が難しいケース向けに
+            // ルート Animator.avatar も比較します。
+            // 優先順位は MeshId と同様に GUID/LocalId を先に使い、
+            // 取れない場合のみ AssetPath へフォールバックします。
+            if (AnimatorAvatarIdMatches(a, b)) return true;
+            if (AnimatorAvatarAssetPathMatches(a, b)) return true;
+
             if (PrefabGuidMatches(a, b)) return true;
             if (PrefabNameMatches(a, b)) return true;
             if (FbxGuidMatches(a, b)) return true;
@@ -161,6 +176,19 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return true;
+        }
+
+
+
+        private static bool AnimatorAvatarIdMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            return MeshIdMatches(a.AnimatorAvatarId, b.AnimatorAvatarId);
+        }
+
+        private static bool AnimatorAvatarAssetPathMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            if (string.IsNullOrEmpty(a.AnimatorAvatarAssetPath) || string.IsNullOrEmpty(b.AnimatorAvatarAssetPath)) return false;
+            return string.Equals(a.AnimatorAvatarAssetPath, b.AnimatorAvatarAssetPath, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool PrefabGuidMatches(FaceMeshSignature a, FaceMeshSignature b)
@@ -214,8 +242,41 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return !string.IsNullOrEmpty(prefabGuid) || !string.IsNullOrEmpty(prefabName);
         }
 
+
+        private static bool TryGetAnimatorAvatarIdentity(GameObject root, out MeshId animatorAvatarId, out string animatorAvatarAssetPath)
+        {
+            animatorAvatarId = default;
+            animatorAvatarAssetPath = string.Empty;
+            if (root == null) return false;
+
+            var animator = root.GetComponent<Animator>();
+            if (animator == null || animator.avatar == null) return false;
+
+            var avatar = animator.avatar;
+            animatorAvatarAssetPath = AssetDatabase.GetAssetPath(avatar);
+            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(avatar, out var guid, out long localId))
+            {
+                animatorAvatarId = new MeshId(guid, localId, hasLocalId: true);
+                return true;
+            }
+
+            if (!string.IsNullOrEmpty(animatorAvatarAssetPath))
+            {
+                var fallbackGuid = AssetDatabase.AssetPathToGUID(animatorAvatarAssetPath);
+                if (!string.IsNullOrEmpty(fallbackGuid))
+                {
+                    animatorAvatarId = new MeshId(fallbackGuid, 0, hasLocalId: false);
+                    return true;
+                }
+            }
+
+            return !string.IsNullOrEmpty(animatorAvatarAssetPath);
+        }
+
         private static bool TryBuildFaceMeshSignature(
             Mesh mesh,
+            MeshId animatorAvatarId,
+            string animatorAvatarAssetPath,
             string prefabGuid,
             string prefabName,
             out FaceMeshSignature signature)
@@ -229,6 +290,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var hasMeshId = TryBuildMeshId(mesh, out var meshId);
 
             if (!hasMeshId &&
+                string.IsNullOrEmpty(animatorAvatarId.Guid) &&
+                string.IsNullOrEmpty(animatorAvatarAssetPath) &&
                 string.IsNullOrEmpty(prefabGuid) &&
                 string.IsNullOrEmpty(prefabName) &&
                 string.IsNullOrEmpty(fbxGuid) &&
@@ -238,7 +301,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
-            signature = new FaceMeshSignature(meshId, prefabGuid, prefabName, fbxGuid, fbxName, assetPath);
+            signature = new FaceMeshSignature(
+                meshId,
+                animatorAvatarId,
+                animatorAvatarAssetPath,
+                prefabGuid,
+                prefabName,
+                fbxGuid,
+                fbxName,
+                assetPath);
             return true;
         }
 
