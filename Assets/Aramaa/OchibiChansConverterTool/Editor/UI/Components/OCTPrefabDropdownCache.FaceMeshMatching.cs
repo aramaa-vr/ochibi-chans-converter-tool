@@ -154,7 +154,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             // 優先順位は MeshId と同様に GUID/LocalId を先に使い、
             // 取れない場合のみ AssetPath へフォールバックします。
             if (AnimatorAvatarIdMatches(a, b)) return true;
-            if (AnimatorAvatarAssetPathMatches(a, b)) return true;
+            if (ShouldFallbackToAnimatorAvatarAssetPath(a, b) && AnimatorAvatarAssetPathMatches(a, b)) return true;
 
             if (PrefabGuidMatches(a, b)) return true;
             if (PrefabNameMatches(a, b)) return true;
@@ -179,7 +179,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
 
-
         private static bool AnimatorAvatarIdMatches(FaceMeshSignature a, FaceMeshSignature b)
         {
             return MeshIdMatches(a.AnimatorAvatarId, b.AnimatorAvatarId);
@@ -189,6 +188,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             if (string.IsNullOrEmpty(a.AnimatorAvatarAssetPath) || string.IsNullOrEmpty(b.AnimatorAvatarAssetPath)) return false;
             return string.Equals(a.AnimatorAvatarAssetPath, b.AnimatorAvatarAssetPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool ShouldFallbackToAnimatorAvatarAssetPath(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            // NOTE: GUID/LocalId が両方取れている場合は Path 比較へ降りません。
+            // 同一アセット内の別 Avatar（LocalId 違い）を Path 一致で誤マッチさせないためです。
+            var hasAId = !string.IsNullOrEmpty(a.AnimatorAvatarId.Guid);
+            var hasBId = !string.IsNullOrEmpty(b.AnimatorAvatarId.Guid);
+            return !hasAId || !hasBId;
         }
 
         private static bool PrefabGuidMatches(FaceMeshSignature a, FaceMeshSignature b)
@@ -241,7 +249,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             prefabName = prefabPath;
             return !string.IsNullOrEmpty(prefabGuid) || !string.IsNullOrEmpty(prefabName);
         }
-
 
         private static bool TryGetAnimatorAvatarIdentity(GameObject root, out MeshId animatorAvatarId, out string animatorAvatarAssetPath)
         {
