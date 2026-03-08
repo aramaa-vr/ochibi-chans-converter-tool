@@ -834,10 +834,6 @@
       "value": "\"역변환\" 모드에서 자동으로 찾은 원본 아바타 Prefab입니다. 이 Prefab이 변환 소스로 사용됩니다."
     },
     {
-      "key": "Help.RestoreModeCacheNotFound",
-      "value": "\"역변환\" 모드에서 자동 찾기에 실패했습니다. 드롭다운 후보를 선택하거나 원본 아바타 Prefab을 수동 지정하세요."
-    },
-    {
       "key": "Log.RestoreMode.Enabled",
       "value": "복원 모드 활성화: 동기화 전에 역변환 보조 컴포넌트를 제거합니다."
     },

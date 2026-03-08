@@ -834,10 +834,6 @@
       "value": "「逆改変」モードで自動解決された元アバター Prefab です。この Prefab が変換元として使われます。"
     },
     {
-      "key": "Help.RestoreModeCacheNotFound",
-      "value": "「逆改変」モードで自動解決できませんでした。プルダウン候補を選ぶか、元アバター Prefab を手動指定してください。"
-    },
-    {
       "key": "Log.RestoreMode.Enabled",
       "value": "復元モード有効: 同期前に逆変換用の補助コンポーネントを削除します。"
     },

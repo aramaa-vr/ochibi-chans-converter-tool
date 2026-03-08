@@ -739,18 +739,19 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _sourcePrefabAsset = null;
                 }
 
-                using (new EditorGUI.DisabledScope(true))
-                {
-                    EditorGUILayout.ObjectField(L("Label.RestoreModeResolvedPrefab"), resolvedFromCandidate ? resolvedPrefab : null, typeof(GameObject), allowSceneObjects: false);
-                }
-
                 if (resolvedFromCandidate)
                 {
+                    using (new EditorGUI.DisabledScope(true))
+                    {
+                        EditorGUILayout.ObjectField(L("Label.RestoreModeResolvedPrefab"), resolvedPrefab, typeof(GameObject), allowSceneObjects: false);
+                    }
+
                     EditorGUILayout.HelpBox(L("Help.RestoreModeResolvedPrefab"), MessageType.Info);
                     return;
                 }
 
-                EditorGUILayout.HelpBox(L("Help.RestoreModeCacheNotFound"), MessageType.Warning);
+                // 自動解決できなかった時は、案内は手動入力側の警告1つに集約する。
+                // ユーザーに同系統の注意文を2回出さないことで、UIをシンプルに保つ。
                 DrawManualPrefabField("Help.RestoreModeManualPrefabWarning");
             }
 

@@ -834,10 +834,6 @@
       "value": "这是“逆向改造”模式下自动解析到的原始头像 Prefab，将作为转换源使用。"
     },
     {
-      "key": "Help.RestoreModeCacheNotFound",
-      "value": "在“逆向改造”模式下自动解析失败。请选择下拉候选，或手动指定原始头像 Prefab。"
-    },
-    {
       "key": "Log.RestoreMode.Enabled",
       "value": "已启用还原模式：同步前会先移除逆向转换辅助组件。"
     },

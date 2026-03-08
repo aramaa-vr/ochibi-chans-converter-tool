@@ -834,10 +834,6 @@
       "value": "這是「逆向改造」模式下自動解析到的原始 Avatar Prefab，會作為轉換來源使用。"
     },
     {
-      "key": "Help.RestoreModeCacheNotFound",
-      "value": "在「逆向改造」模式下自動解析失敗。請先選擇下拉候選，或手動指定原始 Avatar Prefab。"
-    },
-    {
       "key": "Log.RestoreMode.Enabled",
       "value": "已啟用還原模式：同步前會先移除逆轉換輔助元件。"
     },

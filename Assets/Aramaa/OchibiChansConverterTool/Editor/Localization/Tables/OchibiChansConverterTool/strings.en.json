@@ -834,10 +834,6 @@
       "value": "In \"Reverse conversion\" mode, this original-avatar prefab was resolved automatically and will be used as the source."
     },
     {
-      "key": "Help.RestoreModeCacheNotFound",
-      "value": "In \"Reverse conversion\" mode, auto resolution failed. Select a candidate from the dropdown or specify the original-avatar prefab manually."
-    },
-    {
       "key": "Log.RestoreMode.Enabled",
       "value": "Restore mode enabled: Removing reverse-conversion helper components before sync."
     },
