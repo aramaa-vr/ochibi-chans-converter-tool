@@ -186,9 +186,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (!TryGetFaceMeshSignature(sourceTarget, out var avatarFaceMeshSignature)) return;
 
+            // 候補生成フロー（高コスト箇所をまとめて最適化）:
+            // 1) BaseFolder直下のサブフォルダ一覧を取得
+            // 2) BaseFolder全体を1回だけ走査して「各サブフォルダの優先Prefab」を集約
+            // 3) その結果を使って FaceMesh 一致判定を行い、最終候補へ追加
             var subFolders = AssetDatabase.GetSubFolders(BaseFolder);
             if (subFolders == null || subFolders.Length == 0) return;
 
+            // サブフォルダ数を上限目安にして容量を確保。
+            // List の再確保を減らし、候補追加時の GC 発生を抑える。
             EnsureCandidateListCapacity(subFolders.Length);
 
             var preferredPrefabStateByFolder = BuildPreferredPrefabStateBySubFolder(subFolders);
@@ -221,6 +227,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             _needsRefreshPrefabs = false;
         }
 
+        /// <summary>
+        /// ドロップダウン候補リストの内部容量を事前確保します。
+        /// 候補追加時の再割り当てを減らし、GC 負荷を抑えるための補助メソッドです。
+        /// </summary>
         private void EnsureCandidateListCapacity(int expectedCount)
         {
             if (expectedCount <= 0) return;
@@ -236,6 +246,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// BaseFolder 配下の Prefab を1回だけ走査し、
+        /// 「サブフォルダごとの優先Prefab候補状態」を構築します。
+        ///
+        /// 以前のようにサブフォルダごとに FindAssets を呼ばず、
+        /// 走査回数を抑えて候補生成の負荷を下げることが目的です。
+        /// </summary>
         private static Dictionary<string, PreferredPrefabState> BuildPreferredPrefabStateBySubFolder(string[] subFolders)
         {
             if (subFolders == null || subFolders.Length == 0)
@@ -277,6 +294,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return statesByFolder;
         }
 
+        /// <summary>
+        /// Asset パスから BaseFolder 直下のサブフォルダパスを取り出します。
+        /// 例: Assets/.../Base/CharA/Model.prefab -> Assets/.../Base/CharA
+        /// </summary>
         private static bool TryGetImmediateSubFolder(string assetPath, out string subFolderPath)
         {
             subFolderPath = null;
@@ -295,6 +316,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return true;
         }
 
+        /// <summary>
+        /// サブフォルダ内での「優先Prefab選定状態」を保持します。
+        /// - first: どの優先条件にも当てはまらない場合のフォールバック
+        /// - best: 優先順位に基づく現在の最有力候補
+        /// </summary>
         private struct PreferredPrefabState
         {
             private string _firstCandidate;
@@ -305,12 +331,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 if (string.IsNullOrEmpty(path)) return;
 
+                // 最初に見つかった Prefab は常にフォールバックとして保持する。
+
                 if (string.IsNullOrEmpty(_firstCandidate))
                 {
                     _firstCandidate = path;
                     _bestPriority = int.MaxValue;
                 }
 
+                // 優先度0（Kisekae Variant）は最良値なので、以降の比較は不要。
                 if (_bestPriority == 0) return;
 
                 var fileName = Path.GetFileNameWithoutExtension(path);
@@ -327,6 +356,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// ファイル名ベースの優先度を返します（値が小さいほど優先）。
+        /// 既存仕様:
+        ///   0: "Kisekae Variant"
+        ///   1: "Kaihen_Kisekae"
+        ///   2: "Kisekae"
+        ///   3: その他
+        /// </summary>
         private static int GetPrefabNamePriority(string fileNameWithoutExtension)
         {
             if (string.IsNullOrEmpty(fileNameWithoutExtension)) return 3;
