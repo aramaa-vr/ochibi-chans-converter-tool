@@ -204,7 +204,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var preferredPrefabStateByFolder = BuildPreferredPrefabStateBySubFolder(subFolders);
             foreach (var folder in subFolders)
             {
-                if (IsPathExcludedFromSearch(folder)) continue;
                 if (!preferredPrefabStateByFolder.TryGetValue(folder, out var state)) continue;
 
                 var prefabPath = state.GetPreferredPath();
