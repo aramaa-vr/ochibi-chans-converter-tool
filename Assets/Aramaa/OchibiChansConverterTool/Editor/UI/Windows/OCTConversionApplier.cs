@@ -137,6 +137,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             private bool _showLogs;
             private bool _applyMaboneProxyProcessing = true;
+            private bool _restoreOriginalAvatarFromOchibi;
             private Vector2 _scrollPosition;
             private bool _versionCheckRequested;
             private bool _versionCheckInProgress;
@@ -263,6 +264,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     DrawCard(() =>
                     {
                         DrawSectionHeader("2", L("Section.TargetPrefabLabel"));
+                        DrawRestoreOriginalAvatarToggle();
+                        EditorGUILayout.Space(4);
                         DrawSourcePrefabObjectField();
                     });
 
@@ -587,6 +590,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             /// </summary>
             private void DrawSourcePrefabObjectField()
             {
+                // 初めて使う人向けメモ:
+                // - 通常モード: 元アバター -> おちびちゃんズへ変換するため、候補一覧からおちびちゃんズ Prefab を選ぶ
+                // - 復元モード: おちびちゃんズ -> 元アバターへ戻すため、FaceMeshCache の PrefabVariantPath を自動利用する
+                if (_restoreOriginalAvatarFromOchibi)
+                {
+                    DrawSourcePrefabObjectFieldForRestoreMode();
+                    return;
+                }
+
                 _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
 
                 var hasCandidates = _prefabDropdownCache.CandidateDisplayNames.Count > 0;
@@ -667,6 +679,38 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
             }
 
+            private void DrawSourcePrefabObjectFieldForRestoreMode()
+            {
+                if (_sourceTarget == null)
+                {
+                    EditorGUILayout.HelpBox(L("Help.RestoreModeNeedSourceAvatar"), MessageType.Info);
+                    _sourcePrefabAsset = null;
+                    return;
+                }
+
+                if (_prefabDropdownCache.TryResolveOriginalAvatarPrefab(_sourceTarget, out var resolvedPrefab))
+                {
+                    _sourcePrefabAsset = resolvedPrefab;
+                }
+                else
+                {
+                    _sourcePrefabAsset = null;
+                }
+
+                using (new EditorGUI.DisabledScope(true))
+                {
+                    EditorGUILayout.ObjectField(L("Label.RestoreModeResolvedPrefab"), _sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                }
+
+                if (_sourcePrefabAsset != null)
+                {
+                    EditorGUILayout.HelpBox(L("Help.RestoreModeResolvedPrefab"), MessageType.Info);
+                    return;
+                }
+
+                EditorGUILayout.HelpBox(L("Help.RestoreModeCacheNotFound"), MessageType.Warning);
+            }
+
             /// <summary>
             /// 実行ボタンを描画し、押されたら安全に delayCall へ処理を逃がします。
             /// </summary>
@@ -737,6 +781,20 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
             }
 
+            private void DrawRestoreOriginalAvatarToggle()
+            {
+                EditorGUI.BeginChangeCheck();
+                var next = EditorGUILayout.ToggleLeft(L("Toggle.RestoreOriginalAvatar"), _restoreOriginalAvatarFromOchibi);
+                if (!EditorGUI.EndChangeCheck())
+                {
+                    return;
+                }
+
+                _restoreOriginalAvatarFromOchibi = next;
+                _prefabDropdownCache.MarkNeedsRefresh();
+                _sourcePrefabAsset = null;
+            }
+
             /// <summary>
             /// 入力欄の内容で「複製→変換」を予約します。
             /// </summary>
@@ -773,6 +831,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var capturedSourcePrefab = _sourcePrefabAsset;
                 var capturedTarget = _sourceTarget;
                 var capturedApplyMaboneProxyProcessing = _applyMaboneProxyProcessing;
+                var capturedRestoreOriginalAvatarFromOchibi = _restoreOriginalAvatarFromOchibi;
 
                 var capturedTargetName = capturedTarget != null ? capturedTarget.name : L("Log.NullValue");
                 Debug.Log(F("Log.QueuedApply", capturedTargetName, capturedSourcePrefab.name));
@@ -788,6 +847,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                             capturedSourcePrefab,
                             capturedTarget,
                             capturedApplyMaboneProxyProcessing,
+                            capturedRestoreOriginalAvatarFromOchibi,
                             logs
                         );
 

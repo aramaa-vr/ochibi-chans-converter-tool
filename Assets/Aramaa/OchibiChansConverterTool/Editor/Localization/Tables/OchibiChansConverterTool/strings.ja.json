@@ -820,6 +820,58 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "処理ログを表示する"
+    },
+    {
+      "key": "Toggle.RestoreOriginalAvatar",
+      "value": "復元モード：おちびちゃんズ → 元アバター"
+    },
+    {
+      "key": "Help.RestoreModeNeedSourceAvatar",
+      "value": "先に Hierarchy でおちびちゃんズのアバターを選択してください。"
+    },
+    {
+      "key": "Label.RestoreModeResolvedPrefab",
+      "value": "自動解決された元アバター Prefab"
+    },
+    {
+      "key": "Help.RestoreModeResolvedPrefab",
+      "value": "アバター情報から自動で一致した Prefab です。この Prefab が変換元として使われます。"
+    },
+    {
+      "key": "Help.RestoreModeCacheNotFound",
+      "value": "元アバターを自動で見つけられませんでした。通常モードで一度アバターを開く・選択してから、復元モードを再実行してください。"
+    },
+    {
+      "key": "Log.RestoreMode.Enabled",
+      "value": "復元モード有効: 同期前に逆変換用の補助コンポーネントを削除します。"
+    },
+    {
+      "key": "Log.RestoreMode.ArmatureNotFound",
+      "value": "復元モード: Armature が見つかりません。target={0}"
+    },
+    {
+      "key": "Log.RestoreMode.ComponentRemoved",
+      "value": "復元モード: Armature から '{0}' を {1} 件削除しました。"
+    },
+    {
+      "key": "Log.RestoreMode.ComponentNotFound",
+      "value": "復元モード: Armature に '{0}' は見つかりませんでした。"
+    },
+    {
+      "key": "Log.RestoreMode.SkipAddMenuAttach",
+      "value": "復元モード: Ochibichans_Addmenu の追加は行いません。"
+    },
+    {
+      "key": "Log.RestoreMode.ExAddMenuNotFound",
+      "value": "復元モード: 複製アバターに既存の Ochibichans_Addmenu は見つかりませんでした。"
+    },
+    {
+      "key": "Log.RestoreMode.ExAddMenuRemovedObject",
+      "value": "復元モード: AddMenu オブジェクトを削除しました: {0}"
+    },
+    {
+      "key": "Log.RestoreMode.ExAddMenuRemovedCount",
+      "value": "復元モード: 削除した Ochibichans_Addmenu 数={0}"
     }
   ]
 }

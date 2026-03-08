@@ -76,6 +76,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             GameObject sourceChibiPrefab,
             GameObject sourceTarget,
             bool applyMaboneProxyProcessing,
+            bool restoreOriginalAvatarFromOchibi,
             List<string> logs
         )
         {
@@ -174,6 +175,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 logs.Add("");
 
+                if (restoreOriginalAvatarFromOchibi)
+                {
+                    logs.Add(L("Log.RestoreMode.Enabled"));
+                    foreach (var duplicated in duplicatedTargets.Where(x => x != null))
+                    {
+                        RemoveReverseConversionAdjusters(duplicated, logs);
+                    }
+
+                    logs.Add("");
+                }
+
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 3) （任意）MA BoneProxy 補正
                 // --------------------------------------------------------
@@ -222,7 +234,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // 複製先へ変換を適用
                 // --------------------------------------------------------
-                var applySucceeded = ApplyConversionToTargets(sourceChibiPrefab, duplicatedTargets, logs: logs);
+                var applySucceeded = ApplyConversionToTargets(
+                    sourceChibiPrefab,
+                    duplicatedTargets,
+                    restoreOriginalAvatarFromOchibi,
+                    logs: logs);
                 return applySucceeded;
             }
             finally
@@ -257,10 +273,69 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
+        /// おちびちゃんズから元アバターへ戻す際に不要な調整コンポーネントを削除します。
+        /// </summary>
+        private static void RemoveReverseConversionAdjusters(GameObject avatarRoot, List<string> logs)
+        {
+            if (avatarRoot == null)
+            {
+                return;
+            }
+
+            var armature = OCTEditorUtility.FindAvatarMainArmature(avatarRoot.transform);
+            if (armature == null)
+            {
+                logs.Add(F("Log.RestoreMode.ArmatureNotFound", OCTConversionLogFormatter.GetHierarchyPath(avatarRoot.transform)));
+                return;
+            }
+
+            RemoveComponentByTypeName(armature.gameObject, "FloorAdjuster", logs);
+            RemoveComponentByTypeName(armature.gameObject, "ModularAvatarScaleAdjuster", logs);
+        }
+
+        private static void RemoveComponentByTypeName(GameObject target, string typeName, List<string> logs)
+        {
+            if (target == null || string.IsNullOrEmpty(typeName))
+            {
+                return;
+            }
+
+            var removedCount = 0;
+            foreach (var component in target.GetComponents<Component>())
+            {
+                if (component == null)
+                {
+                    continue;
+                }
+
+                if (!string.Equals(component.GetType().Name, typeName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                Undo.DestroyObjectImmediate(component);
+                removedCount++;
+            }
+
+            if (removedCount > 0)
+            {
+                logs.Add(F("Log.RestoreMode.ComponentRemoved", typeName, removedCount));
+            }
+            else
+            {
+                logs.Add(F("Log.RestoreMode.ComponentNotFound", typeName));
+            }
+        }
+
+        /// <summary>
         /// 変換元 Prefab の参照を読み取り、複製先へ段階的に同期適用します。
         /// （変換パイプラインの 5〜7 ステップ相当）
         /// </summary>
-        private static bool ApplyConversionToTargets(GameObject sourceChibiPrefab, GameObject[] targets, List<string> logs)
+        private static bool ApplyConversionToTargets(
+            GameObject sourceChibiPrefab,
+            GameObject[] targets,
+            bool restoreOriginalAvatarFromOchibi,
+            List<string> logs)
         {
             logs ??= new List<string>();
             var log = new OCTConversionLogger(logs);
@@ -356,8 +431,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     // SVG 対応ステップ: 6) 複製先へ同期適用（コア処理）
                     ApplyCoreAvatarSynchronization(basePrefabRoot, dstRoot, logs);
 
-                    // Ex AddMenu Prefab 追加（未配置時のみ）
-                    if (exAddMenuPlacement.PrefabAsset != null)
+                    // Ex AddMenu は通常変換のみ追加します。
+                    // 逆変換（おちびちゃんズ -> 元アバター）の場合は追加せず、
+                    // 既に付いている場合はここで削除します。
+                    if (restoreOriginalAvatarFromOchibi)
+                    {
+                        logs.Add(L("Log.ExPrefabHeader"));
+                        RemoveExAddMenuObjectsIfExists(dstRoot, logs);
+                        logs.Add(L("Log.RestoreMode.SkipAddMenuAttach"));
+                        logs.Add("");
+                    }
+                    else if (exAddMenuPlacement.PrefabAsset != null)
                     {
                         logs.Add(L("Log.ExPrefabHeader"));
                         TryAddExPrefabIfMissing(dstRoot, exAddMenuPlacement, logs);
@@ -1030,6 +1114,72 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 逆変換時に、複製先アバターに残っている Ochibichans_Addmenu を削除します。
+        /// </summary>
+        private static void RemoveExAddMenuObjectsIfExists(GameObject avatarRoot, List<string> logs)
+        {
+            if (avatarRoot == null)
+            {
+                return;
+            }
+
+            logs ??= new List<string>();
+
+            var removalTargets = new HashSet<GameObject>();
+            var transforms = avatarRoot.GetComponentsInChildren<Transform>(includeInactive: true);
+            foreach (var transform in transforms)
+            {
+                if (transform == null || transform == avatarRoot.transform)
+                {
+                    continue;
+                }
+
+                var go = transform.gameObject;
+                if (go == null)
+                {
+                    continue;
+                }
+
+                var nearestPrefabRoot = PrefabUtility.GetNearestPrefabInstanceRoot(go);
+                if (nearestPrefabRoot != null && nearestPrefabRoot != avatarRoot)
+                {
+                    var prefabAssetPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(nearestPrefabRoot);
+                    if (!string.IsNullOrEmpty(prefabAssetPath) &&
+                        (prefabAssetPath.EndsWith(OCTEditorConstants.AddMenuPrefabFileName, StringComparison.OrdinalIgnoreCase) ||
+                         nearestPrefabRoot.name.IndexOf(OCTEditorConstants.AddMenuNameKeyword, StringComparison.OrdinalIgnoreCase) >= 0))
+                    {
+                        removalTargets.Add(nearestPrefabRoot);
+                        continue;
+                    }
+                }
+
+                if (go.name.IndexOf(OCTEditorConstants.AddMenuNameKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    removalTargets.Add(go);
+                }
+            }
+
+            if (removalTargets.Count == 0)
+            {
+                logs.Add(L("Log.RestoreMode.ExAddMenuNotFound"));
+                return;
+            }
+
+            foreach (var target in removalTargets)
+            {
+                if (target == null)
+                {
+                    continue;
+                }
+
+                logs.Add(F("Log.RestoreMode.ExAddMenuRemovedObject", OCTConversionLogFormatter.GetHierarchyPath(target.transform)));
+                Undo.DestroyObjectImmediate(target);
+            }
+
+            logs.Add(F("Log.RestoreMode.ExAddMenuRemovedCount", removalTargets.Count));
         }
 
         // ログ用ユーティリティは OCTConversionLogFormatter に切り出し

@@ -62,7 +62,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         entry.FbxGuid ?? string.Empty,
                         entry.FbxName ?? string.Empty,
                         entry.FaceMeshAssetPath ?? string.Empty);
-                    CachedFaceMeshByPrefab[entry.PrefabPath] = new CachedFaceMesh(hash, signature, entry.HasFaceMesh);
+                    CachedFaceMeshByPrefab[entry.PrefabPath] = new CachedFaceMesh(
+                        hash,
+                        signature,
+                        entry.HasFaceMesh,
+                        entry.PrefabVariantPath ?? string.Empty);
                 }
             }
             catch (Exception e)
@@ -84,7 +88,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     cacheEntries.Add(new FaceMeshCacheEntry
                     {
                         PrefabPath = pair.Key,
-                        PrefabVariantPath = FindFirstVariantPrefabPathForCache(pair.Key),
+                        PrefabVariantPath = string.IsNullOrEmpty(cached.PrefabVariantPath)
+                            ? FindFirstVariantPrefabPathForCache(pair.Key)
+                            : cached.PrefabVariantPath,
                         DependencyHash = cached.DependencyHash.ToString(),
                         FaceMeshGuid = cached.FaceMeshSignature.MeshId.Guid,
                         FaceMeshLocalId = cached.FaceMeshSignature.MeshId.LocalId,

@@ -113,7 +113,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             var hasFaceMesh = TryGetFaceMeshSignatureFromPrefabPath(prefabPath, out var cachedSignature);
-            CachedFaceMeshByPrefab[prefabPath] = new CachedFaceMesh(hash, cachedSignature, hasFaceMesh);
+            CachedFaceMeshByPrefab[prefabPath] = new CachedFaceMesh(
+                hash,
+                cachedSignature,
+                hasFaceMesh,
+                FindFirstVariantPrefabPathForCache(prefabPath));
             MarkFaceMeshCacheDirty();
             // ここでは即時保存しません。
             // - OnDisable でまとめて保存される

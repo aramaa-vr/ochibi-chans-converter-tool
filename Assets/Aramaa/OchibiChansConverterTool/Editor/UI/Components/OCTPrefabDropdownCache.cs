@@ -108,6 +108,56 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
+        /// 「おちびちゃんズ → 元アバター」モード向けに、
+        /// FaceMeshCache の PrefabVariantPath から元アバター Prefab を解決します。
+        /// </summary>
+        public bool TryResolveOriginalAvatarPrefab(GameObject sourceTarget, out GameObject originalAvatarPrefab)
+        {
+            originalAvatarPrefab = null;
+            if (sourceTarget == null)
+            {
+                return false;
+            }
+
+            if (!TryGetFaceMeshSignature(sourceTarget, out var targetFaceMeshSignature) || !targetFaceMeshSignature.HasAnyIdentity)
+            {
+                return false;
+            }
+
+            EnsureFaceMeshCacheLoaded();
+
+            foreach (var pair in CachedFaceMeshByPrefab)
+            {
+                var cached = pair.Value;
+                if (!cached.HasFaceMesh)
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(cached.PrefabVariantPath))
+                {
+                    continue;
+                }
+
+                if (!FaceMeshSignatureMatches(targetFaceMeshSignature, cached.FaceMeshSignature))
+                {
+                    continue;
+                }
+
+                var resolved = AssetDatabase.LoadAssetAtPath<GameObject>(cached.PrefabVariantPath);
+                if (resolved == null)
+                {
+                    continue;
+                }
+
+                originalAvatarPrefab = resolved;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 対象アバターの変更に備えて、次回の候補再構築を予約します。
         /// </summary>
         public void MarkNeedsRefresh()

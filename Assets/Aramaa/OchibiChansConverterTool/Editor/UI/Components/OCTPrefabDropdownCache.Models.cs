@@ -90,16 +90,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private readonly struct CachedFaceMesh
         {
-            public CachedFaceMesh(Hash128 dependencyHash, FaceMeshSignature faceMeshSignature, bool hasFaceMesh)
+            public CachedFaceMesh(Hash128 dependencyHash, FaceMeshSignature faceMeshSignature, bool hasFaceMesh, string prefabVariantPath)
             {
                 DependencyHash = dependencyHash;
                 FaceMeshSignature = faceMeshSignature;
                 HasFaceMesh = hasFaceMesh;
+                PrefabVariantPath = prefabVariantPath;
             }
 
             public Hash128 DependencyHash { get; }
             public FaceMeshSignature FaceMeshSignature { get; }
             public bool HasFaceMesh { get; }
+            public string PrefabVariantPath { get; }
         }
     }
 }
