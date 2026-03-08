@@ -73,11 +73,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             try
             {
-                var cacheFile = new FaceMeshCacheFile();
+                var cacheEntries = new List<FaceMeshCacheEntry>(CachedFaceMeshByPrefab.Count);
                 foreach (var pair in CachedFaceMeshByPrefab)
                 {
                     var cached = pair.Value;
-                    cacheFile.Entries.Add(new FaceMeshCacheEntry
+                    cacheEntries.Add(new FaceMeshCacheEntry
                     {
                         PrefabPath = pair.Key,
                         DependencyHash = cached.DependencyHash.ToString(),
@@ -92,6 +92,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         HasFaceMesh = cached.HasFaceMesh
                     });
                 }
+
+                var cacheFile = new FaceMeshCacheFile
+                {
+                    Entries = cacheEntries
+                };
 
                 var json = JsonUtility.ToJson(cacheFile, true);
                 var cachePath = GetFaceMeshCacheFilePath();

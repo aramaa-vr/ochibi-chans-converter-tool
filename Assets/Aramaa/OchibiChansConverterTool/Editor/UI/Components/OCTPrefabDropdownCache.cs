@@ -22,7 +22,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -223,40 +222,57 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { folder });
             if (prefabGuids == null || prefabGuids.Length == 0) return null;
 
-            var candidates = new List<string>();
+            string firstCandidate = null;
+            string bestCandidate = null;
+            var bestPriority = int.MaxValue;
+
             foreach (var guid in prefabGuids)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 if (string.IsNullOrEmpty(path)) continue;
                 if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) continue;
 
-                candidates.Add(path);
+                if (firstCandidate == null)
+                {
+                    firstCandidate = path;
+                }
+
+                var fileName = Path.GetFileNameWithoutExtension(path);
+                var currentPriority = GetPrefabNamePriority(fileName);
+                if (currentPriority >= bestPriority) continue;
+
+                bestPriority = currentPriority;
+                bestCandidate = path;
+
+                if (bestPriority == 0)
+                {
+                    break;
+                }
             }
 
-            if (candidates.Count == 0) return null;
-
-            var preferred = PickPrefabByFilenamePattern(candidates, "Kisekae Variant");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, "Kaihen_Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, "Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            return candidates[0];
+            return bestCandidate ?? firstCandidate;
         }
 
-        private static string PickPrefabByFilenamePattern(IEnumerable<string> paths, string pattern)
+        private static int GetPrefabNamePriority(string fileNameWithoutExtension)
         {
-            if (paths == null) return null;
-            if (string.IsNullOrEmpty(pattern)) return null;
+            if (string.IsNullOrEmpty(fileNameWithoutExtension)) return 3;
 
-            var match = paths.FirstOrDefault(path =>
-                Path.GetFileNameWithoutExtension(path)
-                    .IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
+            if (fileNameWithoutExtension.IndexOf("Kisekae Variant", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return 0;
+            }
 
-            return match;
+            if (fileNameWithoutExtension.IndexOf("Kaihen_Kisekae", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return 1;
+            }
+
+            if (fileNameWithoutExtension.IndexOf("Kisekae", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return 2;
+            }
+
+            return 3;
         }
 
     }
