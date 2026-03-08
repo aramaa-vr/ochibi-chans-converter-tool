@@ -132,18 +132,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             // 二重起動防止：既に開いているウィンドウがあればそれを使う
             private static OCTConversionSourcePrefabWindow _opened;
 
-            private enum ConversionMode
-            {
-                Forward = 0,
-                ReverseRestore = 1
-            }
-
             // 二重実行防止：ボタン連打で複数回の delayCall が積まれるのを防ぐ
             private bool _applyQueued;
 
             private bool _showLogs;
             private bool _applyMaboneProxyProcessing = true;
-            private ConversionMode _conversionMode = ConversionMode.Forward;
+            private bool _useReverseConversionFromCandidateDropdown;
+            private int _lastSelectedCandidateIndexForReverseMode;
             private Vector2 _scrollPosition;
             private bool _versionCheckRequested;
             private bool _versionCheckInProgress;
@@ -270,8 +265,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     DrawCard(() =>
                     {
                         DrawSectionHeader("2", L("Section.TargetPrefabLabel"));
-                        DrawConversionModeDropdown();
-                        EditorGUILayout.Space(4);
                         DrawSourcePrefabObjectField();
                     });
 
@@ -574,6 +567,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _sourceTarget = nextTarget;
                     _prefabDropdownCache.MarkNeedsRefresh();
                     _sourcePrefabAsset = null;
+                    _useReverseConversionFromCandidateDropdown = false;
+                    _lastSelectedCandidateIndexForReverseMode = 0;
                 }
 
                 if (_sourceTarget == null)
@@ -597,20 +592,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             private void DrawSourcePrefabObjectField()
             {
                 // 初めて使う人向けメモ:
-                // - 変換モード「通常変換」: 候補一覧からおちびちゃんズ Prefab を選ぶ
-                // - 変換モード「逆改変」: 復元向けUI（候補選択 + 自動解決 + 手動指定）を使う
-                if (IsRestoreModeSelected())
-                {
-                    DrawSourcePrefabObjectFieldForRestoreMode();
-                    return;
-                }
-
+                // - 候補一覧プルダウンの最下段に「逆改変」項目を追加しています。
+                // - 「逆改変」を選ぶと復元向けUI（自動解決 + 手動指定）を表示します。
                 _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
 
                 var hasCandidates = _prefabDropdownCache.CandidateDisplayNames.Count > 0;
 
                 if (!hasCandidates)
                 {
+                    _useReverseConversionFromCandidateDropdown = false;
                     EditorGUILayout.HelpBox(L("Help.NoPrefabCandidates"), MessageType.Info);
 
                     EditorGUILayout.LabelField(L("Section.ManualPrefabLabel"), EditorStyles.boldLabel);
@@ -644,11 +634,37 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     return;
                 }
 
-                var currentIndex = Mathf.Clamp(_prefabDropdownCache.SelectedIndex, 0, candidateDisplayNames.Length - 1);
-                var nextIndex = EditorGUILayout.Popup(L("Label.CandidateList"), currentIndex, candidateDisplayNames);
+                var dropdownOptions = new string[candidateDisplayNames.Length + 1];
+                Array.Copy(candidateDisplayNames, dropdownOptions, candidateDisplayNames.Length);
+                dropdownOptions[candidateDisplayNames.Length] = L("Label.CandidateReverseOption");
+
+                var candidateIndex = Mathf.Clamp(_prefabDropdownCache.SelectedIndex, 0, candidateDisplayNames.Length - 1);
+                var currentIndex = _useReverseConversionFromCandidateDropdown
+                    ? candidateDisplayNames.Length
+                    : candidateIndex;
+                var nextIndex = EditorGUILayout.Popup(L("Label.CandidateList"), currentIndex, dropdownOptions);
                 if (nextIndex != currentIndex)
                 {
-                    _prefabDropdownCache.ApplySelection(nextIndex);
+                    if (nextIndex >= candidateDisplayNames.Length)
+                    {
+                        _useReverseConversionFromCandidateDropdown = true;
+                        _lastSelectedCandidateIndexForReverseMode = candidateIndex;
+                        _sourcePrefabAsset = null;
+                    }
+                    else
+                    {
+                        _useReverseConversionFromCandidateDropdown = false;
+                        _prefabDropdownCache.ApplySelection(nextIndex);
+                        _lastSelectedCandidateIndexForReverseMode = nextIndex;
+                    }
+                }
+
+                if (_useReverseConversionFromCandidateDropdown)
+                {
+                    // 復元モードで使う一致候補を固定するため、最後に選ばれていた候補を再適用する。
+                    _prefabDropdownCache.ApplySelection(Mathf.Clamp(_lastSelectedCandidateIndexForReverseMode, 0, candidateDisplayNames.Length - 1));
+                    DrawSourcePrefabObjectFieldForRestoreMode();
+                    return;
                 }
 
                 _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
@@ -695,25 +711,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 // 逆変換の元Prefab解決ルール（重要）:
-                // - まず通常と同じ一致候補（プルダウン）を生成する
-                // - ユーザーが選択した候補の PrefabVariantPath を使って元アバターを解決する
-                // これにより「どの一致データを使ったか」が UI 上で明確になります。
-                _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
-
-                var candidateDisplayNames = _prefabDropdownCache.CandidateDisplayNames?.ToArray() ?? Array.Empty<string>();
-                if (candidateDisplayNames.Length == 0)
-                {
-                    _sourcePrefabAsset = null;
-                    EditorGUILayout.HelpBox(L("Help.RestoreModeCacheNotFound"), MessageType.Warning);
-                    return;
-                }
-
-                var currentIndex = Mathf.Clamp(_prefabDropdownCache.SelectedIndex, 0, candidateDisplayNames.Length - 1);
-                var nextIndex = EditorGUILayout.Popup(L("Label.CandidateList"), currentIndex, candidateDisplayNames);
-                if (nextIndex != currentIndex)
-                {
-                    _prefabDropdownCache.ApplySelection(nextIndex);
-                }
+                // - 候補一覧で選んだ一致候補の PrefabVariantPath から元アバターを解決します。
+                // - ここでは候補プルダウン自体は描画せず、上段の候補一覧選択結果をそのまま使います。
 
                 var resolvedFromCandidate = _prefabDropdownCache.TryResolveOriginalAvatarPrefabFromSelectedCandidate(out var resolvedPrefab);
                 if (resolvedFromCandidate)
@@ -830,33 +829,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     EditorGUILayout.HelpBox(L("Help.MaboneProxy"), MessageType.Info);
                 }
             }
-
-            private void DrawConversionModeDropdown()
-            {
-                // 初見向けメモ:
-                // - 変換モードは「候補プルダウン」と同じ入力方式に寄せ、UIを1パターンに統一しています。
-                // - 一番下の項目「逆改変」を選ぶと復元モードになります。
-                var options = new[]
-                {
-                    L("Mode.Forward"),
-                    L("Mode.Reverse")
-                };
-
-                var current = (int)_conversionMode;
-                var next = EditorGUILayout.Popup(L("Mode.Label"), current, options);
-                if (next == current)
-                {
-                    return;
-                }
-
-                _conversionMode = (ConversionMode)Mathf.Clamp(next, 0, options.Length - 1);
-                _prefabDropdownCache.MarkNeedsRefresh();
-                _sourcePrefabAsset = null;
-            }
-
             private bool IsRestoreModeSelected()
             {
-                return _conversionMode == ConversionMode.ReverseRestore;
+                return _useReverseConversionFromCandidateDropdown;
             }
 
             /// <summary>

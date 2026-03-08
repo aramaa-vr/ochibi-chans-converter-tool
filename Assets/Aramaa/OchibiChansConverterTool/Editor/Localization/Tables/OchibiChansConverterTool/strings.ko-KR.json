@@ -874,16 +874,8 @@
       "value": "\"역변환\" 모드에서는 수동으로 선택한 Prefab이 올바른 원본 아바타인지 확인한 뒤 실행하세요."
     },
     {
-      "key": "Mode.Label",
-      "value": "변환 모드"
-    },
-    {
-      "key": "Mode.Forward",
-      "value": "일반 변환 (원본 아바타 -> 오치비챤즈)"
-    },
-    {
-      "key": "Mode.Reverse",
-      "value": "역변환 (오치비챤즈 -> 원본 아바타)"
+      "key": "Label.CandidateReverseOption",
+      "value": "↩ 역변환 (오치비챤즈 -> 원본 아바타)"
     }
   ]
 }
