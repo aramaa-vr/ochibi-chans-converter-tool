@@ -876,6 +876,18 @@
     {
       "key": "Help.RestoreModeManualPrefabWarning",
       "value": "在还原模式下，请确认手动选择的 Prefab 确实是正确的原始头像后再执行。"
+    },
+    {
+      "key": "Mode.Label",
+      "value": "转换模式"
+    },
+    {
+      "key": "Mode.Forward",
+      "value": "普通转换（原始头像 -> 小只酱）"
+    },
+    {
+      "key": "Mode.Reverse",
+      "value": "逆向改造（小只酱 -> 原始头像）"
     }
   ]
 }

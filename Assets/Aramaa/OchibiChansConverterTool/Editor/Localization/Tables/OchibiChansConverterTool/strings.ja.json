@@ -876,6 +876,18 @@
     {
       "key": "Help.RestoreModeManualPrefabWarning",
       "value": "復元モードでは、手動で選んだ Prefab が正しい元アバターであることを確認して実行してください。"
+    },
+    {
+      "key": "Mode.Label",
+      "value": "変換モード"
+    },
+    {
+      "key": "Mode.Forward",
+      "value": "通常変換（元アバター → おちびちゃんズ）"
+    },
+    {
+      "key": "Mode.Reverse",
+      "value": "逆改変（おちびちゃんズ → 元アバター）"
     }
   ]
 }

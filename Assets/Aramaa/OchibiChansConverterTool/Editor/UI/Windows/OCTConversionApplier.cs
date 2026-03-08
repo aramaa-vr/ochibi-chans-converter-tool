@@ -132,12 +132,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             // 二重起動防止：既に開いているウィンドウがあればそれを使う
             private static OCTConversionSourcePrefabWindow _opened;
 
+            private enum ConversionMode
+            {
+                Forward = 0,
+                ReverseRestore = 1
+            }
+
             // 二重実行防止：ボタン連打で複数回の delayCall が積まれるのを防ぐ
             private bool _applyQueued;
 
             private bool _showLogs;
             private bool _applyMaboneProxyProcessing = true;
-            private bool _restoreOriginalAvatarFromOchibi;
+            private ConversionMode _conversionMode = ConversionMode.Forward;
             private Vector2 _scrollPosition;
             private bool _versionCheckRequested;
             private bool _versionCheckInProgress;
@@ -264,7 +270,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     DrawCard(() =>
                     {
                         DrawSectionHeader("2", L("Section.TargetPrefabLabel"));
-                        DrawRestoreOriginalAvatarToggle();
+                        DrawConversionModeDropdown();
                         EditorGUILayout.Space(4);
                         DrawSourcePrefabObjectField();
                     });
@@ -593,7 +599,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // 初めて使う人向けメモ:
                 // - 通常モード: 元アバター -> おちびちゃんズへ変換するため、候補一覧からおちびちゃんズ Prefab を選ぶ
                 // - 復元モード: おちびちゃんズ -> 元アバターへ戻すため、FaceMeshCache の PrefabVariantPath を自動利用する
-                if (_restoreOriginalAvatarFromOchibi)
+                if (IsRestoreModeSelected())
                 {
                     DrawSourcePrefabObjectFieldForRestoreMode();
                     return;
@@ -825,18 +831,32 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
             }
 
-            private void DrawRestoreOriginalAvatarToggle()
+            private void DrawConversionModeDropdown()
             {
-                EditorGUI.BeginChangeCheck();
-                var next = EditorGUILayout.ToggleLeft(L("Toggle.RestoreOriginalAvatar"), _restoreOriginalAvatarFromOchibi);
-                if (!EditorGUI.EndChangeCheck())
+                // 初見向けメモ:
+                // - 変換モードは「候補プルダウン」と同じ入力方式に寄せ、UIを1パターンに統一しています。
+                // - 一番下の項目「逆改変」を選ぶと復元モードになります。
+                var options = new[]
+                {
+                    L("Mode.Forward"),
+                    L("Mode.Reverse")
+                };
+
+                var current = (int)_conversionMode;
+                var next = EditorGUILayout.Popup(L("Mode.Label"), current, options);
+                if (next == current)
                 {
                     return;
                 }
 
-                _restoreOriginalAvatarFromOchibi = next;
+                _conversionMode = (ConversionMode)Mathf.Clamp(next, 0, options.Length - 1);
                 _prefabDropdownCache.MarkNeedsRefresh();
                 _sourcePrefabAsset = null;
+            }
+
+            private bool IsRestoreModeSelected()
+            {
+                return _conversionMode == ConversionMode.ReverseRestore;
             }
 
             /// <summary>
@@ -875,7 +895,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var capturedSourcePrefab = _sourcePrefabAsset;
                 var capturedTarget = _sourceTarget;
                 var capturedApplyMaboneProxyProcessing = _applyMaboneProxyProcessing;
-                var capturedRestoreOriginalAvatarFromOchibi = _restoreOriginalAvatarFromOchibi;
+                var capturedRestoreOriginalAvatarFromOchibi = IsRestoreModeSelected();
 
                 var capturedTargetName = capturedTarget != null ? capturedTarget.name : L("Log.NullValue");
                 Debug.Log(F("Log.QueuedApply", capturedTargetName, capturedSourcePrefab.name));

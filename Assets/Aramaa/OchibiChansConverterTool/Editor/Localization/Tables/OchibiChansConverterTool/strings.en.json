@@ -876,6 +876,18 @@
     {
       "key": "Help.RestoreModeManualPrefabWarning",
       "value": "In restore mode, ensure the manually selected prefab is the correct original avatar before running."
+    },
+    {
+      "key": "Mode.Label",
+      "value": "Conversion mode"
+    },
+    {
+      "key": "Mode.Forward",
+      "value": "Normal conversion (original -> Ochibi-chans)"
+    },
+    {
+      "key": "Mode.Reverse",
+      "value": "Reverse conversion (Ochibi-chans -> original avatar)"
     }
   ]
 }
