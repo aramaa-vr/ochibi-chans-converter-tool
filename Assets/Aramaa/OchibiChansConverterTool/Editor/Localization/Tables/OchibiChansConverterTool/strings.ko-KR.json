@@ -872,6 +872,10 @@
     {
       "key": "Log.RestoreMode.ExAddMenuRemovedCount",
       "value": "복원 모드: 제거된 Ochibichans_Addmenu 개수={0}"
+    },
+    {
+      "key": "Help.RestoreModeManualPrefabWarning",
+      "value": "복원 모드에서는 수동으로 선택한 Prefab이 올바른 원본 아바타인지 확인한 뒤 실행하세요."
     }
   ]
 }

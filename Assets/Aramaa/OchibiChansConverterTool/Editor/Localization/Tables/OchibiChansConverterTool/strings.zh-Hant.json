@@ -872,6 +872,10 @@
     {
       "key": "Log.RestoreMode.ExAddMenuRemovedCount",
       "value": "還原模式：已移除 Ochibichans_Addmenu 數量={0}"
+    },
+    {
+      "key": "Help.RestoreModeManualPrefabWarning",
+      "value": "在還原模式下，請先確認手動選擇的 Prefab 確實是正確的原始 Avatar 再執行。"
     }
   ]
 }

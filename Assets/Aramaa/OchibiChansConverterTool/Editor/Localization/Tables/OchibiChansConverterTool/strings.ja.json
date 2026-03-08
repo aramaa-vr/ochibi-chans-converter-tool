@@ -872,6 +872,10 @@
     {
       "key": "Log.RestoreMode.ExAddMenuRemovedCount",
       "value": "復元モード: 削除した Ochibichans_Addmenu 数={0}"
+    },
+    {
+      "key": "Help.RestoreModeManualPrefabWarning",
+      "value": "復元モードでは、手動で選んだ Prefab が正しい元アバターであることを確認して実行してください。"
     }
   ]
 }

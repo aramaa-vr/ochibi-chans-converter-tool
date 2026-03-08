@@ -872,6 +872,10 @@
     {
       "key": "Log.RestoreMode.ExAddMenuRemovedCount",
       "value": "还原模式：已删除 Ochibichans_Addmenu 数量={0}"
+    },
+    {
+      "key": "Help.RestoreModeManualPrefabWarning",
+      "value": "在还原模式下，请确认手动选择的 Prefab 确实是正确的原始头像后再执行。"
     }
   ]
 }

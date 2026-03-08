@@ -709,27 +709,50 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _prefabDropdownCache.ApplySelection(nextIndex);
                 }
 
-                if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromSelectedCandidate(out var resolvedPrefab))
+                var resolvedFromCandidate = _prefabDropdownCache.TryResolveOriginalAvatarPrefabFromSelectedCandidate(out var resolvedPrefab);
+                if (resolvedFromCandidate)
                 {
                     _sourcePrefabAsset = resolvedPrefab;
                 }
-                else
+                else if (_sourcePrefabAsset == null || !IsPrefabAsset(_sourcePrefabAsset))
                 {
+                    // 自動解決できなかった時だけ null へ戻し、ユーザー手動入力を受け付ける。
                     _sourcePrefabAsset = null;
                 }
 
                 using (new EditorGUI.DisabledScope(true))
                 {
-                    EditorGUILayout.ObjectField(L("Label.RestoreModeResolvedPrefab"), _sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                    EditorGUILayout.ObjectField(L("Label.RestoreModeResolvedPrefab"), resolvedFromCandidate ? resolvedPrefab : null, typeof(GameObject), allowSceneObjects: false);
                 }
 
-                if (_sourcePrefabAsset != null)
+                if (resolvedFromCandidate)
                 {
                     EditorGUILayout.HelpBox(L("Help.RestoreModeResolvedPrefab"), MessageType.Info);
                     return;
                 }
 
                 EditorGUILayout.HelpBox(L("Help.RestoreModeCacheNotFound"), MessageType.Warning);
+                EditorGUILayout.LabelField(L("Section.ManualPrefabLabel"), EditorStyles.boldLabel);
+                EditorGUI.BeginChangeCheck();
+                var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _sourcePrefabAsset = manualPrefab;
+                }
+
+                if (_sourcePrefabAsset == null)
+                {
+                    EditorGUILayout.HelpBox(L("Help.SelectPrefabFromProject"), MessageType.Info);
+                    return;
+                }
+
+                if (!IsPrefabAsset(_sourcePrefabAsset))
+                {
+                    EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
+                    return;
+                }
+
+                EditorGUILayout.HelpBox(L("Help.RestoreModeManualPrefabWarning"), MessageType.Warning);
             }
 
             /// <summary>
