@@ -33,7 +33,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
-        // 既知コンポーネント型は初回解決後にキャッシュし、毎回の Assembly 走査を避けます。
+        // 既知コンポーネント型は初回解決後にキャッシュし、以降の探索コストを抑えます。
         private static readonly Dictionary<string, Type> ResolvedTypeCache = new Dictionary<string, Type>(StringComparer.Ordinal);
 
         private static readonly string[] FloorAdjusterTypeCandidates =
@@ -208,22 +208,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private static Type FindType(string typeName)
         {
-            var type = Type.GetType(typeName);
-            if (type != null)
+            if (string.IsNullOrEmpty(typeName))
             {
-                return type;
+                return null;
             }
 
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in assemblies)
+            // UnityEditor.TypeCache は Editor での型探索向けに最適化されており、
+            // AppDomain 全走査より安定して低コストに扱えます。
+            foreach (var type in TypeCache.GetTypesDerivedFrom<Component>())
             {
-                if (assembly == null)
+                if (type == null)
                 {
                     continue;
                 }
 
-                type = assembly.GetType(typeName, throwOnError: false, ignoreCase: false);
-                if (type != null)
+                if (string.Equals(type.FullName, typeName, StringComparison.Ordinal)
+                    || string.Equals(type.Name, typeName, StringComparison.Ordinal))
                 {
                     return type;
                 }
