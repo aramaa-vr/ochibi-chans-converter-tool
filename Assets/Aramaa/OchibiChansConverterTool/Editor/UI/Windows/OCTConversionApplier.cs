@@ -598,7 +598,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 if (!hasCandidates)
                 {
-                    ResetReverseModeToggleState();
+                    ResetReverseModeSelectionState();
                     EditorGUILayout.HelpBox(L("Help.NoPrefabCandidates"), MessageType.Info);
                     DrawManualPrefabField("Help.ManualPrefabWarning");
                     return;
@@ -609,7 +609,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     // 基本的には到達しない想定だが、キャッシュ更新タイミングの競合に備えて
                     // 手動入力へフォールバックし、実行不能なUI状態を作らない。
-                    ResetReverseModeToggleState();
+                    ResetReverseModeSelectionState();
                     EditorGUILayout.HelpBox(L("Help.NoPrefabCandidates"), MessageType.Info);
                     DrawManualPrefabField("Help.ManualPrefabWarning");
                     return;
@@ -701,8 +701,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             /// <summary>
             /// 逆改変のUI状態のみを初期化します。
-            /// 候補無しフォールバックでは手動Prefab入力を保持するため、
-            /// _sourcePrefabAsset はこのメソッドでは変更しません。
+            /// 候補がある状態で通常モードへ戻す時に使います。
             /// </summary>
             private void ResetReverseModeToggleState()
             {
