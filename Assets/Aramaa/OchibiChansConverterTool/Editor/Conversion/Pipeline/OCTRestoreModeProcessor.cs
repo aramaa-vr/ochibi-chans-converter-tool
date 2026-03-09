@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
@@ -191,8 +192,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private static bool IsExAddMenuPrefabPath(string prefabAssetPath)
         {
-            return !string.IsNullOrEmpty(prefabAssetPath)
-                && prefabAssetPath.EndsWith(OCTEditorConstants.AddMenuPrefabFileName, StringComparison.OrdinalIgnoreCase);
+            if (string.IsNullOrEmpty(prefabAssetPath))
+            {
+                return false;
+            }
+
+            // パス末尾の部分一致ではなく「ファイル名の完全一致」で判定する。
+            // 例: MyOchibichans_Addmenu.prefab を誤検知して削除しないようにする。
+            var fileName = Path.GetFileName(prefabAssetPath);
+            return string.Equals(fileName, OCTEditorConstants.AddMenuPrefabFileName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
