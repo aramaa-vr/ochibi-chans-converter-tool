@@ -164,15 +164,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             EnsureFaceMeshCacheLoaded();
 
-            // 旧キャッシュ（PrefabVariantPath 未格納）にも追従できるよう、
-            // エントリ未登録「または」VariantPath未設定なら再解決を1回走らせて更新します。
-            var shouldRefreshSignature =
-                !CachedFaceMeshByPrefab.TryGetValue(selectedCandidatePath, out var cachedBeforeResolve) ||
-                string.IsNullOrEmpty(cachedBeforeResolve.PrefabVariantPath);
-            if (shouldRefreshSignature)
-            {
-                TryGetCachedFaceMeshSignature(selectedCandidatePath, out _);
-            }
+            // 逆変換時の元Prefab解決は、常に最新の依存ハッシュで検証してから行います。
+            // - 依存が変わっていなければ既存キャッシュを再利用
+            // - 依存が変わっていれば TryGetCachedFaceMeshSignature 内で再計算して更新
+            // - 旧キャッシュ（PrefabVariantPath 未格納）も同メソッド内の backfill で補完
+            TryGetCachedFaceMeshSignature(selectedCandidatePath, out _);
 
             if (!CachedFaceMeshByPrefab.TryGetValue(selectedCandidatePath, out var cached))
             {
