@@ -175,6 +175,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
+            // 安全性担保:
+            // ここで「使用直前の依存ハッシュ一致」を明示的に確認します。
+            // 通常は上の TryGetCachedFaceMeshSignature 呼び出しで一致しますが、
+            // 将来この前処理が変更されても stale データ利用を防ぐガードとして残します。
+            var currentDependencyHash = AssetDatabase.GetAssetDependencyHash(selectedCandidatePath);
+            if (cached.DependencyHash != currentDependencyHash)
+            {
+                TryGetCachedFaceMeshSignature(selectedCandidatePath, out _);
+                if (!CachedFaceMeshByPrefab.TryGetValue(selectedCandidatePath, out cached) ||
+                    cached.DependencyHash != currentDependencyHash)
+                {
+                    return false;
+                }
+            }
+
             if (string.IsNullOrEmpty(cached.PrefabVariantPath))
             {
                 return false;
