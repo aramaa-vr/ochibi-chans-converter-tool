@@ -76,6 +76,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             GameObject sourceChibiPrefab,
             GameObject sourceTarget,
             bool applyMaboneProxyProcessing,
+            bool restoreOriginalAvatarFromOchibi,
             List<string> logs
         )
         {
@@ -174,9 +175,23 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 logs.Add("");
 
+                if (restoreOriginalAvatarFromOchibi)
+                {
+                    logs.Add(L("Log.RestoreMode.Enabled"));
+                    foreach (var duplicated in duplicatedTargets.Where(x => x != null))
+                    {
+                        OCTRestoreModeProcessor.RemoveReverseConversionAdjusters(duplicated, logs);
+                    }
+
+                    logs.Add("");
+                }
+
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 3) （任意）MA BoneProxy 補正
                 // --------------------------------------------------------
+                // 仕様メモ:
+                // - MA BoneProxy は通常処理 / 逆変換処理のどちらでも、チェックが ON なら実行します。
+                // - 逆変換時もこの挙動は変更しません。
                 if (applyMaboneProxyProcessing)
                 {
                     log.AddStep(
@@ -222,7 +237,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // 複製先へ変換を適用
                 // --------------------------------------------------------
-                var applySucceeded = ApplyConversionToTargets(sourceChibiPrefab, duplicatedTargets, logs: logs);
+                var applySucceeded = ApplyConversionToTargets(
+                    sourceChibiPrefab,
+                    duplicatedTargets,
+                    restoreOriginalAvatarFromOchibi,
+                    logs: logs);
                 return applySucceeded;
             }
             finally
@@ -260,7 +279,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// 変換元 Prefab の参照を読み取り、複製先へ段階的に同期適用します。
         /// （変換パイプラインの 5〜7 ステップ相当）
         /// </summary>
-        private static bool ApplyConversionToTargets(GameObject sourceChibiPrefab, GameObject[] targets, List<string> logs)
+        private static bool ApplyConversionToTargets(
+            GameObject sourceChibiPrefab,
+            GameObject[] targets,
+            bool restoreOriginalAvatarFromOchibi,
+            List<string> logs)
         {
             logs ??= new List<string>();
             var log = new OCTConversionLogger(logs);
@@ -323,8 +346,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     out var expressionParameters
                 );
 
-                // Ochibichans_Addmenu は sourceChibiPrefab の内部にある想定
-                TryResolveExAddMenuPlacementFromSourcePrefab(basePrefabRoot, out var exAddMenuPlacement);
+                // 初見向けメモ:
+                // - 通常変換: sourceChibiPrefab から AddMenu 配置を取得して、複製先へ追加する
+                // - 逆変換   : AddMenu は追加しないため、ここでの解決処理はスキップする
+                var exAddMenuPlacement = default(ExPrefabPlacement);
+                if (!restoreOriginalAvatarFromOchibi)
+                {
+                    // Ochibichans_Addmenu は sourceChibiPrefab の内部にある想定
+                    TryResolveExAddMenuPlacementFromSourcePrefab(basePrefabRoot, out exAddMenuPlacement);
+                }
 
                 // --------------------------------------------------------
                 // 変換対象へ反映
@@ -356,8 +386,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     // SVG 対応ステップ: 6) 複製先へ同期適用（コア処理）
                     ApplyCoreAvatarSynchronization(basePrefabRoot, dstRoot, logs);
 
-                    // Ex AddMenu Prefab 追加（未配置時のみ）
-                    if (exAddMenuPlacement.PrefabAsset != null)
+                    // Ex AddMenu は通常変換のみ追加します。
+                    // 逆変換（おちびちゃんズ -> 元アバター）の場合は追加せず、
+                    // 既に付いている場合はここで削除します。
+                    if (restoreOriginalAvatarFromOchibi)
+                    {
+                        logs.Add(L("Log.ExPrefabHeader"));
+                        OCTRestoreModeProcessor.RemoveExAddMenuObjectsIfExists(dstRoot, logs);
+                        logs.Add(L("Log.RestoreMode.SkipAddMenuAttach"));
+                        logs.Add("");
+                    }
+                    else if (exAddMenuPlacement.PrefabAsset != null)
                     {
                         logs.Add(L("Log.ExPrefabHeader"));
                         TryAddExPrefabIfMissing(dstRoot, exAddMenuPlacement, logs);

@@ -1,0 +1,381 @@
+#if UNITY_EDITOR
+// ============================================================================
+// 概要
+// ============================================================================
+// - FaceMesh の抽出・一致判定を担当する分割ファイルです。
+// - 候補 Prefab が「同じ顔メッシュ系統か」を判定するロジックをまとめています。
+//
+// ============================================================================
+// 重要メモ（初心者向け）
+// ============================================================================
+// - ここは「比較/抽出」のみを扱い、UI や候補一覧の状態は変更しません。
+// - VRChat SDK が無い環境では #if で安全にスキップされます。
+//
+// ============================================================================
+// チーム開発向けルール
+// ============================================================================
+// - 一致条件を変更する場合は、既存の優先順位（MeshId > GUID/Path）を維持するか理由を残すこと。
+// - 新しい比較キーを追加する場合は、誤マッチのリスクをコメントに明記すること。
+// ============================================================================
+using System;
+using System.IO;
+using UnityEditor;
+using UnityEngine;
+#if VRC_SDK_VRCSDK3
+using VRC.SDK3.Avatars.Components;
+#endif
+
+namespace Aramaa.OchibiChansConverterTool.Editor
+{
+    internal sealed partial class OCTPrefabDropdownCache
+    {
+        // NOTE: このファイルは「比較ロジック専用」。
+        // ここでは候補一覧の状態（_candidatePrefabPaths など）は直接変更しません。
+        private static bool PrefabHasMatchingFaceMesh(string prefabPath, FaceMeshSignature targetFaceMeshSignature)
+        {
+            if (string.IsNullOrEmpty(prefabPath)) return false;
+            if (!targetFaceMeshSignature.HasAnyIdentity) return false;
+
+            return TryGetCachedFaceMeshSignature(prefabPath, out var prefabFaceMeshSignature) &&
+                   FaceMeshSignatureMatches(targetFaceMeshSignature, prefabFaceMeshSignature);
+        }
+
+        /// <summary>
+        /// アバターの Viseme 用メッシュから、GUID/LocalId を抽出します。
+        /// </summary>
+        private static bool TryGetFaceMeshSignature(GameObject root, out FaceMeshSignature signature)
+        {
+            signature = default;
+            if (root == null) return false;
+
+#if VRC_SDK_VRCSDK3
+            var descriptor = root.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
+            if (!TryGetVisemeRendererFromDescriptor(descriptor, out var faceRenderer)) return false;
+            if (faceRenderer == null || faceRenderer.sharedMesh == null) return false;
+
+            var mesh = faceRenderer.sharedMesh;
+            TryGetAnimatorAvatarIdentity(root, out var animatorAvatarId, out var animatorAvatarAssetPath);
+
+            if (!TryGetPrefabInfo(root, out var prefabGuid, out var prefabName))
+            {
+                prefabGuid = string.Empty;
+                prefabName = string.Empty;
+            }
+
+            return TryBuildFaceMeshSignature(
+                mesh,
+                animatorAvatarId,
+                animatorAvatarAssetPath,
+                prefabGuid,
+                prefabName,
+                out signature);
+#else
+            return false;
+#endif
+        }
+
+        private static bool TryGetFaceMeshSignatureFromPrefabPath(string prefabPath, out FaceMeshSignature signature)
+        {
+            signature = default;
+            if (string.IsNullOrEmpty(prefabPath)) return false;
+
+            var prefab = AssetDatabase.LoadMainAssetAtPath(prefabPath) as GameObject;
+            if (prefab == null) return false;
+
+            if (!TryGetFaceMeshSignature(prefab, out signature)) return false;
+
+            var prefabSource = PrefabUtility.GetCorrespondingObjectFromOriginalSource(prefab) ?? prefab;
+            var sourcePath = AssetDatabase.GetAssetPath(prefabSource);
+            if (string.IsNullOrEmpty(sourcePath))
+            {
+                sourcePath = prefabPath;
+            }
+
+            var prefabGuid = AssetDatabase.AssetPathToGUID(sourcePath);
+            var prefabName = sourcePath;
+            signature = signature.WithPrefabInfo(prefabGuid, prefabName);
+            return true;
+        }
+
+        /// <summary>
+        /// Prefab の依存ハッシュを使って、顔メッシュIDのキャッシュを再利用します。
+        /// </summary>
+        private static bool TryGetCachedFaceMeshSignature(string prefabPath, out FaceMeshSignature signature)
+        {
+            signature = default;
+            if (string.IsNullOrEmpty(prefabPath)) return false;
+
+            EnsureFaceMeshCacheLoaded();
+
+            var hash = AssetDatabase.GetAssetDependencyHash(prefabPath);
+            var hasCachedEntry = CachedFaceMeshByPrefab.TryGetValue(prefabPath, out var cached);
+            var needsVariantPathBackfill = hasCachedEntry && string.IsNullOrEmpty(cached.PrefabVariantPath);
+
+            if (hasCachedEntry &&
+                cached.DependencyHash == hash &&
+                !needsVariantPathBackfill)
+            {
+                if (cached.HasFaceMesh)
+                {
+                    signature = cached.FaceMeshSignature;
+                    return true;
+                }
+
+                return false;
+            }
+
+            var hasFaceMesh = TryGetFaceMeshSignatureFromPrefabPath(prefabPath, out var cachedSignature);
+            CachedFaceMeshByPrefab[prefabPath] = new CachedFaceMesh(
+                hash,
+                cachedSignature,
+                hasFaceMesh,
+                FindFirstVariantPrefabPathForCache(prefabPath));
+            MarkFaceMeshCacheDirty();
+            // ここでは即時保存しません。
+            // - OnDisable でまとめて保存される
+            // - 検索中に毎回ディスク/設定を書き換える回数を減らし、Editor の負荷を抑える
+            if (hasFaceMesh)
+            {
+                signature = cachedSignature;
+            }
+
+            return hasFaceMesh;
+        }
+
+        private static bool FaceMeshSignatureMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            if (MeshIdMatches(a.MeshId, b.MeshId))
+            {
+                return true;
+            }
+
+            // NOTE: 顔メッシュだけでは区別が難しいケース向けに
+            // ルート Animator.avatar も比較します。
+            // 優先順位は MeshId と同様に GUID/LocalId を先に使い、
+            // 取れない場合のみ AssetPath へフォールバックします。
+            if (AnimatorAvatarIdMatches(a, b)) return true;
+            if (ShouldFallbackToAnimatorAvatarAssetPath(a, b) && AnimatorAvatarAssetPathMatches(a, b)) return true;
+
+            if (PrefabGuidMatches(a, b)) return true;
+            if (PrefabNameMatches(a, b)) return true;
+            if (FbxGuidMatches(a, b)) return true;
+            if (FbxNameMatches(a, b)) return true;
+            if (AssetPathMatches(a, b)) return true;
+
+            return false;
+        }
+
+        private static bool MeshIdMatches(MeshId a, MeshId b)
+        {
+            if (string.IsNullOrEmpty(a.Guid) || string.IsNullOrEmpty(b.Guid)) return false;
+            if (!string.Equals(a.Guid, b.Guid, StringComparison.Ordinal)) return false;
+
+            if (a.HasLocalId && b.HasLocalId)
+            {
+                return a.LocalId == b.LocalId;
+            }
+
+            return true;
+        }
+
+
+        private static bool AnimatorAvatarIdMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            return MeshIdMatches(a.AnimatorAvatarId, b.AnimatorAvatarId);
+        }
+
+        private static bool AnimatorAvatarAssetPathMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            if (string.IsNullOrEmpty(a.AnimatorAvatarAssetPath) || string.IsNullOrEmpty(b.AnimatorAvatarAssetPath)) return false;
+            return string.Equals(a.AnimatorAvatarAssetPath, b.AnimatorAvatarAssetPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool ShouldFallbackToAnimatorAvatarAssetPath(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            // NOTE: GUID/LocalId が両方取れている場合は Path 比較へ降りません。
+            // 同一アセット内の別 Avatar（LocalId 違い）を Path 一致で誤マッチさせないためです。
+            var hasAId = !string.IsNullOrEmpty(a.AnimatorAvatarId.Guid);
+            var hasBId = !string.IsNullOrEmpty(b.AnimatorAvatarId.Guid);
+            return !hasAId || !hasBId;
+        }
+
+        private static bool PrefabGuidMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            if (string.IsNullOrEmpty(a.PrefabGuid) || string.IsNullOrEmpty(b.PrefabGuid)) return false;
+            return string.Equals(a.PrefabGuid, b.PrefabGuid, StringComparison.Ordinal);
+        }
+
+        private static bool PrefabNameMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            if (string.IsNullOrEmpty(a.PrefabName) || string.IsNullOrEmpty(b.PrefabName)) return false;
+            return string.Equals(a.PrefabName, b.PrefabName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool FbxGuidMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            if (string.IsNullOrEmpty(a.FbxGuid) || string.IsNullOrEmpty(b.FbxGuid)) return false;
+            return string.Equals(a.FbxGuid, b.FbxGuid, StringComparison.Ordinal);
+        }
+
+        private static bool FbxNameMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            if (string.IsNullOrEmpty(a.FbxName) || string.IsNullOrEmpty(b.FbxName)) return false;
+            return string.Equals(a.FbxName, b.FbxName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool AssetPathMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            if (string.IsNullOrEmpty(a.FaceMeshAssetPath) || string.IsNullOrEmpty(b.FaceMeshAssetPath)) return false;
+            return string.Equals(a.FaceMeshAssetPath, b.FaceMeshAssetPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool TryGetPrefabInfo(GameObject root, out string prefabGuid, out string prefabName)
+        {
+            prefabGuid = string.Empty;
+            prefabName = string.Empty;
+            if (root == null) return false;
+
+            var instanceRoot = PrefabUtility.GetNearestPrefabInstanceRoot(root);
+            if (instanceRoot == null) return false;
+
+            var prefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(instanceRoot);
+            if (prefabAsset == null) return false;
+
+            var sourceAsset = PrefabUtility.GetCorrespondingObjectFromOriginalSource(prefabAsset) ?? prefabAsset;
+            var prefabPath = AssetDatabase.GetAssetPath(sourceAsset);
+            if (string.IsNullOrEmpty(prefabPath)) return false;
+
+            prefabGuid = AssetDatabase.AssetPathToGUID(prefabPath);
+            prefabName = prefabPath;
+            return !string.IsNullOrEmpty(prefabGuid) || !string.IsNullOrEmpty(prefabName);
+        }
+
+        private static bool TryGetAnimatorAvatarIdentity(GameObject root, out MeshId animatorAvatarId, out string animatorAvatarAssetPath)
+        {
+            animatorAvatarId = default;
+            animatorAvatarAssetPath = string.Empty;
+            if (root == null) return false;
+
+            var animator = root.GetComponent<Animator>();
+            if (animator == null || animator.avatar == null) return false;
+
+            var avatar = animator.avatar;
+            animatorAvatarAssetPath = AssetDatabase.GetAssetPath(avatar);
+            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(avatar, out var guid, out long localId))
+            {
+                animatorAvatarId = new MeshId(guid, localId, hasLocalId: true);
+                return true;
+            }
+
+            if (!string.IsNullOrEmpty(animatorAvatarAssetPath))
+            {
+                var fallbackGuid = AssetDatabase.AssetPathToGUID(animatorAvatarAssetPath);
+                if (!string.IsNullOrEmpty(fallbackGuid))
+                {
+                    animatorAvatarId = new MeshId(fallbackGuid, 0, hasLocalId: false);
+                    return true;
+                }
+            }
+
+            return !string.IsNullOrEmpty(animatorAvatarAssetPath);
+        }
+
+        private static bool TryBuildFaceMeshSignature(
+            Mesh mesh,
+            MeshId animatorAvatarId,
+            string animatorAvatarAssetPath,
+            string prefabGuid,
+            string prefabName,
+            out FaceMeshSignature signature)
+        {
+            signature = default;
+            if (mesh == null) return false;
+
+            var assetPath = AssetDatabase.GetAssetPath(mesh);
+            var fbxGuid = string.IsNullOrEmpty(assetPath) ? string.Empty : AssetDatabase.AssetPathToGUID(assetPath);
+            var fbxName = string.IsNullOrEmpty(assetPath) ? string.Empty : assetPath;
+            var hasMeshId = TryBuildMeshId(mesh, out var meshId);
+
+            if (!hasMeshId &&
+                string.IsNullOrEmpty(animatorAvatarId.Guid) &&
+                string.IsNullOrEmpty(animatorAvatarAssetPath) &&
+                string.IsNullOrEmpty(prefabGuid) &&
+                string.IsNullOrEmpty(prefabName) &&
+                string.IsNullOrEmpty(fbxGuid) &&
+                string.IsNullOrEmpty(fbxName) &&
+                string.IsNullOrEmpty(assetPath))
+            {
+                return false;
+            }
+
+            signature = new FaceMeshSignature(
+                meshId,
+                animatorAvatarId,
+                animatorAvatarAssetPath,
+                prefabGuid,
+                prefabName,
+                fbxGuid,
+                fbxName,
+                assetPath);
+            return true;
+        }
+
+        private static bool TryBuildMeshId(Mesh mesh, out MeshId meshId)
+        {
+            meshId = default;
+            if (mesh == null) return false;
+
+            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(mesh, out var guid, out long localId))
+            {
+                meshId = new MeshId(guid, localId, hasLocalId: true);
+                return true;
+            }
+
+            var meshPath = AssetDatabase.GetAssetPath(mesh);
+            if (string.IsNullOrEmpty(meshPath)) return false;
+
+            var fallbackGuid = AssetDatabase.AssetPathToGUID(meshPath);
+            if (string.IsNullOrEmpty(fallbackGuid)) return false;
+
+            meshId = new MeshId(fallbackGuid, 0, hasLocalId: false);
+            return true;
+        }
+
+#if VRC_SDK_VRCSDK3
+        private static bool TryGetVisemeRendererFromDescriptor(
+            VRCAvatarDescriptor descriptor,
+            out SkinnedMeshRenderer renderer)
+        {
+            renderer = null;
+            if (descriptor == null) return false;
+
+            using (var so = new SerializedObject(descriptor))
+            {
+                var prop = so.FindProperty("VisemeSkinnedMesh");
+                if (prop != null)
+                {
+                    renderer = prop.objectReferenceValue as SkinnedMeshRenderer;
+                }
+            }
+
+            if (renderer != null) return true;
+
+            renderer = descriptor.VisemeSkinnedMesh;
+            return renderer != null;
+        }
+#endif
+
+        private static void EnsureFaceMeshCacheLoaded()
+        {
+            if (_faceMeshCacheLoaded) return;
+            _faceMeshCacheLoaded = true;
+            LoadFaceMeshCacheFromLibrary();
+        }
+
+        private static void MarkFaceMeshCacheDirty()
+        {
+            _faceMeshCacheDirty = true;
+        }
+    }
+}
+#endif

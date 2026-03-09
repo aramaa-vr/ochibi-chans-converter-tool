@@ -137,6 +137,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             private bool _showLogs;
             private bool _applyMaboneProxyProcessing = true;
+            private bool _useReverseConversionFromCandidateDropdown;
+            private string _lastSelectedCandidatePathForReverseMode;
             private Vector2 _scrollPosition;
             private bool _versionCheckRequested;
             private bool _versionCheckInProgress;
@@ -564,7 +566,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     _sourceTarget = nextTarget;
                     _prefabDropdownCache.MarkNeedsRefresh();
-                    _sourcePrefabAsset = null;
+                    ResetReverseModeSelectionState();
                 }
 
                 if (_sourceTarget == null)
@@ -579,6 +581,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     EditorGUILayout.HelpBox(L("Help.SourceAvatarAssetInvalid"), MessageType.Error);
                     _sourceTarget = null;
                     _prefabDropdownCache.MarkNeedsRefresh();
+                    ResetReverseModeSelectionState();
                 }
             }
 
@@ -587,50 +590,69 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             /// </summary>
             private void DrawSourcePrefabObjectField()
             {
+                // 初めて使う人向けメモ:
+                // - 候補一覧プルダウンの最下段に「逆改変」項目を追加しています。
+                // - 「逆改変」を選ぶと復元向けUI（自動解決 + 手動指定）を表示します。
                 _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
 
                 var hasCandidates = _prefabDropdownCache.CandidateDisplayNames.Count > 0;
 
                 if (!hasCandidates)
                 {
+                    ResetReverseModeToggleState();
                     EditorGUILayout.HelpBox(L("Help.NoPrefabCandidates"), MessageType.Info);
-
-                    EditorGUILayout.LabelField(L("Section.ManualPrefabLabel"), EditorStyles.boldLabel);
-                    EditorGUI.BeginChangeCheck();
-                    var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        _sourcePrefabAsset = manualPrefab;
-                    }
-
-                    if (_sourcePrefabAsset == null)
-                    {
-                        EditorGUILayout.HelpBox(L("Help.SelectPrefabFromProject"), MessageType.Info);
-                        return;
-                    }
-
-                    if (!IsPrefabAsset(_sourcePrefabAsset))
-                    {
-                        EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
-                        return;
-                    }
-
-                    EditorGUILayout.HelpBox(L("Help.ManualPrefabWarning"), MessageType.Warning);
+                    DrawManualPrefabField("Help.ManualPrefabWarning");
                     return;
                 }
 
                 var candidateDisplayNames = _prefabDropdownCache.CandidateDisplayNames?.ToArray() ?? Array.Empty<string>();
                 if (candidateDisplayNames.Length == 0)
                 {
-                    EditorGUILayout.HelpBox(L("Help.SelectPrefabFromProject"), MessageType.Info);
+                    // 基本的には到達しない想定だが、キャッシュ更新タイミングの競合に備えて
+                    // 手動入力へフォールバックし、実行不能なUI状態を作らない。
+                    ResetReverseModeToggleState();
+                    EditorGUILayout.HelpBox(L("Help.NoPrefabCandidates"), MessageType.Info);
+                    DrawManualPrefabField("Help.ManualPrefabWarning");
                     return;
                 }
 
-                var currentIndex = Mathf.Clamp(_prefabDropdownCache.SelectedIndex, 0, candidateDisplayNames.Length - 1);
-                var nextIndex = EditorGUILayout.Popup(L("Label.CandidateList"), currentIndex, candidateDisplayNames);
+                var dropdownOptions = new string[candidateDisplayNames.Length + 1];
+                Array.Copy(candidateDisplayNames, dropdownOptions, candidateDisplayNames.Length);
+                dropdownOptions[candidateDisplayNames.Length] = L("Label.CandidateReverseOption");
+
+                var candidateIndex = Mathf.Clamp(_prefabDropdownCache.SelectedIndex, 0, candidateDisplayNames.Length - 1);
+                var currentIndex = _useReverseConversionFromCandidateDropdown
+                    ? candidateDisplayNames.Length
+                    : candidateIndex;
+                var nextIndex = EditorGUILayout.Popup(L("Label.CandidateList"), currentIndex, dropdownOptions);
                 if (nextIndex != currentIndex)
                 {
-                    _prefabDropdownCache.ApplySelection(nextIndex);
+                    if (nextIndex >= candidateDisplayNames.Length)
+                    {
+                        EnterReverseMode(candidateIndex);
+                    }
+                    else
+                    {
+                        _useReverseConversionFromCandidateDropdown = false;
+                        _prefabDropdownCache.ApplySelection(nextIndex);
+                        _lastSelectedCandidatePathForReverseMode = _prefabDropdownCache.GetSelectedCandidatePath();
+                    }
+                }
+
+                if (_useReverseConversionFromCandidateDropdown)
+                {
+                    // 復元モードで使う一致候補を固定するため、
+                    // 位置依存のインデックスではなく候補パスで再適用する。
+                    if (!_prefabDropdownCache.TryApplySelectionByPath(_lastSelectedCandidatePathForReverseMode))
+                    {
+                        ResetReverseModeToggleState();
+                        _prefabDropdownCache.ApplySelection(Mathf.Clamp(_prefabDropdownCache.SelectedIndex, 0, candidateDisplayNames.Length - 1));
+                        _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
+                        return;
+                    }
+
+                    DrawSourcePrefabObjectFieldForRestoreMode();
+                    return;
                 }
 
                 _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
@@ -665,6 +687,114 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     EditorGUILayout.HelpBox(L("Help.ManualPrefabWarning"), MessageType.Warning);
                 }
+            }
+
+            /// <summary>
+            /// 逆改変モードの一時状態を初期化します。
+            /// 「候補が無いのに逆改変が残る」状態を防ぐため、
+            /// ターゲット変更時・候補消失時に必ずここを通します。
+            /// </summary>
+            private void ResetReverseModeSelectionState()
+            {
+                _sourcePrefabAsset = null;
+                ResetReverseModeToggleState();
+            }
+
+            /// <summary>
+            /// 逆改変のUI状態のみを初期化します。
+            /// 候補がある状態で通常モードへ戻す時に使います。
+            /// </summary>
+            private void ResetReverseModeToggleState()
+            {
+                _useReverseConversionFromCandidateDropdown = false;
+                _lastSelectedCandidatePathForReverseMode = string.Empty;
+            }
+
+            /// <summary>
+            /// 候補プルダウンで「逆改変」を選んだ時の遷移をまとめます。
+            /// 逆改変の基準候補を固定し、手動入力が必要なら下段UIに任せます。
+            /// </summary>
+            private void EnterReverseMode(int candidateIndex)
+            {
+                _useReverseConversionFromCandidateDropdown = true;
+                _prefabDropdownCache.ApplySelection(Mathf.Clamp(candidateIndex, 0, Mathf.Max(0, _prefabDropdownCache.CandidateDisplayNames.Count - 1)));
+                _lastSelectedCandidatePathForReverseMode = _prefabDropdownCache.GetSelectedCandidatePath();
+                _sourcePrefabAsset = null;
+            }
+
+            /// <summary>
+            /// 手動 Prefab 指定 UI を共通化します。
+            /// 通常変換/逆改変の両方で同じ入力検証（null / 非Prefab）を使うことで、
+            /// 不具合時の挙動を揃えて安全に保守できるようにします。
+            /// </summary>
+            private bool DrawManualPrefabField(string warningLocalizationKey)
+            {
+                EditorGUILayout.LabelField(L("Section.ManualPrefabLabel"), EditorStyles.boldLabel);
+                EditorGUI.BeginChangeCheck();
+                var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _sourcePrefabAsset = manualPrefab;
+                }
+
+                if (_sourcePrefabAsset == null)
+                {
+                    EditorGUILayout.HelpBox(L("Help.SelectPrefabFromProject"), MessageType.Info);
+                    return false;
+                }
+
+                if (!IsPrefabAsset(_sourcePrefabAsset))
+                {
+                    EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(warningLocalizationKey))
+                {
+                    EditorGUILayout.HelpBox(L(warningLocalizationKey), MessageType.Warning);
+                }
+
+                return true;
+            }
+
+            private void DrawSourcePrefabObjectFieldForRestoreMode()
+            {
+                if (_sourceTarget == null)
+                {
+                    EditorGUILayout.HelpBox(L("Help.RestoreModeNeedSourceAvatar"), MessageType.Info);
+                    _sourcePrefabAsset = null;
+                    return;
+                }
+
+                // 逆変換の元Prefab解決ルール（重要）:
+                // - 候補一覧で選んだ一致候補の PrefabVariantPath から元アバターを解決します。
+                // - ここでは候補プルダウン自体は描画せず、上段の候補一覧選択結果をそのまま使います。
+
+                var resolvedFromCandidate = _prefabDropdownCache.TryResolveOriginalAvatarPrefabFromSelectedCandidate(out var resolvedPrefab);
+                if (resolvedFromCandidate)
+                {
+                    _sourcePrefabAsset = resolvedPrefab;
+                }
+                else if (_sourcePrefabAsset == null || !IsPrefabAsset(_sourcePrefabAsset))
+                {
+                    // 自動解決できなかった時だけ null へ戻し、ユーザー手動入力を受け付ける。
+                    _sourcePrefabAsset = null;
+                }
+
+                if (resolvedFromCandidate)
+                {
+                    using (new EditorGUI.DisabledScope(true))
+                    {
+                        EditorGUILayout.ObjectField(L("Label.RestoreModeResolvedPrefab"), resolvedPrefab, typeof(GameObject), allowSceneObjects: false);
+                    }
+
+                    EditorGUILayout.HelpBox(L("Help.RestoreModeResolvedPrefab"), MessageType.Info);
+                    return;
+                }
+
+                // 自動解決できなかった時は、案内は手動入力側の警告1つに集約する。
+                // ユーザーに同系統の注意文を2回出さないことで、UIをシンプルに保つ。
+                DrawManualPrefabField("Help.RestoreModeManualPrefabWarning");
             }
 
             /// <summary>
@@ -736,6 +866,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     EditorGUILayout.HelpBox(L("Help.MaboneProxy"), MessageType.Info);
                 }
             }
+            private bool IsRestoreModeSelected()
+            {
+                return _useReverseConversionFromCandidateDropdown;
+            }
 
             /// <summary>
             /// 入力欄の内容で「複製→変換」を予約します。
@@ -773,6 +907,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var capturedSourcePrefab = _sourcePrefabAsset;
                 var capturedTarget = _sourceTarget;
                 var capturedApplyMaboneProxyProcessing = _applyMaboneProxyProcessing;
+                var capturedRestoreOriginalAvatarFromOchibi = IsRestoreModeSelected();
 
                 var capturedTargetName = capturedTarget != null ? capturedTarget.name : L("Log.NullValue");
                 Debug.Log(F("Log.QueuedApply", capturedTargetName, capturedSourcePrefab.name));
@@ -782,12 +917,37 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 {
                     var logs = new List<string>();
 
+                    var isCapturedTargetValid =
+                        capturedTarget != null &&
+                        !EditorUtility.IsPersistent(capturedTarget) &&
+                        capturedTarget.scene.IsValid() &&
+                        capturedTarget.scene.isLoaded;
+                    var isCapturedSourcePrefabValid = capturedSourcePrefab != null && IsPrefabAsset(capturedSourcePrefab);
+                    if (!isCapturedTargetValid || !isCapturedSourcePrefabValid)
+                    {
+                        logs.Add("Invalid queued input. Please re-select source avatar / prefab and retry.");
+                        _applyQueued = false;
+
+                        if (_showLogs)
+                        {
+                            OCTConversionLogWindow.ShowLogs(LogWindowTitle, logs);
+                        }
+
+                        if (_isWindowActive && _opened == this)
+                        {
+                            Repaint();
+                        }
+
+                        return;
+                    }
+
                     try
                     {
                         var applySucceeded = OCTConversionPipeline.DuplicateThenApply(
                             capturedSourcePrefab,
                             capturedTarget,
                             capturedApplyMaboneProxyProcessing,
+                            capturedRestoreOriginalAvatarFromOchibi,
                             logs
                         );
 

@@ -22,29 +22,49 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
-#if VRC_SDK_VRCSDK3
-using VRC.SDK3.Avatars.Components;
-#endif
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
     /// <summary>
     /// アバターの顔メッシュ情報を基に、候補となるおちびちゃんズ Prefab の一覧を作るキャッシュです。
     /// </summary>
-    internal sealed class OCTPrefabDropdownCache
+    internal sealed partial class OCTPrefabDropdownCache
     {
+        // --------------------------------------------------------------------
+        // partial ファイル構成（初見の人向け）
+        // --------------------------------------------------------------------
+        // - OCTPrefabDropdownCache.cs
+        //   候補一覧の状態管理・公開API・基本フロー。
+        // - OCTPrefabDropdownCache.FaceMeshMatching.cs
+        //   FaceMeshSignature の抽出/一致判定（比較ロジック本体）。
+        // - OCTPrefabDropdownCache.Persistence.cs
+        //   Library 配下キャッシュの読み書き（JSON）。
+        // - OCTPrefabDropdownCache.Models.cs
+        //   判定と保存で共有する値オブジェクト定義。
+        // --------------------------------------------------------------------
+        // 呼び出しフロー（概要）:
+        // RefreshIfNeeded
+        //   -> PrefabHasMatchingFaceMesh
+        //     -> TryGetCachedFaceMeshSignature
+        //       -> (cache miss時) TryGetFaceMeshSignatureFromPrefabPath
+        //          -> TryGetFaceMeshSignature / TryBuildFaceMeshSignature
+        // OnDisable時の SaveCacheToDisk -> SaveFaceMeshCacheToLibrary
+        // ※ 上記の実体は partial 先ファイルに分割されています。
         private static string L(string key) => OCTLocalization.Get(key);
         private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
 
         private const string BaseFolder = OCTEditorConstants.BaseFolder;
+        // BaseFolder 配下のうち、候補検索から外すサブフォルダ名。
+        private const string ExcludedSearchSubFolderName = "缶バッジ";
+        private const string ExcludedSearchFolder = BaseFolder + "/" + ExcludedSearchSubFolderName;
+        private static readonly string ExcludedSearchFolderPrefix = ExcludedSearchFolder + "/";
 
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
-        // 末尾の v7 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
-        // 互換が壊れる変更を入れたら v7 に上げる（JSON構造が同じでも上げてよい）。
-        private const string FaceMeshCacheFileName = "FaceMeshCache.v7.json";
+        // 末尾の v9 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
+        // 互換が壊れる変更を入れたら v9 から更新する（JSON構造が同じでも上げてよい）。
+        private const string FaceMeshCacheFileName = "FaceMeshCache.v9.json";
 
         private static readonly Dictionary<string, CachedFaceMesh> CachedFaceMeshByPrefab =
             new Dictionary<string, CachedFaceMesh>();
@@ -63,6 +83,41 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         public GameObject SourcePrefabAsset => _sourcePrefabAsset;
 
         /// <summary>
+        /// 現在選択中候補の Prefab パスを返します。候補が無い場合は空文字列です。
+        /// </summary>
+        public string GetSelectedCandidatePath()
+        {
+            if (_candidatePrefabPaths.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var selectedIndex = Mathf.Clamp(_selectedPrefabIndex, 0, _candidatePrefabPaths.Count - 1);
+            return _candidatePrefabPaths[selectedIndex] ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 指定パスの候補が存在する場合のみ選択を更新します。
+        /// </summary>
+        public bool TryApplySelectionByPath(string prefabPath)
+        {
+            if (string.IsNullOrEmpty(prefabPath) || _candidatePrefabPaths.Count == 0)
+            {
+                return false;
+            }
+
+            var index = _candidatePrefabPaths.FindIndex(path =>
+                string.Equals(path, prefabPath, StringComparison.Ordinal));
+            if (index < 0)
+            {
+                return false;
+            }
+
+            ApplySelection(index);
+            return true;
+        }
+
+        /// <summary>
         /// 指定した Prefab が候補一覧に含まれるかを判定します。
         /// </summary>
         public bool ContainsCandidate(GameObject prefab)
@@ -78,13 +133,76 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
-            return _candidatePrefabPaths.Any(path =>
+            return _candidatePrefabPaths.Exists(path =>
                 string.Equals(path, prefabPath, StringComparison.Ordinal));
         }
 
         public static void SaveCacheToDisk()
         {
             SaveFaceMeshCacheToLibrary();
+        }
+
+        /// <summary>
+        /// 候補プルダウンで現在選択中の「一致データ」から、PrefabVariantPath を使って元アバター Prefab を解決します。
+        /// 逆変換ではこのメソッドを優先し、辞書全走査の曖昧さを避けます。
+        /// </summary>
+        public bool TryResolveOriginalAvatarPrefabFromSelectedCandidate(out GameObject originalAvatarPrefab)
+        {
+            originalAvatarPrefab = null;
+
+            if (_candidatePrefabPaths.Count == 0)
+            {
+                return false;
+            }
+
+            var selectedIndex = Mathf.Clamp(_selectedPrefabIndex, 0, _candidatePrefabPaths.Count - 1);
+            var selectedCandidatePath = _candidatePrefabPaths[selectedIndex];
+            if (string.IsNullOrEmpty(selectedCandidatePath))
+            {
+                return false;
+            }
+
+            EnsureFaceMeshCacheLoaded();
+
+            // 逆変換時の元Prefab解決は、常に最新の依存ハッシュで検証してから行います。
+            // - 依存が変わっていなければ既存キャッシュを再利用
+            // - 依存が変わっていれば TryGetCachedFaceMeshSignature 内で再計算して更新
+            // - 旧キャッシュ（PrefabVariantPath 未格納）も同メソッド内の backfill で補完
+            TryGetCachedFaceMeshSignature(selectedCandidatePath, out _);
+
+            if (!CachedFaceMeshByPrefab.TryGetValue(selectedCandidatePath, out var cached))
+            {
+                return false;
+            }
+
+            // 安全性担保:
+            // ここで「使用直前の依存ハッシュ一致」を明示的に確認します。
+            // 通常は上の TryGetCachedFaceMeshSignature 呼び出しで一致しますが、
+            // 将来この前処理が変更されても stale データ利用を防ぐガードとして残します。
+            var currentDependencyHash = AssetDatabase.GetAssetDependencyHash(selectedCandidatePath);
+            if (cached.DependencyHash != currentDependencyHash)
+            {
+                TryGetCachedFaceMeshSignature(selectedCandidatePath, out _);
+                if (!CachedFaceMeshByPrefab.TryGetValue(selectedCandidatePath, out cached) ||
+                    cached.DependencyHash != currentDependencyHash)
+                {
+                    return false;
+                }
+            }
+
+            if (string.IsNullOrEmpty(cached.PrefabVariantPath))
+            {
+                return false;
+            }
+
+            var resolved = AssetDatabase.LoadAssetAtPath<GameObject>(cached.PrefabVariantPath);
+            if (resolved == null)
+            {
+                return false;
+            }
+
+            originalAvatarPrefab = resolved;
+            return true;
         }
 
         /// <summary>
@@ -170,10 +288,23 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (!TryGetFaceMeshSignature(sourceTarget, out var avatarFaceMeshSignature)) return;
 
+            // 候補生成フロー（高コスト箇所をまとめて最適化）:
+            // 1) BaseFolder直下のサブフォルダ一覧を取得
+            // 2) BaseFolder全体を1回だけ走査して「各サブフォルダの優先Prefab」を集約
+            // 3) その結果を使って FaceMesh 一致判定を行い、最終候補へ追加
             var subFolders = AssetDatabase.GetSubFolders(BaseFolder);
+            if (subFolders == null || subFolders.Length == 0) return;
+
+            // サブフォルダ数を上限目安にして容量を確保。
+            // List の再確保を減らし、候補追加時の GC 発生を抑える。
+            EnsureCandidateListCapacity(subFolders.Length);
+
+            var preferredPrefabStateByFolder = BuildPreferredPrefabStateBySubFolder(subFolders);
             foreach (var folder in subFolders)
             {
-                var prefabPath = FindPreferredPrefabPathUnder(folder);
+                if (!preferredPrefabStateByFolder.TryGetValue(folder, out var state)) continue;
+
+                var prefabPath = state.GetPreferredPath();
                 if (string.IsNullOrEmpty(prefabPath)) continue;
 
                 if (!PrefabHasMatchingFaceMesh(prefabPath, avatarFaceMeshSignature)) continue;
@@ -199,508 +330,174 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
-        /// 指定フォルダ配下の Prefab から、優先順位に従って候補を1つ選びます。
+        /// ドロップダウン候補リストの内部容量を事前確保します。
+        /// 候補追加時の再割り当てを減らし、GC 負荷を抑えるための補助メソッドです。
         /// </summary>
-        private static string FindPreferredPrefabPathUnder(string folder)
+        private void EnsureCandidateListCapacity(int expectedCount)
         {
-            var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { folder });
-            if (prefabGuids == null || prefabGuids.Length == 0) return null;
+            if (expectedCount <= 0) return;
 
-            var candidates = new List<string>();
+            if (_candidatePrefabPaths.Capacity < expectedCount)
+            {
+                _candidatePrefabPaths.Capacity = expectedCount;
+            }
+
+            if (_candidateDisplayNames.Capacity < expectedCount)
+            {
+                _candidateDisplayNames.Capacity = expectedCount;
+            }
+        }
+
+        /// <summary>
+        /// BaseFolder 配下の Prefab を1回だけ走査し、
+        /// 「サブフォルダごとの優先Prefab候補状態」を構築します。
+        ///
+        /// 以前のようにサブフォルダごとに FindAssets を呼ばず、
+        /// 走査回数を抑えて候補生成の負荷を下げることが目的です。
+        /// </summary>
+        private static Dictionary<string, PreferredPrefabState> BuildPreferredPrefabStateBySubFolder(string[] subFolders)
+        {
+            if (subFolders == null || subFolders.Length == 0)
+            {
+                return new Dictionary<string, PreferredPrefabState>(StringComparer.Ordinal);
+            }
+
+            var statesByFolder = new Dictionary<string, PreferredPrefabState>(subFolders.Length, StringComparer.Ordinal);
+            foreach (var folder in subFolders)
+            {
+                if (string.IsNullOrEmpty(folder)) continue;
+                if (IsPathExcludedFromSearch(folder)) continue;
+                statesByFolder[folder] = default;
+            }
+
+            if (statesByFolder.Count == 0)
+            {
+                return statesByFolder;
+            }
+
+            var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { BaseFolder });
+            if (prefabGuids == null || prefabGuids.Length == 0)
+            {
+                return statesByFolder;
+            }
+
             foreach (var guid in prefabGuids)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 if (string.IsNullOrEmpty(path)) continue;
                 if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) continue;
+                if (IsPathExcludedFromSearch(path)) continue;
 
-                candidates.Add(path);
+                if (!TryGetImmediateSubFolder(path, out var folder)) continue;
+                if (!statesByFolder.TryGetValue(folder, out var state)) continue;
+
+                state.RegisterCandidate(path);
+                statesByFolder[folder] = state;
             }
 
-            if (candidates.Count == 0) return null;
-
-            var preferred = PickPrefabByFilenamePattern(candidates, "Kisekae Variant");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, "Kaihen_Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, "Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            return candidates[0];
+            return statesByFolder;
         }
 
-        private static string PickPrefabByFilenamePattern(IEnumerable<string> paths, string pattern)
+        private static bool IsPathExcludedFromSearch(string assetPath)
         {
-            if (paths == null) return null;
-            if (string.IsNullOrEmpty(pattern)) return null;
+            if (string.IsNullOrEmpty(assetPath)) return false;
 
-            var match = paths.FirstOrDefault(path =>
-                Path.GetFileNameWithoutExtension(path)
-                    .IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
-
-            return match;
-        }
-
-        private static bool PrefabHasMatchingFaceMesh(string prefabPath, FaceMeshSignature targetFaceMeshSignature)
-        {
-            if (string.IsNullOrEmpty(prefabPath)) return false;
-            if (!targetFaceMeshSignature.HasAnyIdentity) return false;
-
-            return TryGetCachedFaceMeshSignature(prefabPath, out var prefabFaceMeshSignature) &&
-                   FaceMeshSignatureMatches(targetFaceMeshSignature, prefabFaceMeshSignature);
+            return string.Equals(assetPath, ExcludedSearchFolder, StringComparison.Ordinal) ||
+                   assetPath.StartsWith(ExcludedSearchFolderPrefix, StringComparison.Ordinal);
         }
 
         /// <summary>
-        /// アバターの Viseme 用メッシュから、GUID/LocalId を抽出します。
+        /// Asset パスから BaseFolder 直下のサブフォルダパスを取り出します。
+        /// 例: Assets/.../Base/CharA/Model.prefab -> Assets/.../Base/CharA
         /// </summary>
-        private static bool TryGetFaceMeshSignature(GameObject root, out FaceMeshSignature signature)
+        private static bool TryGetImmediateSubFolder(string assetPath, out string subFolderPath)
         {
-            signature = default;
-            if (root == null) return false;
+            subFolderPath = null;
+            if (string.IsNullOrEmpty(assetPath)) return false;
+            if (string.IsNullOrEmpty(BaseFolder)) return false;
 
-#if VRC_SDK_VRCSDK3
-            var descriptor = root.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
-            if (!TryGetVisemeRendererFromDescriptor(descriptor, out var faceRenderer)) return false;
-            if (faceRenderer == null || faceRenderer.sharedMesh == null) return false;
+            var prefix = BaseFolder + "/";
+            if (!assetPath.StartsWith(prefix, StringComparison.Ordinal)) return false;
 
-            var mesh = faceRenderer.sharedMesh;
-            if (!TryGetPrefabInfo(root, out var prefabGuid, out var prefabName))
-            {
-                prefabGuid = string.Empty;
-                prefabName = string.Empty;
-            }
+            var relative = assetPath.Substring(prefix.Length);
+            var slashIndex = relative.IndexOf('/');
+            if (slashIndex <= 0) return false;
 
-            return TryBuildFaceMeshSignature(mesh, prefabGuid, prefabName, out signature);
-#else
-            return false;
-#endif
-        }
-
-        private static bool TryGetFaceMeshSignatureFromPrefabPath(string prefabPath, out FaceMeshSignature signature)
-        {
-            signature = default;
-            if (string.IsNullOrEmpty(prefabPath)) return false;
-
-            var prefab = AssetDatabase.LoadMainAssetAtPath(prefabPath) as GameObject;
-            if (prefab == null) return false;
-
-            if (!TryGetFaceMeshSignature(prefab, out signature)) return false;
-
-            var prefabSource = PrefabUtility.GetCorrespondingObjectFromOriginalSource(prefab) ?? prefab;
-            var sourcePath = AssetDatabase.GetAssetPath(prefabSource);
-            if (string.IsNullOrEmpty(sourcePath))
-            {
-                sourcePath = prefabPath;
-            }
-
-            var prefabGuid = AssetDatabase.AssetPathToGUID(sourcePath);
-            var prefabName = sourcePath;
-            signature = signature.WithPrefabInfo(prefabGuid, prefabName);
+            var subFolderName = relative.Substring(0, slashIndex);
+            subFolderPath = prefix + subFolderName;
             return true;
         }
 
         /// <summary>
-        /// Prefab の依存ハッシュを使って、顔メッシュIDのキャッシュを再利用します。
+        /// サブフォルダ内での「優先Prefab選定状態」を保持します。
+        /// - first: どの優先条件にも当てはまらない場合のフォールバック
+        /// - best: 優先順位に基づく現在の最有力候補
         /// </summary>
-        private static bool TryGetCachedFaceMeshSignature(string prefabPath, out FaceMeshSignature signature)
+        private struct PreferredPrefabState
         {
-            signature = default;
-            if (string.IsNullOrEmpty(prefabPath)) return false;
+            private string _firstCandidate;
+            private string _bestCandidate;
+            private int _bestPriority;
 
-            EnsureFaceMeshCacheLoaded();
-
-            var hash = AssetDatabase.GetAssetDependencyHash(prefabPath);
-            if (CachedFaceMeshByPrefab.TryGetValue(prefabPath, out var cached) &&
-                cached.DependencyHash == hash)
+            public void RegisterCandidate(string path)
             {
-                if (cached.HasFaceMesh)
+                if (string.IsNullOrEmpty(path)) return;
+
+                // 最初に見つかった Prefab は常にフォールバックとして保持する。
+
+                if (string.IsNullOrEmpty(_firstCandidate))
                 {
-                    signature = cached.FaceMeshSignature;
-                    return true;
+                    _firstCandidate = path;
+                    _bestPriority = int.MaxValue;
                 }
 
-                return false;
+                // 優先度0（Kisekae Variant）は最良値なので、以降の比較は不要。
+                if (_bestPriority == 0) return;
+
+                var fileName = Path.GetFileNameWithoutExtension(path);
+                var currentPriority = GetPrefabNamePriority(fileName);
+                if (currentPriority >= _bestPriority) return;
+
+                _bestPriority = currentPriority;
+                _bestCandidate = path;
             }
 
-            var hasFaceMesh = TryGetFaceMeshSignatureFromPrefabPath(prefabPath, out var cachedSignature);
-            CachedFaceMeshByPrefab[prefabPath] = new CachedFaceMesh(hash, cachedSignature, hasFaceMesh);
-            MarkFaceMeshCacheDirty();
-            // ここでは即時保存しません。
-            // - OnDisable でまとめて保存される
-            // - 検索中に毎回ディスク/設定を書き換える回数を減らし、Editor の負荷を抑える
-            if (hasFaceMesh)
+            public string GetPreferredPath()
             {
-                signature = cachedSignature;
-            }
-
-            return hasFaceMesh;
-        }
-
-        private static bool FaceMeshSignatureMatches(FaceMeshSignature a, FaceMeshSignature b)
-        {
-            if (MeshIdMatches(a.MeshId, b.MeshId))
-            {
-                return true;
-            }
-
-            if (PrefabGuidMatches(a, b)) return true;
-            if (PrefabNameMatches(a, b)) return true;
-            if (FbxGuidMatches(a, b)) return true;
-            if (FbxNameMatches(a, b)) return true;
-            if (AssetPathMatches(a, b)) return true;
-
-            return false;
-        }
-
-        private static bool MeshIdMatches(MeshId a, MeshId b)
-        {
-            if (string.IsNullOrEmpty(a.Guid) || string.IsNullOrEmpty(b.Guid)) return false;
-            if (!string.Equals(a.Guid, b.Guid, StringComparison.Ordinal)) return false;
-
-            if (a.HasLocalId && b.HasLocalId)
-            {
-                return a.LocalId == b.LocalId;
-            }
-
-            return true;
-        }
-
-        private static bool PrefabGuidMatches(FaceMeshSignature a, FaceMeshSignature b)
-        {
-            if (string.IsNullOrEmpty(a.PrefabGuid) || string.IsNullOrEmpty(b.PrefabGuid)) return false;
-            return string.Equals(a.PrefabGuid, b.PrefabGuid, StringComparison.Ordinal);
-        }
-
-        private static bool PrefabNameMatches(FaceMeshSignature a, FaceMeshSignature b)
-        {
-            if (string.IsNullOrEmpty(a.PrefabName) || string.IsNullOrEmpty(b.PrefabName)) return false;
-            return string.Equals(a.PrefabName, b.PrefabName, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool FbxGuidMatches(FaceMeshSignature a, FaceMeshSignature b)
-        {
-            if (string.IsNullOrEmpty(a.FbxGuid) || string.IsNullOrEmpty(b.FbxGuid)) return false;
-            return string.Equals(a.FbxGuid, b.FbxGuid, StringComparison.Ordinal);
-        }
-
-        private static bool FbxNameMatches(FaceMeshSignature a, FaceMeshSignature b)
-        {
-            if (string.IsNullOrEmpty(a.FbxName) || string.IsNullOrEmpty(b.FbxName)) return false;
-            return string.Equals(a.FbxName, b.FbxName, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool AssetPathMatches(FaceMeshSignature a, FaceMeshSignature b)
-        {
-            if (string.IsNullOrEmpty(a.FaceMeshAssetPath) || string.IsNullOrEmpty(b.FaceMeshAssetPath)) return false;
-            return string.Equals(a.FaceMeshAssetPath, b.FaceMeshAssetPath, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool TryGetPrefabInfo(GameObject root, out string prefabGuid, out string prefabName)
-        {
-            prefabGuid = string.Empty;
-            prefabName = string.Empty;
-            if (root == null) return false;
-
-            var instanceRoot = PrefabUtility.GetNearestPrefabInstanceRoot(root);
-            if (instanceRoot == null) return false;
-
-            var prefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(instanceRoot);
-            if (prefabAsset == null) return false;
-
-            var sourceAsset = PrefabUtility.GetCorrespondingObjectFromOriginalSource(prefabAsset) ?? prefabAsset;
-            var prefabPath = AssetDatabase.GetAssetPath(sourceAsset);
-            if (string.IsNullOrEmpty(prefabPath)) return false;
-
-            prefabGuid = AssetDatabase.AssetPathToGUID(prefabPath);
-            prefabName = prefabPath;
-            return !string.IsNullOrEmpty(prefabGuid) || !string.IsNullOrEmpty(prefabName);
-        }
-
-        private static bool TryBuildFaceMeshSignature(
-            Mesh mesh,
-            string prefabGuid,
-            string prefabName,
-            out FaceMeshSignature signature)
-        {
-            signature = default;
-            if (mesh == null) return false;
-
-            var assetPath = AssetDatabase.GetAssetPath(mesh);
-            var fbxGuid = string.IsNullOrEmpty(assetPath) ? string.Empty : AssetDatabase.AssetPathToGUID(assetPath);
-            var fbxName = string.IsNullOrEmpty(assetPath) ? string.Empty : assetPath;
-            var hasMeshId = TryBuildMeshId(mesh, out var meshId);
-
-            if (!hasMeshId &&
-                string.IsNullOrEmpty(prefabGuid) &&
-                string.IsNullOrEmpty(prefabName) &&
-                string.IsNullOrEmpty(fbxGuid) &&
-                string.IsNullOrEmpty(fbxName) &&
-                string.IsNullOrEmpty(assetPath))
-            {
-                return false;
-            }
-
-            signature = new FaceMeshSignature(meshId, prefabGuid, prefabName, fbxGuid, fbxName, assetPath);
-            return true;
-        }
-
-        private static bool TryBuildMeshId(Mesh mesh, out MeshId meshId)
-        {
-            meshId = default;
-            if (mesh == null) return false;
-
-            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(mesh, out var guid, out long localId))
-            {
-                meshId = new MeshId(guid, localId, hasLocalId: true);
-                return true;
-            }
-
-            var meshPath = AssetDatabase.GetAssetPath(mesh);
-            if (string.IsNullOrEmpty(meshPath)) return false;
-
-            var fallbackGuid = AssetDatabase.AssetPathToGUID(meshPath);
-            if (string.IsNullOrEmpty(fallbackGuid)) return false;
-
-            meshId = new MeshId(fallbackGuid, 0, hasLocalId: false);
-            return true;
-        }
-
-#if VRC_SDK_VRCSDK3
-        private static bool TryGetVisemeRendererFromDescriptor(
-            VRCAvatarDescriptor descriptor,
-            out SkinnedMeshRenderer renderer)
-        {
-            renderer = null;
-            if (descriptor == null) return false;
-
-            using (var so = new SerializedObject(descriptor))
-            {
-                var prop = so.FindProperty("VisemeSkinnedMesh");
-                if (prop != null)
-                {
-                    renderer = prop.objectReferenceValue as SkinnedMeshRenderer;
-                }
-            }
-
-            if (renderer != null) return true;
-
-            renderer = descriptor.VisemeSkinnedMesh;
-            return renderer != null;
-        }
-#endif
-
-        private static void EnsureFaceMeshCacheLoaded()
-        {
-            if (_faceMeshCacheLoaded) return;
-            _faceMeshCacheLoaded = true;
-            LoadFaceMeshCacheFromLibrary();
-        }
-
-        private static void MarkFaceMeshCacheDirty()
-        {
-            _faceMeshCacheDirty = true;
-        }
-
-        private static void LoadFaceMeshCacheFromLibrary()
-        {
-            try
-            {
-                var cachePath = GetFaceMeshCacheFilePath();
-                if (!File.Exists(cachePath)) return;
-
-                var json = File.ReadAllText(cachePath);
-                if (string.IsNullOrEmpty(json)) return;
-
-                var cacheFile = JsonUtility.FromJson<FaceMeshCacheFile>(json);
-                if (cacheFile == null) return;
-                if (cacheFile.Entries == null) return;
-
-                foreach (var entry in cacheFile.Entries)
-                {
-                    if (entry == null) continue;
-                    if (string.IsNullOrEmpty(entry.PrefabPath)) continue;
-                    if (string.IsNullOrEmpty(entry.DependencyHash)) continue;
-
-                    if (!TryParseHash128(entry.DependencyHash, out var hash)) continue;
-
-                    var meshId = new MeshId(entry.FaceMeshGuid ?? string.Empty, entry.FaceMeshLocalId, entry.HasLocalId);
-                    var signature = new FaceMeshSignature(
-                        meshId,
-                        entry.PrefabGuid ?? string.Empty,
-                        entry.PrefabName ?? string.Empty,
-                        entry.FbxGuid ?? string.Empty,
-                        entry.FbxName ?? string.Empty,
-                        entry.FaceMeshAssetPath ?? string.Empty);
-                    CachedFaceMeshByPrefab[entry.PrefabPath] = new CachedFaceMesh(hash, signature, entry.HasFaceMesh);
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning(F("Warning.FaceMeshCacheLoadFailed", e.Message));
-            }
-        }
-
-        private static void SaveFaceMeshCacheToLibrary()
-        {
-            if (!_faceMeshCacheDirty) return;
-
-            try
-            {
-                var cacheFile = new FaceMeshCacheFile();
-                foreach (var pair in CachedFaceMeshByPrefab)
-                {
-                    var cached = pair.Value;
-                    cacheFile.Entries.Add(new FaceMeshCacheEntry
-                    {
-                        PrefabPath = pair.Key,
-                        DependencyHash = cached.DependencyHash.ToString(),
-                        FaceMeshGuid = cached.FaceMeshSignature.MeshId.Guid,
-                        FaceMeshLocalId = cached.FaceMeshSignature.MeshId.LocalId,
-                        HasLocalId = cached.FaceMeshSignature.MeshId.HasLocalId,
-                        PrefabGuid = cached.FaceMeshSignature.PrefabGuid,
-                        PrefabName = cached.FaceMeshSignature.PrefabName,
-                        FbxGuid = cached.FaceMeshSignature.FbxGuid,
-                        FbxName = cached.FaceMeshSignature.FbxName,
-                        FaceMeshAssetPath = cached.FaceMeshSignature.FaceMeshAssetPath,
-                        HasFaceMesh = cached.HasFaceMesh
-                    });
-                }
-
-                var json = JsonUtility.ToJson(cacheFile, true);
-                var cachePath = GetFaceMeshCacheFilePath();
-                Directory.CreateDirectory(Path.GetDirectoryName(cachePath) ?? string.Empty);
-                File.WriteAllText(cachePath, json);
-                _faceMeshCacheDirty = false;
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning(F("Warning.FaceMeshCacheSaveFailed", e.Message));
-            }
-        }
-
-        private static string GetFaceMeshCacheFilePath()
-        {
-            var projectRoot = Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
-            return Path.Combine(projectRoot, "Library", "Aramaa", "OchibiChansConverterTool", FaceMeshCacheFileName);
-        }
-
-        private static bool TryParseHash128(string value, out Hash128 hash)
-        {
-            hash = default;
-            if (string.IsNullOrEmpty(value)) return false;
-
-            try
-            {
-                hash = Hash128.Parse(value);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        [Serializable]
-        private sealed class FaceMeshCacheFile
-        {
-            public List<FaceMeshCacheEntry> Entries = new List<FaceMeshCacheEntry>();
-        }
-
-        /// <summary>
-        /// フェイスメッシュキャッシュのシリアライズ用エントリです。
-        /// </summary>
-        [Serializable]
-        private sealed class FaceMeshCacheEntry
-        {
-            public string PrefabPath;
-            public string DependencyHash;
-            public string FaceMeshGuid;
-            public long FaceMeshLocalId;
-            public bool HasLocalId;
-            public bool HasFaceMesh;
-            public string PrefabGuid;
-            public string PrefabName;
-            public string FbxGuid;
-            public string FbxName;
-            public string FaceMeshAssetPath;
-        }
-
-        /// <summary>
-        /// メッシュ識別子（GUID と LocalId の組）です。
-        /// </summary>
-        private readonly struct MeshId
-        {
-            public MeshId(string guid, long localId, bool hasLocalId)
-            {
-                Guid = guid;
-                LocalId = localId;
-                HasLocalId = hasLocalId;
-            }
-
-            public string Guid { get; }
-            public long LocalId { get; }
-            public bool HasLocalId { get; }
-        }
-
-        /// <summary>
-        /// 顔メッシュの識別情報（GUID/LocalId + Prefab/FBX 識別子）です。
-        /// </summary>
-        private readonly struct FaceMeshSignature
-        {
-            public FaceMeshSignature(
-                MeshId meshId,
-                string prefabGuid,
-                string prefabName,
-                string fbxGuid,
-                string fbxName,
-                string faceMeshAssetPath)
-            {
-                MeshId = meshId;
-                PrefabGuid = prefabGuid;
-                PrefabName = prefabName;
-                FbxGuid = fbxGuid;
-                FbxName = fbxName;
-                FaceMeshAssetPath = faceMeshAssetPath;
-            }
-
-            public MeshId MeshId { get; }
-            public string PrefabGuid { get; }
-            public string PrefabName { get; }
-            public string FbxGuid { get; }
-            public string FbxName { get; }
-            public string FaceMeshAssetPath { get; }
-
-            public bool HasAnyIdentity =>
-                !string.IsNullOrEmpty(MeshId.Guid) ||
-                !string.IsNullOrEmpty(PrefabGuid) ||
-                !string.IsNullOrEmpty(PrefabName) ||
-                !string.IsNullOrEmpty(FbxGuid) ||
-                !string.IsNullOrEmpty(FbxName) ||
-                !string.IsNullOrEmpty(FaceMeshAssetPath);
-
-            public FaceMeshSignature WithPrefabInfo(string prefabGuid, string prefabName)
-            {
-                return new FaceMeshSignature(MeshId, prefabGuid, prefabName, FbxGuid, FbxName, FaceMeshAssetPath);
+                return _bestCandidate ?? _firstCandidate;
             }
         }
 
         /// <summary>
-        /// Prefab の依存ハッシュと顔メッシュIDをまとめたキャッシュ情報です。
+        /// ファイル名ベースの優先度を返します（値が小さいほど優先）。
+        /// 既存仕様:
+        ///   0: "Kisekae Variant"
+        ///   1: "Kaihen_Kisekae"
+        ///   2: "Kisekae"
+        ///   3: その他
         /// </summary>
-        private readonly struct CachedFaceMesh
+        private static int GetPrefabNamePriority(string fileNameWithoutExtension)
         {
-            public CachedFaceMesh(Hash128 dependencyHash, FaceMeshSignature faceMeshSignature, bool hasFaceMesh)
+            if (string.IsNullOrEmpty(fileNameWithoutExtension)) return 3;
+
+            if (fileNameWithoutExtension.IndexOf("Kisekae Variant", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                DependencyHash = dependencyHash;
-                FaceMeshSignature = faceMeshSignature;
-                HasFaceMesh = hasFaceMesh;
+                return 0;
             }
 
-            public Hash128 DependencyHash { get; }
-            public FaceMeshSignature FaceMeshSignature { get; }
-            public bool HasFaceMesh { get; }
+            if (fileNameWithoutExtension.IndexOf("Kaihen_Kisekae", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return 1;
+            }
+
+            if (fileNameWithoutExtension.IndexOf("Kisekae", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return 2;
+            }
+
+            return 3;
         }
+
     }
 }
 #endif
