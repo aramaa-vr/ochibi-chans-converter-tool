@@ -48,7 +48,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 prefabName = string.Empty;
             }
 
-            return TryBuildFaceMeshSignature(mesh, prefabGuid, prefabName, out signature);
+            _ = TryGetAnimatorAvatarInfoFromDescriptor(descriptor, out var avatarId, out var avatarAssetPath);
+            return TryBuildFaceMeshSignature(mesh, avatarId, avatarAssetPath, prefabGuid, prefabName, out signature);
 #else
             return false;
 #endif
@@ -121,6 +122,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return true;
             }
 
+            if (AvatarIdMatches(a.AvatarId, b.AvatarId)) return true;
+
+            if (AvatarAssetPathMatches(a, b)) return true;
+
             if (PrefabGuidMatches(a, b)) return true;
             if (PrefabNameMatches(a, b)) return true;
             if (FbxGuidMatches(a, b)) return true;
@@ -141,6 +146,31 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return true;
+        }
+
+        private static bool HasStrongAvatarId(FaceMeshSignature signature)
+        {
+            return !string.IsNullOrEmpty(signature.AvatarId.Guid) && signature.AvatarId.HasLocalId;
+        }
+
+        private static bool AvatarIdMatches(MeshId a, MeshId b)
+        {
+            if (string.IsNullOrEmpty(a.Guid) || string.IsNullOrEmpty(b.Guid)) return false;
+            if (!string.Equals(a.Guid, b.Guid, StringComparison.Ordinal)) return false;
+
+            if (a.HasLocalId && b.HasLocalId)
+            {
+                return a.LocalId == b.LocalId;
+            }
+
+            return false;
+        }
+
+        private static bool AvatarAssetPathMatches(FaceMeshSignature a, FaceMeshSignature b)
+        {
+            if (HasStrongAvatarId(a) || HasStrongAvatarId(b)) return false;
+            if (string.IsNullOrEmpty(a.AvatarAssetPath) || string.IsNullOrEmpty(b.AvatarAssetPath)) return false;
+            return string.Equals(a.AvatarAssetPath, b.AvatarAssetPath, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool PrefabGuidMatches(FaceMeshSignature a, FaceMeshSignature b)
@@ -196,6 +226,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private static bool TryBuildFaceMeshSignature(
             Mesh mesh,
+            MeshId avatarId,
+            string avatarAssetPath,
             string prefabGuid,
             string prefabName,
             out FaceMeshSignature signature)
@@ -209,6 +241,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var hasMeshId = TryBuildMeshId(mesh, out var meshId);
 
             if (!hasMeshId &&
+                string.IsNullOrEmpty(avatarId.Guid) &&
+                string.IsNullOrEmpty(avatarAssetPath) &&
                 string.IsNullOrEmpty(prefabGuid) &&
                 string.IsNullOrEmpty(prefabName) &&
                 string.IsNullOrEmpty(fbxGuid) &&
@@ -218,7 +252,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
-            signature = new FaceMeshSignature(meshId, prefabGuid, prefabName, fbxGuid, fbxName, assetPath);
+            signature = new FaceMeshSignature(
+                meshId,
+                avatarId,
+                avatarAssetPath,
+                prefabGuid,
+                prefabName,
+                fbxGuid,
+                fbxName,
+                assetPath);
             return true;
         }
 
@@ -227,16 +269,24 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             meshId = default;
             if (mesh == null) return false;
 
-            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(mesh, out var guid, out long localId))
+            return TryBuildAssetObjectId(mesh, out meshId);
+        }
+
+        private static bool TryBuildAssetObjectId(UnityEngine.Object assetObject, out MeshId meshId)
+        {
+            meshId = default;
+            if (assetObject == null) return false;
+
+            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(assetObject, out var guid, out long localId))
             {
                 meshId = new MeshId(guid, localId, hasLocalId: true);
                 return true;
             }
 
-            var meshPath = AssetDatabase.GetAssetPath(mesh);
-            if (string.IsNullOrEmpty(meshPath)) return false;
+            var assetPath = AssetDatabase.GetAssetPath(assetObject);
+            if (string.IsNullOrEmpty(assetPath)) return false;
 
-            var fallbackGuid = AssetDatabase.AssetPathToGUID(meshPath);
+            var fallbackGuid = AssetDatabase.AssetPathToGUID(assetPath);
             if (string.IsNullOrEmpty(fallbackGuid)) return false;
 
             meshId = new MeshId(fallbackGuid, 0, hasLocalId: false);
@@ -244,6 +294,31 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
 #if VRC_SDK_VRCSDK3
+        private static bool TryGetAnimatorAvatarInfoFromDescriptor(
+            VRC.SDK3.Avatars.Components.VRCAvatarDescriptor descriptor,
+            out MeshId avatarId,
+            out string avatarAssetPath)
+        {
+            avatarId = default;
+            avatarAssetPath = string.Empty;
+            if (descriptor == null) return false;
+
+            // Descriptor が付いている同一 GameObject の Animator/Avatar だけを使う。
+            // 親子や別オブジェクトまで広げると、逆引き候補の誤一致が増えるため。
+            var animator = descriptor.GetComponent<Animator>();
+            if (animator == null || animator.avatar == null)
+            {
+                // 仕様: ここで false は「Avatar 条件としては不成立」を意味する。
+                // FaceMesh 判定処理全体は呼び出し元で継続する。
+                return false;
+            }
+
+            var avatar = animator.avatar;
+            var hasAvatarId = TryBuildAssetObjectId(avatar, out avatarId);
+            avatarAssetPath = AssetDatabase.GetAssetPath(avatar) ?? string.Empty;
+            return hasAvatarId || !string.IsNullOrEmpty(avatarAssetPath);
+        }
+
         private static bool TryGetVisemeRendererFromDescriptor(
             VRC.SDK3.Avatars.Components.VRCAvatarDescriptor descriptor,
             out SkinnedMeshRenderer renderer)

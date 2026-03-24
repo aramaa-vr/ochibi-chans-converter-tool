@@ -44,8 +44,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     if (!TryParseHash128(entry.DependencyHash, out var hash)) continue;
 
                     var meshId = new MeshId(entry.FaceMeshGuid ?? string.Empty, entry.FaceMeshLocalId, entry.HasLocalId);
+                    var avatarId = new MeshId(entry.AvatarGuid ?? string.Empty, entry.AvatarLocalId, entry.AvatarHasLocalId);
                     var signature = new FaceMeshSignature(
                         meshId,
+                        avatarId,
+                        entry.AvatarAssetPath ?? string.Empty,
                         entry.PrefabGuid ?? string.Empty,
                         entry.PrefabName ?? string.Empty,
                         entry.FbxGuid ?? string.Empty,
@@ -77,6 +80,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         FaceMeshGuid = cached.FaceMeshSignature.MeshId.Guid,
                         FaceMeshLocalId = cached.FaceMeshSignature.MeshId.LocalId,
                         HasLocalId = cached.FaceMeshSignature.MeshId.HasLocalId,
+                        AvatarGuid = cached.FaceMeshSignature.AvatarId.Guid,
+                        AvatarLocalId = cached.FaceMeshSignature.AvatarId.LocalId,
+                        AvatarHasLocalId = cached.FaceMeshSignature.AvatarId.HasLocalId,
+                        AvatarAssetPath = cached.FaceMeshSignature.AvatarAssetPath,
                         PrefabGuid = cached.FaceMeshSignature.PrefabGuid,
                         PrefabName = cached.FaceMeshSignature.PrefabName,
                         FbxGuid = cached.FaceMeshSignature.FbxGuid,
@@ -138,6 +145,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             public long FaceMeshLocalId;
             public bool HasLocalId;
             public bool HasFaceMesh;
+            public string AvatarGuid;
+            public long AvatarLocalId;
+            public bool AvatarHasLocalId;
+            public string AvatarAssetPath;
             public string PrefabGuid;
             public string PrefabName;
             public string FbxGuid;
