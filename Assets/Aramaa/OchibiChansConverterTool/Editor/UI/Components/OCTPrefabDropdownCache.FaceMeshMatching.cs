@@ -306,6 +306,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return false;
         }
 
+        /// <summary>
+        /// Variant 系譜探索の開始地点となる Prefab Asset を決めます。
+        /// - Prefab Instance: インスタンスの適用元 Prefab Asset を返す
+        /// - Prefab Asset: そのアセット自身を返す
+        /// - それ以外: 系譜を辿れないため null
+        /// </summary>
         private static GameObject ResolveLineageStartPrefabAsset(GameObject root)
         {
             if (root == null) return null;
