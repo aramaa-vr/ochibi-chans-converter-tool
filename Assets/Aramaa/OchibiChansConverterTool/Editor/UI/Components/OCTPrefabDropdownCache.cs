@@ -72,6 +72,36 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         public GameObject SourcePrefabAsset => _sourcePrefabAsset;
 
         /// <summary>
+        /// 変換元（おちびちゃんズ）インスタンスから、元アバターの Prefab アセットを逆引きします。
+        /// </summary>
+        public bool TryResolveOriginalAvatarPrefabFromTarget(GameObject sourceTarget, out GameObject originalAvatarPrefab)
+        {
+            originalAvatarPrefab = null;
+            if (sourceTarget == null)
+            {
+                return false;
+            }
+
+            if (!TryGetFaceMeshSignature(sourceTarget, out var signature))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(signature.OriginalAvatarPrefabPath))
+            {
+                return false;
+            }
+
+            originalAvatarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(signature.OriginalAvatarPrefabPath);
+            if (originalAvatarPrefab == null)
+            {
+                return false;
+            }
+
+            return PrefabUtility.GetPrefabAssetType(originalAvatarPrefab) != PrefabAssetType.NotAPrefab;
+        }
+
+        /// <summary>
         /// 指定した Prefab が候補一覧に含まれるかを判定します。
         /// </summary>
         public bool ContainsCandidate(GameObject prefab)

@@ -137,6 +137,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             private bool _showLogs;
             private bool _applyMaboneProxyProcessing = true;
+            private bool _restoreModeEnabled;
             private Vector2 _scrollPosition;
             private bool _versionCheckRequested;
             private bool _versionCheckInProgress;
@@ -263,6 +264,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     DrawCard(() =>
                     {
                         DrawSectionHeader("2", L("Section.TargetPrefabLabel"));
+                        DrawRestoreModeToggle();
+                        EditorGUILayout.Space(2);
                         DrawSourcePrefabObjectField();
                     });
 
@@ -587,6 +590,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             /// </summary>
             private void DrawSourcePrefabObjectField()
             {
+                if (_restoreModeEnabled)
+                {
+                    DrawRestoreModePrefabObjectField();
+                    return;
+                }
+
                 _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
 
                 var hasCandidates = _prefabDropdownCache.CandidateDisplayNames.Count > 0;
@@ -664,6 +673,76 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (!_prefabDropdownCache.ContainsCandidate(_sourcePrefabAsset))
                 {
                     EditorGUILayout.HelpBox(L("Help.ManualPrefabWarning"), MessageType.Warning);
+                }
+            }
+
+            private void DrawRestoreModeToggle()
+            {
+                var nextEnabled = EditorGUILayout.ToggleLeft("逆変換モード（おちびちゃんズ -> 元アバター）", _restoreModeEnabled);
+                if (nextEnabled == _restoreModeEnabled)
+                {
+                    return;
+                }
+
+                _restoreModeEnabled = nextEnabled;
+                _sourcePrefabAsset = null;
+            }
+
+            private void DrawRestoreModePrefabObjectField()
+            {
+                EditorGUILayout.HelpBox("逆変換モードでは、候補プルダウンを使わず元アバター Prefab を自動解決します。", MessageType.Info);
+
+                if (_sourceTarget == null)
+                {
+                    EditorGUILayout.HelpBox("元アバターを解決するには、Hierarchy の対象アバターを選択してください。", MessageType.Warning);
+                    DrawRestoreManualPrefabField();
+                    return;
+                }
+
+                if (EditorUtility.IsPersistent(_sourceTarget))
+                {
+                    EditorGUILayout.HelpBox("Project アセットは逆変換の対象外です。Hierarchy 上のオブジェクトを指定してください。", MessageType.Error);
+                    DrawRestoreManualPrefabField();
+                    return;
+                }
+
+                if (!PrefabUtility.IsPartOfPrefabInstance(_sourceTarget))
+                {
+                    EditorGUILayout.HelpBox("選択中オブジェクトは Prefab Instance ではないため自動解決できません。", MessageType.Warning);
+                    DrawRestoreManualPrefabField();
+                    return;
+                }
+
+                if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromTarget(_sourceTarget, out var resolvedPrefab) && IsPrefabAsset(resolvedPrefab))
+                {
+                    _sourcePrefabAsset = resolvedPrefab;
+                    EditorGUILayout.ObjectField("元アバター Prefab（自動解決）", _sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                    return;
+                }
+
+                EditorGUILayout.HelpBox("元アバター Prefab の自動解決に失敗しました。手動で指定してください。", MessageType.Warning);
+                DrawRestoreManualPrefabField();
+            }
+
+            private void DrawRestoreManualPrefabField()
+            {
+                EditorGUILayout.LabelField("元アバター Prefab（手動指定）", EditorStyles.boldLabel);
+                EditorGUI.BeginChangeCheck();
+                var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _sourcePrefabAsset = manualPrefab;
+                }
+
+                if (_sourcePrefabAsset == null)
+                {
+                    EditorGUILayout.HelpBox("Project から元アバターの Prefab を指定してください。", MessageType.Info);
+                    return;
+                }
+
+                if (!IsPrefabAsset(_sourcePrefabAsset))
+                {
+                    EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
                 }
             }
 
@@ -773,6 +852,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var capturedSourcePrefab = _sourcePrefabAsset;
                 var capturedTarget = _sourceTarget;
                 var capturedApplyMaboneProxyProcessing = _applyMaboneProxyProcessing;
+                var capturedRestoreMode = _restoreModeEnabled;
 
                 var capturedTargetName = capturedTarget != null ? capturedTarget.name : L("Log.NullValue");
                 Debug.Log(F("Log.QueuedApply", capturedTargetName, capturedSourcePrefab.name));
@@ -788,6 +868,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                             capturedSourcePrefab,
                             capturedTarget,
                             capturedApplyMaboneProxyProcessing,
+                            capturedRestoreMode,
                             logs
                         );
 

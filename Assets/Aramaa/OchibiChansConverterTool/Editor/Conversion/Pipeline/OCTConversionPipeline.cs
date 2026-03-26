@@ -76,6 +76,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             GameObject sourceChibiPrefab,
             GameObject sourceTarget,
             bool applyMaboneProxyProcessing,
+            bool restoreMode,
             List<string> logs
         )
         {
@@ -174,6 +175,16 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 logs.Add("");
 
+                if (restoreMode)
+                {
+                    logs.Add("[Restore] 逆変換モード: Armature 補正コンポーネント削除を実行します。");
+                    foreach (var duplicated in duplicatedTargets.Where(x => x != null))
+                    {
+                        OCTRestoreModeProcessor.RemoveReverseConversionAdjusters(duplicated, logs);
+                    }
+                    logs.Add("");
+                }
+
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 3) （任意）MA BoneProxy 補正
                 // --------------------------------------------------------
@@ -222,7 +233,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // 複製先へ変換を適用
                 // --------------------------------------------------------
-                var applySucceeded = ApplyConversionToTargets(sourceChibiPrefab, duplicatedTargets, logs: logs);
+                var applySucceeded = ApplyConversionToTargets(sourceChibiPrefab, duplicatedTargets, restoreMode, logs: logs);
                 return applySucceeded;
             }
             finally
@@ -260,7 +271,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// 変換元 Prefab の参照を読み取り、複製先へ段階的に同期適用します。
         /// （変換パイプラインの 5〜7 ステップ相当）
         /// </summary>
-        private static bool ApplyConversionToTargets(GameObject sourceChibiPrefab, GameObject[] targets, List<string> logs)
+        private static bool ApplyConversionToTargets(GameObject sourceChibiPrefab, GameObject[] targets, bool restoreMode, List<string> logs)
         {
             logs ??= new List<string>();
             var log = new OCTConversionLogger(logs);
@@ -357,10 +368,16 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     ApplyCoreAvatarSynchronization(basePrefabRoot, dstRoot, logs);
 
                     // Ex AddMenu Prefab 追加（未配置時のみ）
-                    if (exAddMenuPlacement.PrefabAsset != null)
+                    if (!restoreMode && exAddMenuPlacement.PrefabAsset != null)
                     {
                         logs.Add(L("Log.ExPrefabHeader"));
                         TryAddExPrefabIfMissing(dstRoot, exAddMenuPlacement, logs);
+                        logs.Add("");
+                    }
+                    else if (restoreMode)
+                    {
+                        logs.Add("[Restore] AddMenu追加スキップ");
+                        OCTRestoreModeProcessor.RemoveExAddMenuObjectsIfExists(dstRoot, logs);
                         logs.Add("");
                     }
 
