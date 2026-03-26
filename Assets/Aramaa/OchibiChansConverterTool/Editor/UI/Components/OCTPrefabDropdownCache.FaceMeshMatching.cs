@@ -4,12 +4,15 @@
 // ============================================================================
 // - FaceMesh の抽出・一致判定を担当する分割ファイルです。
 // - 候補 Prefab が「同じ顔メッシュ系統か」を判定するロジックをまとめています。
+// - OriginalAvatarPrefabPath（元アバタープリファブのパス）もここで算出します。
 //
 // ============================================================================
 // 重要メモ（初心者向け）
 // ============================================================================
 // - ここは「比較/抽出」のみを扱い、UI や候補一覧の状態は変更しません。
 // - VRChat SDK が無い環境では #if で安全にスキップされます。
+// - OriginalAvatarPrefabPath は「Variant 系譜を上流へたどって最初に条件一致した .prefab」を採用します。
+//   （BaseFolder 配下は除外、ルートに Descriptor があることが条件）
 // ============================================================================
 
 using System;
@@ -279,10 +282,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             originalAvatarPrefabPath = string.Empty;
             if (root == null) return false;
 
+            // 入口:
+            // - Prefab Instance なら「現在適用されている Prefab Asset」から開始
+            // - Prefab Asset ならその Asset 自身から開始
             var currentPrefabAsset = ResolveLineageStartPrefabAsset(root);
             while (currentPrefabAsset != null)
             {
                 var currentPath = AssetDatabase.GetAssetPath(currentPrefabAsset);
+                // 条件を満たす最初の候補を採用する（要件準拠）。
                 if (IsOriginalAvatarPrefabPathCandidate(currentPath) &&
                     PrefabAssetRootHasDescriptor(currentPrefabAsset))
                 {
@@ -290,6 +297,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     return true;
                 }
 
+                // Variant 系譜の上流（Base側）へ 1段ずつ遡る。
                 var nextPrefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(currentPrefabAsset);
                 if (nextPrefabAsset == currentPrefabAsset) break;
                 currentPrefabAsset = nextPrefabAsset;
@@ -321,6 +329,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             if (string.IsNullOrEmpty(prefabPath)) return false;
             if (!prefabPath.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) return false;
+            // おちびちゃんズ配布側（BaseFolder）を除外し、元アバター側のみ対象にする。
             if (prefabPath.StartsWith(BaseFolder + "/", StringComparison.OrdinalIgnoreCase)) return false;
             return !string.Equals(prefabPath, BaseFolder, StringComparison.OrdinalIgnoreCase);
         }
