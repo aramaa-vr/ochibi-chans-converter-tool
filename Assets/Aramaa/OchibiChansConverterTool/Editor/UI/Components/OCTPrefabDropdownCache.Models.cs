@@ -42,6 +42,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             public FaceMeshSignature(
                 MeshId meshId,
+                MeshId avatarId,
+                string avatarAssetPath,
                 string prefabGuid,
                 string prefabName,
                 string fbxGuid,
@@ -49,6 +51,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 string faceMeshAssetPath)
             {
                 MeshId = meshId;
+                AvatarId = avatarId;
+                AvatarAssetPath = avatarAssetPath;
                 PrefabGuid = prefabGuid;
                 PrefabName = prefabName;
                 FbxGuid = fbxGuid;
@@ -57,6 +61,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             public MeshId MeshId { get; }
+            public MeshId AvatarId { get; }
+            public string AvatarAssetPath { get; }
             public string PrefabGuid { get; }
             public string PrefabName { get; }
             public string FbxGuid { get; }
@@ -65,6 +71,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             public bool HasAnyIdentity =>
                 !string.IsNullOrEmpty(MeshId.Guid) ||
+                !string.IsNullOrEmpty(AvatarId.Guid) ||
+                !string.IsNullOrEmpty(AvatarAssetPath) ||
                 !string.IsNullOrEmpty(PrefabGuid) ||
                 !string.IsNullOrEmpty(PrefabName) ||
                 !string.IsNullOrEmpty(FbxGuid) ||
@@ -73,7 +81,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             public FaceMeshSignature WithPrefabInfo(string prefabGuid, string prefabName)
             {
-                return new FaceMeshSignature(MeshId, prefabGuid, prefabName, FbxGuid, FbxName, FaceMeshAssetPath);
+                return new FaceMeshSignature(
+                    MeshId,
+                    AvatarId,
+                    AvatarAssetPath,
+                    prefabGuid,
+                    prefabName,
+                    FbxGuid,
+                    FbxName,
+                    FaceMeshAssetPath);
             }
         }
 

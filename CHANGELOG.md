@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.6-beta.3]（Pre-release）
+### 主な変更点
+- **FaceMesh一致判定の補助キーを拡張**：`Animator.avatar` の GUID/LocalId と AssetPath を署名に追加し、VisemeメッシュIDが取りにくいケースでも候補一致を補強しました
+- **Avatar由来キーの比較条件を追加**：強いID（GUID+LocalId）がある場合はそれを優先し、不足時のみ AssetPath 比較にフォールバックすることで誤一致リスクを抑えました
+- **FaceMeshキャッシュ形式を更新**：`FaceMeshCache.v8.json` に切り替え、Avatar関連キー（Guid/LocalId/AssetPath）を保存・再利用できるようにしました
+- **パッケージバージョンを更新**：`ToolVersion` / `package.json` / 配布URLを **0.5.6-beta.3** に更新しました
+
 ## [0.5.6-beta.2]（Pre-release）
 ### 主な変更点
 - **Prefab候補キャッシュの責務を分割**：`OCTPrefabDropdownCache` を機能別の partial class（Models / Persistence / FaceMeshMatching）に分離し、既存挙動を維持したまま保守しやすくしました
