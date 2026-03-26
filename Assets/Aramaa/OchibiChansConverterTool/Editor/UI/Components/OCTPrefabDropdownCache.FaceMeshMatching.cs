@@ -47,9 +47,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 prefabGuid = string.Empty;
                 prefabName = string.Empty;
             }
+            _ = TryGetOriginalAvatarPrefabPath(root, out var originalAvatarPrefabPath);
 
             _ = TryGetAnimatorAvatarInfoFromDescriptor(descriptor, out var avatarId, out var avatarAssetPath);
-            return TryBuildFaceMeshSignature(mesh, avatarId, avatarAssetPath, prefabGuid, prefabName, out signature);
+            return TryBuildFaceMeshSignature(
+                mesh,
+                avatarId,
+                avatarAssetPath,
+                prefabGuid,
+                prefabName,
+                originalAvatarPrefabPath,
+                out signature);
 #else
             return false;
 #endif
@@ -230,6 +238,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             string avatarAssetPath,
             string prefabGuid,
             string prefabName,
+            string originalAvatarPrefabPath,
             out FaceMeshSignature signature)
         {
             signature = default;
@@ -258,10 +267,72 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 avatarAssetPath,
                 prefabGuid,
                 prefabName,
+                originalAvatarPrefabPath,
                 fbxGuid,
                 fbxName,
                 assetPath);
             return true;
+        }
+
+        private static bool TryGetOriginalAvatarPrefabPath(GameObject root, out string originalAvatarPrefabPath)
+        {
+            originalAvatarPrefabPath = string.Empty;
+            if (root == null) return false;
+
+            var currentPrefabAsset = ResolveLineageStartPrefabAsset(root);
+            while (currentPrefabAsset != null)
+            {
+                var currentPath = AssetDatabase.GetAssetPath(currentPrefabAsset);
+                if (IsOriginalAvatarPrefabPathCandidate(currentPath) &&
+                    PrefabAssetRootHasDescriptor(currentPrefabAsset))
+                {
+                    originalAvatarPrefabPath = currentPath;
+                    return true;
+                }
+
+                var nextPrefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(currentPrefabAsset);
+                if (nextPrefabAsset == currentPrefabAsset) break;
+                currentPrefabAsset = nextPrefabAsset;
+            }
+
+            return false;
+        }
+
+        private static GameObject ResolveLineageStartPrefabAsset(GameObject root)
+        {
+            if (root == null) return null;
+
+            if (PrefabUtility.IsPartOfPrefabInstance(root))
+            {
+                var instanceRoot = PrefabUtility.GetNearestPrefabInstanceRoot(root);
+                if (instanceRoot == null) return null;
+                return PrefabUtility.GetCorrespondingObjectFromSource(instanceRoot);
+            }
+
+            if (PrefabUtility.IsPartOfPrefabAsset(root))
+            {
+                return root;
+            }
+
+            return null;
+        }
+
+        private static bool IsOriginalAvatarPrefabPathCandidate(string prefabPath)
+        {
+            if (string.IsNullOrEmpty(prefabPath)) return false;
+            if (!prefabPath.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) return false;
+            if (prefabPath.StartsWith(BaseFolder + "/", StringComparison.OrdinalIgnoreCase)) return false;
+            return !string.Equals(prefabPath, BaseFolder, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool PrefabAssetRootHasDescriptor(GameObject prefabAsset)
+        {
+            if (prefabAsset == null) return false;
+#if VRC_SDK_VRCSDK3
+            return prefabAsset.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>() != null;
+#else
+            return false;
+#endif
         }
 
         private static bool TryBuildMeshId(Mesh mesh, out MeshId meshId)

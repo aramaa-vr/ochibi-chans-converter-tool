@@ -46,6 +46,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 string avatarAssetPath,
                 string prefabGuid,
                 string prefabName,
+                string originalAvatarPrefabPath,
                 string fbxGuid,
                 string fbxName,
                 string faceMeshAssetPath)
@@ -55,6 +56,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 AvatarAssetPath = avatarAssetPath;
                 PrefabGuid = prefabGuid;
                 PrefabName = prefabName;
+                OriginalAvatarPrefabPath = originalAvatarPrefabPath;
                 FbxGuid = fbxGuid;
                 FbxName = fbxName;
                 FaceMeshAssetPath = faceMeshAssetPath;
@@ -65,6 +67,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             public string AvatarAssetPath { get; }
             public string PrefabGuid { get; }
             public string PrefabName { get; }
+            public string OriginalAvatarPrefabPath { get; }
             public string FbxGuid { get; }
             public string FbxName { get; }
             public string FaceMeshAssetPath { get; }
@@ -87,6 +90,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     AvatarAssetPath,
                     prefabGuid,
                     prefabName,
+                    OriginalAvatarPrefabPath,
                     FbxGuid,
                     FbxName,
                     FaceMeshAssetPath);
