@@ -691,7 +691,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     return;
                 }
 
-                if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromTarget(_sourceTarget, out var resolvedPrefab))
+                _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
+                if (_prefabDropdownCache.CandidateDisplayNames.Count == 0)
+                {
+                    EditorGUILayout.HelpBox(L("Help.RestoreAutoResolveFailed"), MessageType.Warning);
+                    DrawRestoreManualPrefabField();
+                    return;
+                }
+
+                if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromFirstCandidate(out var resolvedPrefab))
                 {
                     ApplyPrefabSelectionUsingDropdownLogic(resolvedPrefab);
                     DrawRestorePrefabDirectInputField(L("Label.RestorePrefabAutoResolved"));

@@ -87,52 +87,42 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
-            if (TryLoadOriginalAvatarPrefab(signature.OriginalAvatarPrefabPath, out originalAvatarPrefab))
-            {
-                return true;
-            }
-
-            return TryResolveOriginalAvatarPrefabFromDropdownCandidates(signature, out originalAvatarPrefab);
-        }
-
-        private static bool TryResolveOriginalAvatarPrefabFromDropdownCandidates(
-            FaceMeshSignature targetFaceMeshSignature,
-            out GameObject originalAvatarPrefab)
-        {
-            originalAvatarPrefab = null;
-            if (!targetFaceMeshSignature.HasAnyIdentity)
+            if (string.IsNullOrEmpty(signature.OriginalAvatarPrefabPath))
             {
                 return false;
             }
 
-            var subFolders = AssetDatabase.GetSubFolders(BaseFolder);
-            foreach (var folder in subFolders)
+            return TryLoadOriginalAvatarPrefab(signature.OriginalAvatarPrefabPath, out originalAvatarPrefab);
+        }
+
+        /// <summary>
+        /// 現在の候補一覧（プルダウン）先頭に対応する元アバター Prefab を返します。
+        /// </summary>
+        public bool TryResolveOriginalAvatarPrefabFromFirstCandidate(out GameObject originalAvatarPrefab)
+        {
+            originalAvatarPrefab = null;
+            if (_candidatePrefabPaths.Count == 0)
             {
-                var prefabPath = FindPreferredPrefabPathUnder(folder);
-                if (string.IsNullOrEmpty(prefabPath))
-                {
-                    continue;
-                }
-
-                if (!PrefabHasMatchingFaceMesh(prefabPath, targetFaceMeshSignature))
-                {
-                    continue;
-                }
-
-                if (!TryGetCachedFaceMeshSignature(prefabPath, out var prefabSignature))
-                {
-                    continue;
-                }
-
-                if (!TryLoadOriginalAvatarPrefab(prefabSignature.OriginalAvatarPrefabPath, out originalAvatarPrefab))
-                {
-                    continue;
-                }
-
-                return true;
+                return false;
             }
 
-            return false;
+            var firstCandidatePath = _candidatePrefabPaths[0];
+            if (string.IsNullOrEmpty(firstCandidatePath))
+            {
+                return false;
+            }
+
+            if (!TryGetCachedFaceMeshSignature(firstCandidatePath, out var firstCandidateSignature))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(firstCandidateSignature.OriginalAvatarPrefabPath))
+            {
+                return false;
+            }
+
+            return TryLoadOriginalAvatarPrefab(firstCandidateSignature.OriginalAvatarPrefabPath, out originalAvatarPrefab);
         }
 
         private static bool TryLoadOriginalAvatarPrefab(string prefabPath, out GameObject originalAvatarPrefab)
