@@ -82,6 +82,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
+            // 仕様: 逆変換は「プルダウン先頭候補」を基準に決定する。
+            // 候補の優先順位（FindPreferredPrefabPathUnder + フォルダ順）と一致させるため、先頭固定で扱う。
             var firstCandidatePath = _candidatePrefabPaths[0];
             if (string.IsNullOrEmpty(firstCandidatePath))
             {

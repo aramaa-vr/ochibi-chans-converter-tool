@@ -607,7 +607,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        _sourcePrefabAsset = manualPrefab;
+                        // 通常モード/逆変換モードで入力反映経路を揃え、Prefab 参照の正規化と候補同期を共通化する。
+                        ApplyPrefabSelectionUsingDropdownLogic(manualPrefab);
                     }
 
                     if (_sourcePrefabAsset == null)
