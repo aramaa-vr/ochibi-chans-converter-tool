@@ -699,7 +699,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromFirstCandidate(out var resolvedPrefab))
                 {
-                    ApplyPrefabSelectionUsingDropdownLogic(resolvedPrefab);
+                    if (_sourcePrefabAsset == null)
+                    {
+                        ApplyPrefabSelectionUsingDropdownLogic(resolvedPrefab);
+                    }
+
                     DrawRestorePrefabDirectInputField(L("Label.RestorePrefabAutoResolved"));
                     return;
                 }
