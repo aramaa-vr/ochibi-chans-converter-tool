@@ -371,17 +371,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     // SVG 対応ステップ: 6) 複製先へ同期適用（コア処理）
                     ApplyCoreAvatarSynchronization(basePrefabRoot, dstRoot, logs);
 
-                    // Ex AddMenu Prefab 追加（未配置時のみ）
-                    if (!restoreMode && exAddMenuPlacement.PrefabAsset != null)
-                    {
-                        logs.Add(L("Log.ExPrefabHeader"));
-                        TryAddExPrefabIfMissing(dstRoot, exAddMenuPlacement, logs);
-                        logs.Add("");
-                    }
-                    else if (restoreMode)
+                    // Ex AddMenu 処理（restoreMode を優先分岐）
+                    if (restoreMode)
                     {
                         logs.Add(L("Log.RestoreSkipAddMenu"));
                         OCTRestoreModeProcessor.RemoveExAddMenuObjectsIfExists(dstRoot, logs);
+                        logs.Add("");
+                    }
+                    else if (exAddMenuPlacement.PrefabAsset != null)
+                    {
+                        logs.Add(L("Log.ExPrefabHeader"));
+                        TryAddExPrefabIfMissing(dstRoot, exAddMenuPlacement, logs);
                         logs.Add("");
                     }
 
