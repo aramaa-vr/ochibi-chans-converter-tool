@@ -596,9 +596,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     return;
                 }
 
-                _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
-
-                var hasCandidates = _prefabDropdownCache.CandidateDisplayNames.Count > 0;
+                var hasCandidates = RefreshDropdownCandidatesAndCheckAvailability();
 
                 if (!hasCandidates)
                 {
@@ -609,7 +607,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        _sourcePrefabAsset = manualPrefab;
+                        // 通常モード/逆変換モードで入力反映経路を揃え、Prefab 参照の正規化と候補同期を共通化する。
+                        ApplyPrefabSelectionUsingDropdownLogic(manualPrefab);
                     }
 
                     if (_sourcePrefabAsset == null)
@@ -647,15 +646,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var nextPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    if (nextPrefab == null || IsPrefabAsset(nextPrefab))
-                    {
-                        _prefabDropdownCache.ApplyManualSelection(nextPrefab);
-                        _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
-                    }
-                    else
-                    {
-                        _sourcePrefabAsset = nextPrefab;
-                    }
+                    ApplyPrefabSelectionUsingDropdownLogic(nextPrefab);
                 }
 
                 if (_sourcePrefabAsset == null)
@@ -676,6 +667,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
             }
 
+            private bool RefreshDropdownCandidatesAndCheckAvailability()
+            {
+                _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
+                return _prefabDropdownCache.CandidateDisplayNames.Count > 0;
+            }
+
             private void DrawRestoreModeToggle()
             {
                 var nextEnabled = EditorGUILayout.ToggleLeft(L("Toggle.RestoreMode"), _restoreModeEnabled);
@@ -685,39 +682,52 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 _restoreModeEnabled = nextEnabled;
-                _sourcePrefabAsset = null;
+                RefreshSourcePrefabAfterRestoreModeToggle();
+            }
+
+            private void RefreshSourcePrefabAfterRestoreModeToggle()
+            {
+                var hasCandidates = RefreshDropdownCandidatesAndCheckAvailability();
+                if (!hasCandidates)
+                {
+                    ApplyPrefabSelectionUsingDropdownLogic(null);
+                    return;
+                }
+
+                if (_restoreModeEnabled)
+                {
+                    if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromFirstCandidate(out var resolvedPrefab))
+                    {
+                        ApplyPrefabSelectionUsingDropdownLogic(resolvedPrefab);
+                        return;
+                    }
+
+                    ApplyPrefabSelectionUsingDropdownLogic(null);
+                    return;
+                }
+
+                var currentIndex = Mathf.Clamp(_prefabDropdownCache.SelectedIndex, 0, _prefabDropdownCache.CandidateDisplayNames.Count - 1);
+                _prefabDropdownCache.ApplySelection(currentIndex);
+                _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
             }
 
             private void DrawRestoreModePrefabObjectField()
             {
                 EditorGUILayout.HelpBox(L("Help.RestoreModeDescription"), MessageType.Info);
 
-                if (_sourceTarget == null)
+                var hasCandidates = RefreshDropdownCandidatesAndCheckAvailability();
+                if (!hasCandidates)
                 {
-                    EditorGUILayout.HelpBox(L("Help.RestoreSelectTarget"), MessageType.Warning);
+                    EditorGUILayout.HelpBox(L("Help.RestoreAutoResolveFailed"), MessageType.Warning);
                     DrawRestoreManualPrefabField();
                     return;
                 }
 
-                if (EditorUtility.IsPersistent(_sourceTarget))
-                {
-                    EditorGUILayout.HelpBox(L("Help.RestorePersistentTargetInvalid"), MessageType.Error);
-                    DrawRestoreManualPrefabField();
-                    return;
-                }
-
-                if (!PrefabUtility.IsPartOfPrefabInstance(_sourceTarget))
-                {
-                    EditorGUILayout.HelpBox(L("Help.RestoreNonPrefabInstance"), MessageType.Warning);
-                    DrawRestoreManualPrefabField();
-                    return;
-                }
-
-                if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromTarget(_sourceTarget, out var resolvedPrefab) && IsPrefabAsset(resolvedPrefab))
+                if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromFirstCandidate(out var resolvedPrefab))
                 {
                     if (_sourcePrefabAsset == null)
                     {
-                        _sourcePrefabAsset = resolvedPrefab;
+                        ApplyPrefabSelectionUsingDropdownLogic(resolvedPrefab);
                     }
 
                     DrawRestorePrefabDirectInputField(L("Label.RestorePrefabAutoResolved"));
@@ -733,6 +743,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 DrawRestorePrefabDirectInputField(L("Label.RestorePrefabManual"));
             }
 
+            private void ApplyPrefabSelectionUsingDropdownLogic(GameObject nextPrefab)
+            {
+                if (nextPrefab == null || IsPrefabAsset(nextPrefab))
+                {
+                    _prefabDropdownCache.ApplyManualSelection(nextPrefab);
+                    _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
+                    return;
+                }
+
+                _sourcePrefabAsset = nextPrefab;
+            }
+
             private void DrawRestorePrefabDirectInputField(string label)
             {
                 EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
@@ -740,7 +762,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    _sourcePrefabAsset = manualPrefab;
+                    ApplyPrefabSelectionUsingDropdownLogic(manualPrefab);
                 }
 
                 if (_sourcePrefabAsset == null)
