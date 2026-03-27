@@ -87,18 +87,75 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
-            if (string.IsNullOrEmpty(signature.OriginalAvatarPrefabPath))
+            if (TryLoadOriginalAvatarPrefab(signature.OriginalAvatarPrefabPath, out originalAvatarPrefab))
+            {
+                return true;
+            }
+
+            return TryResolveOriginalAvatarPrefabFromDropdownCandidates(signature, out originalAvatarPrefab);
+        }
+
+        private static bool TryResolveOriginalAvatarPrefabFromDropdownCandidates(
+            FaceMeshSignature targetFaceMeshSignature,
+            out GameObject originalAvatarPrefab)
+        {
+            originalAvatarPrefab = null;
+            if (!targetFaceMeshSignature.HasAnyIdentity)
             {
                 return false;
             }
 
-            originalAvatarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(signature.OriginalAvatarPrefabPath);
-            if (originalAvatarPrefab == null)
+            var subFolders = AssetDatabase.GetSubFolders(BaseFolder);
+            foreach (var folder in subFolders)
+            {
+                var prefabPath = FindPreferredPrefabPathUnder(folder);
+                if (string.IsNullOrEmpty(prefabPath))
+                {
+                    continue;
+                }
+
+                if (!PrefabHasMatchingFaceMesh(prefabPath, targetFaceMeshSignature))
+                {
+                    continue;
+                }
+
+                if (!TryGetCachedFaceMeshSignature(prefabPath, out var prefabSignature))
+                {
+                    continue;
+                }
+
+                if (!TryLoadOriginalAvatarPrefab(prefabSignature.OriginalAvatarPrefabPath, out originalAvatarPrefab))
+                {
+                    continue;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryLoadOriginalAvatarPrefab(string prefabPath, out GameObject originalAvatarPrefab)
+        {
+            originalAvatarPrefab = null;
+            if (string.IsNullOrEmpty(prefabPath))
             {
                 return false;
             }
 
-            return PrefabUtility.GetPrefabAssetType(originalAvatarPrefab) != PrefabAssetType.NotAPrefab;
+            var loaded = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (loaded == null)
+            {
+                return false;
+            }
+
+            if (PrefabUtility.GetPrefabAssetType(loaded) == PrefabAssetType.NotAPrefab)
+            {
+                return false;
+            }
+
+            originalAvatarPrefab = loaded;
+            return true;
         }
 
         /// <summary>
