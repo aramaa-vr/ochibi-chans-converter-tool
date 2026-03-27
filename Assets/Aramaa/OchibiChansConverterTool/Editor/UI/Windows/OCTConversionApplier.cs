@@ -682,7 +682,33 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 _restoreModeEnabled = nextEnabled;
-                _sourcePrefabAsset = null;
+                RefreshSourcePrefabAfterRestoreModeToggle();
+            }
+
+            private void RefreshSourcePrefabAfterRestoreModeToggle()
+            {
+                var hasCandidates = RefreshDropdownCandidatesAndCheckAvailability();
+                if (!hasCandidates)
+                {
+                    ApplyPrefabSelectionUsingDropdownLogic(null);
+                    return;
+                }
+
+                if (_restoreModeEnabled)
+                {
+                    if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromFirstCandidate(out var resolvedPrefab))
+                    {
+                        ApplyPrefabSelectionUsingDropdownLogic(resolvedPrefab);
+                        return;
+                    }
+
+                    ApplyPrefabSelectionUsingDropdownLogic(null);
+                    return;
+                }
+
+                var currentIndex = Mathf.Clamp(_prefabDropdownCache.SelectedIndex, 0, _prefabDropdownCache.CandidateDisplayNames.Count - 1);
+                _prefabDropdownCache.ApplySelection(currentIndex);
+                _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
             }
 
             private void DrawRestoreModePrefabObjectField()
