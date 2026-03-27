@@ -647,15 +647,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var nextPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    if (nextPrefab == null || IsPrefabAsset(nextPrefab))
-                    {
-                        _prefabDropdownCache.ApplyManualSelection(nextPrefab);
-                        _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
-                    }
-                    else
-                    {
-                        _sourcePrefabAsset = nextPrefab;
-                    }
+                    ApplyPrefabSelectionUsingDropdownLogic(nextPrefab);
                 }
 
                 if (_sourcePrefabAsset == null)
@@ -715,11 +707,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromTarget(_sourceTarget, out var resolvedPrefab) && IsPrefabAsset(resolvedPrefab))
                 {
-                    if (_sourcePrefabAsset == null)
-                    {
-                        _sourcePrefabAsset = resolvedPrefab;
-                    }
-
+                    ApplyPrefabSelectionUsingDropdownLogic(resolvedPrefab);
                     DrawRestorePrefabDirectInputField(L("Label.RestorePrefabAutoResolved"));
                     return;
                 }
@@ -733,6 +721,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 DrawRestorePrefabDirectInputField(L("Label.RestorePrefabManual"));
             }
 
+            private void ApplyPrefabSelectionUsingDropdownLogic(GameObject nextPrefab)
+            {
+                if (nextPrefab == null || IsPrefabAsset(nextPrefab))
+                {
+                    _prefabDropdownCache.ApplyManualSelection(nextPrefab);
+                    _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
+                    return;
+                }
+
+                _sourcePrefabAsset = nextPrefab;
+            }
+
             private void DrawRestorePrefabDirectInputField(string label)
             {
                 EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
@@ -740,7 +740,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    _sourcePrefabAsset = manualPrefab;
+                    ApplyPrefabSelectionUsingDropdownLogic(manualPrefab);
                 }
 
                 if (_sourcePrefabAsset == null)
