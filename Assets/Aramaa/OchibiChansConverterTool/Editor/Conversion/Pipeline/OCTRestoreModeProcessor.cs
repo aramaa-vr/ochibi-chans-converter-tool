@@ -33,8 +33,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             logs.Add(F("Log.RestoreArmatureAdjusterStart", OCTConversionLogFormatter.GetHierarchyPath(armature)));
+
+            // TODO: 仮作成 FloorAdjusterは一つしかないので許容とする
             RemoveComponentByTypeName(armature.gameObject, "FloorAdjuster", logs);
-            RemoveComponentByTypeName(armature.gameObject, "ModularAvatarScaleAdjuster", logs);
+            // TODO: そもそもおちびちゃんズはModularAvatarScaleAdjuster使ってないようなので一旦保留
+            // RemoveComponentByTypeName(armature.gameObject, "ModularAvatarScaleAdjuster", logs);
         }
 
         public static void RemoveExAddMenuObjectsIfExists(GameObject avatarRoot, List<string> logs)
