@@ -716,7 +716,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromTarget(_sourceTarget, out var resolvedPrefab) && IsPrefabAsset(resolvedPrefab))
                 {
                     _sourcePrefabAsset = resolvedPrefab;
-                    EditorGUILayout.ObjectField("元アバター Prefab（自動解決）", _sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                    EditorGUILayout.LabelField("元アバター Prefab（手動指定）", EditorStyles.boldLabel);
+                    EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
                     return;
                 }
 
