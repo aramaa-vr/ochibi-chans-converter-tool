@@ -715,9 +715,23 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromTarget(_sourceTarget, out var resolvedPrefab) && IsPrefabAsset(resolvedPrefab))
                 {
-                    _sourcePrefabAsset = resolvedPrefab;
-                    EditorGUILayout.LabelField("元アバター Prefab（手動指定）", EditorStyles.boldLabel);
-                    EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                    if (_sourcePrefabAsset == null)
+                    {
+                        _sourcePrefabAsset = resolvedPrefab;
+                    }
+
+                    EditorGUILayout.LabelField("元アバター Prefab（自動解決）", EditorStyles.boldLabel);
+                    EditorGUI.BeginChangeCheck();
+                    var nextPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        _sourcePrefabAsset = nextPrefab;
+                    }
+
+                    if (_sourcePrefabAsset != null && !IsPrefabAsset(_sourcePrefabAsset))
+                    {
+                        EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
+                    }
                     return;
                 }
 
