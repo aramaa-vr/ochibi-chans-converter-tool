@@ -691,20 +691,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     return;
                 }
 
-                if (EditorUtility.IsPersistent(_sourceTarget))
-                {
-                    EditorGUILayout.HelpBox(L("Help.RestorePersistentTargetInvalid"), MessageType.Error);
-                    DrawRestoreManualPrefabField();
-                    return;
-                }
-
-                if (!PrefabUtility.IsPartOfPrefabInstance(_sourceTarget))
-                {
-                    EditorGUILayout.HelpBox(L("Help.RestoreNonPrefabInstance"), MessageType.Warning);
-                    DrawRestoreManualPrefabField();
-                    return;
-                }
-
                 if (_prefabDropdownCache.TryResolveOriginalAvatarPrefabFromTarget(_sourceTarget, out var resolvedPrefab) && IsPrefabAsset(resolvedPrefab))
                 {
                     ApplyPrefabSelectionUsingDropdownLogic(resolvedPrefab);
