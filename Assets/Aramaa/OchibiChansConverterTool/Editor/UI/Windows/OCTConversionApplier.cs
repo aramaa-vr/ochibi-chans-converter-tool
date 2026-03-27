@@ -596,9 +596,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     return;
                 }
 
-                _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
-
-                var hasCandidates = _prefabDropdownCache.CandidateDisplayNames.Count > 0;
+                var hasCandidates = RefreshDropdownCandidatesAndCheckAvailability();
 
                 if (!hasCandidates)
                 {
@@ -668,6 +666,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
             }
 
+            private bool RefreshDropdownCandidatesAndCheckAvailability()
+            {
+                _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
+                return _prefabDropdownCache.CandidateDisplayNames.Count > 0;
+            }
+
             private void DrawRestoreModeToggle()
             {
                 var nextEnabled = EditorGUILayout.ToggleLeft(L("Toggle.RestoreMode"), _restoreModeEnabled);
@@ -684,15 +688,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 EditorGUILayout.HelpBox(L("Help.RestoreModeDescription"), MessageType.Info);
 
-                if (_sourceTarget == null)
-                {
-                    EditorGUILayout.HelpBox(L("Help.RestoreSelectTarget"), MessageType.Warning);
-                    DrawRestoreManualPrefabField();
-                    return;
-                }
-
-                _prefabDropdownCache.RefreshIfNeeded(_sourceTarget);
-                if (_prefabDropdownCache.CandidateDisplayNames.Count == 0)
+                var hasCandidates = RefreshDropdownCandidatesAndCheckAvailability();
+                if (!hasCandidates)
                 {
                     EditorGUILayout.HelpBox(L("Help.RestoreAutoResolveFailed"), MessageType.Warning);
                     DrawRestoreManualPrefabField();
