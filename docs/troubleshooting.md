@@ -44,6 +44,12 @@ nav_order: 6
 キャッシュ:
 - `Library/Aramaa/OchibiChansConverterTool/FaceMeshCache.v7.json`
 
+## 復元モードで自動解決されたPrefabを手動で直したい
+
+- 復元モード（逆変換）では、自動解決後でも下のPrefab欄で手動選択できます。
+- 手動で選んだPrefabはそのまま保持され、次フレームで自動候補に戻されません。
+- もう一度自動解決を使いたい場合は、Prefab欄を `None` に戻してください。
+
 ---
 
 ## 髪・小物がズレる
