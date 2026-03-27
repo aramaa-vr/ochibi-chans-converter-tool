@@ -820,6 +820,86 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "Show processing log window"
+    },
+    {
+      "key": "Toggle.RestoreMode",
+      "value": "Restore Mode (Ochibi-chans -> Original Avatar)"
+    },
+    {
+      "key": "Help.RestoreModeDescription",
+      "value": "In restore mode, the original avatar Prefab is auto-resolved without using the candidate dropdown."
+    },
+    {
+      "key": "Help.RestoreSelectTarget",
+      "value": "Select the target avatar in the Hierarchy to resolve the original avatar."
+    },
+    {
+      "key": "Help.RestorePersistentTargetInvalid",
+      "value": "Project assets are not valid restore targets. Select an object in the Hierarchy."
+    },
+    {
+      "key": "Help.RestoreNonPrefabInstance",
+      "value": "The selected object is not a Prefab instance, so auto-resolution is unavailable."
+    },
+    {
+      "key": "Label.RestorePrefabAutoResolved",
+      "value": "Original Avatar Prefab (Auto-resolved)"
+    },
+    {
+      "key": "Help.RestoreAutoResolveFailed",
+      "value": "Failed to auto-resolve the original avatar Prefab. Please set it manually."
+    },
+    {
+      "key": "Label.RestorePrefabManual",
+      "value": "Original Avatar Prefab (Manual)"
+    },
+    {
+      "key": "Help.RestoreSelectOriginalPrefab",
+      "value": "Select the original avatar Prefab from the Project."
+    },
+    {
+      "key": "Log.RestoreAdjustersStart",
+      "value": "[Restore] Restore mode: removing Armature adjuster components."
+    },
+    {
+      "key": "Log.RestoreSkipAddMenu",
+      "value": "[Restore] Skip AddMenu addition"
+    },
+    {
+      "key": "Log.RestoreAvatarRootNullAdjuster",
+      "value": "[Restore] Skipped adjuster removal because avatarRoot is null."
+    },
+    {
+      "key": "Log.RestoreArmatureMissing",
+      "value": "[Restore] Skipped adjuster removal because Armature was not found: {0}"
+    },
+    {
+      "key": "Log.RestoreArmatureAdjusterStart",
+      "value": "[Restore] Start removing Armature adjuster components: {0}"
+    },
+    {
+      "key": "Log.RestoreAvatarRootNullAddMenu",
+      "value": "[Restore] Skipped AddMenu removal because avatarRoot is null."
+    },
+    {
+      "key": "Log.RestoreAddMenuNoTargets",
+      "value": "[Restore] No AddMenu objects to remove."
+    },
+    {
+      "key": "Log.RestoreAddMenuRemoved",
+      "value": "[Restore] Removed AddMenu: {0}"
+    },
+    {
+      "key": "Log.RestoreAddMenuRemovedCount",
+      "value": "[Restore] AddMenu removed count: {0}"
+    },
+    {
+      "key": "Log.RestoreComponentRemoved",
+      "value": "[Restore] Removed component: {0} @ {1}"
+    },
+    {
+      "key": "Log.RestoreComponentNotFound",
+      "value": "[Restore] Component not found: {0}"
     }
   ]
 }

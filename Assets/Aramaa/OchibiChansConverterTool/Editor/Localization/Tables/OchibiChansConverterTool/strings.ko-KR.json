@@ -820,6 +820,86 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "처리 로그 창 표시"
+    },
+    {
+      "key": "Toggle.RestoreMode",
+      "value": "복원 모드 (오치비챤즈 -> 원본 아바타)"
+    },
+    {
+      "key": "Help.RestoreModeDescription",
+      "value": "복원 모드에서는 후보 드롭다운 없이 원본 아바타 Prefab을 자동으로 찾습니다."
+    },
+    {
+      "key": "Help.RestoreSelectTarget",
+      "value": "원본 아바타를 찾으려면 Hierarchy에서 대상 아바타를 선택하세요."
+    },
+    {
+      "key": "Help.RestorePersistentTargetInvalid",
+      "value": "Project 에셋은 복원 대상이 아닙니다. Hierarchy 오브젝트를 선택하세요."
+    },
+    {
+      "key": "Help.RestoreNonPrefabInstance",
+      "value": "선택한 오브젝트가 Prefab 인스턴스가 아니어서 자동 해석을 할 수 없습니다."
+    },
+    {
+      "key": "Label.RestorePrefabAutoResolved",
+      "value": "원본 아바타 Prefab (자동 해석)"
+    },
+    {
+      "key": "Help.RestoreAutoResolveFailed",
+      "value": "원본 아바타 Prefab 자동 해석에 실패했습니다. 수동으로 지정하세요."
+    },
+    {
+      "key": "Label.RestorePrefabManual",
+      "value": "원본 아바타 Prefab (수동 지정)"
+    },
+    {
+      "key": "Help.RestoreSelectOriginalPrefab",
+      "value": "Project에서 원본 아바타 Prefab을 지정하세요."
+    },
+    {
+      "key": "Log.RestoreAdjustersStart",
+      "value": "[Restore] 복원 모드: Armature 보정 컴포넌트 삭제를 실행합니다."
+    },
+    {
+      "key": "Log.RestoreSkipAddMenu",
+      "value": "[Restore] AddMenu 추가 건너뜀"
+    },
+    {
+      "key": "Log.RestoreAvatarRootNullAdjuster",
+      "value": "[Restore] avatarRoot가 null이어서 보정 컴포넌트 삭제를 건너뜁니다."
+    },
+    {
+      "key": "Log.RestoreArmatureMissing",
+      "value": "[Restore] Armature를 찾을 수 없어 보정 컴포넌트 삭제를 건너뜁니다: {0}"
+    },
+    {
+      "key": "Log.RestoreArmatureAdjusterStart",
+      "value": "[Restore] Armature 보정 컴포넌트 삭제 시작: {0}"
+    },
+    {
+      "key": "Log.RestoreAvatarRootNullAddMenu",
+      "value": "[Restore] avatarRoot가 null이어서 AddMenu 삭제를 건너뜁니다."
+    },
+    {
+      "key": "Log.RestoreAddMenuNoTargets",
+      "value": "[Restore] 삭제할 AddMenu 대상이 없습니다."
+    },
+    {
+      "key": "Log.RestoreAddMenuRemoved",
+      "value": "[Restore] AddMenu 삭제: {0}"
+    },
+    {
+      "key": "Log.RestoreAddMenuRemovedCount",
+      "value": "[Restore] AddMenu 삭제 개수: {0}"
+    },
+    {
+      "key": "Log.RestoreComponentRemoved",
+      "value": "[Restore] 컴포넌트 삭제: {0} @ {1}"
+    },
+    {
+      "key": "Log.RestoreComponentNotFound",
+      "value": "[Restore] 컴포넌트를 찾지 못함: {0}"
     }
   ]
 }
