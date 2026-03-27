@@ -334,8 +334,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     out var expressionParameters
                 );
 
-                // Ochibichans_Addmenu は sourceChibiPrefab の内部にある想定
-                TryResolveExAddMenuPlacementFromSourcePrefab(basePrefabRoot, out var exAddMenuPlacement);
+                ExPrefabPlacement exAddMenuPlacement = default;
+                if (!restoreMode)
+                {
+                    // Ochibichans_Addmenu は sourceChibiPrefab の内部にある想定
+                    TryResolveExAddMenuPlacementFromSourcePrefab(basePrefabRoot, out exAddMenuPlacement);
+                }
 
                 // --------------------------------------------------------
                 // 変換対象へ反映
