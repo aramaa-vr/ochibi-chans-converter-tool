@@ -177,7 +177,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 if (restoreMode)
                 {
-                    logs.Add("[Restore] 逆変換モード: Armature 補正コンポーネント削除を実行します。");
+                    logs.Add(L("Log.RestoreAdjustersStart"));
                     foreach (var duplicated in duplicatedTargets.Where(x => x != null))
                     {
                         OCTRestoreModeProcessor.RemoveReverseConversionAdjusters(duplicated, logs);
@@ -376,7 +376,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
                     else if (restoreMode)
                     {
-                        logs.Add("[Restore] AddMenu追加スキップ");
+                        logs.Add(L("Log.RestoreSkipAddMenu"));
                         OCTRestoreModeProcessor.RemoveExAddMenuObjectsIfExists(dstRoot, logs);
                         logs.Add("");
                     }

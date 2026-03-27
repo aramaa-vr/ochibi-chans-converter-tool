@@ -13,23 +13,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal static class OCTRestoreModeProcessor
     {
+        private static string L(string key) => OCTLocalization.Get(key);
+        private static string F(string key, params object[] args) => OCTLocalization.Format(key, args);
+
         public static void RemoveReverseConversionAdjusters(GameObject avatarRoot, List<string> logs)
         {
             logs ??= new List<string>();
             if (avatarRoot == null)
             {
-                logs.Add("[Restore] avatarRoot が null のため補正コンポーネント削除をスキップしました。");
+                logs.Add(L("Log.RestoreAvatarRootNullAdjuster"));
                 return;
             }
 
             var armature = OCTEditorUtility.FindAvatarMainArmature(avatarRoot.transform);
             if (armature == null)
             {
-                logs.Add($"[Restore] Armature が見つからないため補正コンポーネント削除をスキップ: {OCTConversionLogFormatter.GetHierarchyPath(avatarRoot.transform)}");
+                logs.Add(F("Log.RestoreArmatureMissing", OCTConversionLogFormatter.GetHierarchyPath(avatarRoot.transform)));
                 return;
             }
 
-            logs.Add($"[Restore] Armature 補正コンポーネント削除開始: {OCTConversionLogFormatter.GetHierarchyPath(armature)}");
+            logs.Add(F("Log.RestoreArmatureAdjusterStart", OCTConversionLogFormatter.GetHierarchyPath(armature)));
             RemoveComponentByTypeName(armature.gameObject, "FloorAdjuster", logs);
             RemoveComponentByTypeName(armature.gameObject, "ModularAvatarScaleAdjuster", logs);
         }
@@ -39,7 +42,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs ??= new List<string>();
             if (avatarRoot == null)
             {
-                logs.Add("[Restore] avatarRoot が null のため AddMenu 削除をスキップしました。");
+                logs.Add(L("Log.RestoreAvatarRootNullAddMenu"));
                 return;
             }
 
@@ -78,7 +81,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (deleteTargets.Count == 0)
             {
-                logs.Add("[Restore] AddMenu 削除対象なし。");
+                logs.Add(L("Log.RestoreAddMenuNoTargets"));
                 return;
             }
 
@@ -89,11 +92,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                logs.Add($"[Restore] AddMenu 削除: {OCTConversionLogFormatter.GetHierarchyPath(target.transform)}");
+                logs.Add(F("Log.RestoreAddMenuRemoved", OCTConversionLogFormatter.GetHierarchyPath(target.transform)));
                 Undo.DestroyObjectImmediate(target);
             }
 
-            logs.Add($"[Restore] AddMenu 削除件数: {deleteTargets.Count}");
+            logs.Add(F("Log.RestoreAddMenuRemovedCount", deleteTargets.Count));
         }
 
         internal static bool IsStandaloneExAddMenuObject(GameObject go)
@@ -152,13 +155,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     Undo.DestroyObjectImmediate(component);
                     removedCount++;
-                    logs.Add($"[Restore] コンポーネント削除: {typeName} @ {OCTConversionLogFormatter.GetHierarchyPath(t)}");
+                    logs.Add(F("Log.RestoreComponentRemoved", typeName, OCTConversionLogFormatter.GetHierarchyPath(t)));
                 }
             }
 
             if (removedCount == 0)
             {
-                logs.Add($"[Restore] コンポーネント未検出: {typeName}");
+                logs.Add(F("Log.RestoreComponentNotFound", typeName));
             }
         }
 

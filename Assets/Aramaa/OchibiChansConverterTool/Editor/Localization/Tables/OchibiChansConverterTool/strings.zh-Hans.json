@@ -820,6 +820,86 @@
     {
       "key": "CostumeScaleWindow.ShowLogToggle",
       "value": "显示处理日志窗口"
+    },
+    {
+      "key": "Toggle.RestoreMode",
+      "value": "逆转换模式（Ochibi-chans -> 原始 Avatar）"
+    },
+    {
+      "key": "Help.RestoreModeDescription",
+      "value": "在逆转换模式下，不使用候选下拉框，自动解析原始 Avatar Prefab。"
+    },
+    {
+      "key": "Help.RestoreSelectTarget",
+      "value": "要解析原始 Avatar，请在 Hierarchy 中选择目标 Avatar。"
+    },
+    {
+      "key": "Help.RestorePersistentTargetInvalid",
+      "value": "Project 资源不是逆转换目标。请选择 Hierarchy 中的对象。"
+    },
+    {
+      "key": "Help.RestoreNonPrefabInstance",
+      "value": "所选对象不是 Prefab Instance，无法自动解析。"
+    },
+    {
+      "key": "Label.RestorePrefabAutoResolved",
+      "value": "原始 Avatar Prefab（自动解析）"
+    },
+    {
+      "key": "Help.RestoreAutoResolveFailed",
+      "value": "自动解析原始 Avatar Prefab 失败。请手动指定。"
+    },
+    {
+      "key": "Label.RestorePrefabManual",
+      "value": "原始 Avatar Prefab（手动指定）"
+    },
+    {
+      "key": "Help.RestoreSelectOriginalPrefab",
+      "value": "请从 Project 中指定原始 Avatar Prefab。"
+    },
+    {
+      "key": "Log.RestoreAdjustersStart",
+      "value": "[Restore] 逆转换模式：开始删除 Armature 调整组件。"
+    },
+    {
+      "key": "Log.RestoreSkipAddMenu",
+      "value": "[Restore] 跳过 AddMenu 追加"
+    },
+    {
+      "key": "Log.RestoreAvatarRootNullAdjuster",
+      "value": "[Restore] avatarRoot 为 null，跳过调整组件删除。"
+    },
+    {
+      "key": "Log.RestoreArmatureMissing",
+      "value": "[Restore] 未找到 Armature，跳过调整组件删除：{0}"
+    },
+    {
+      "key": "Log.RestoreArmatureAdjusterStart",
+      "value": "[Restore] 开始删除 Armature 调整组件：{0}"
+    },
+    {
+      "key": "Log.RestoreAvatarRootNullAddMenu",
+      "value": "[Restore] avatarRoot 为 null，跳过 AddMenu 删除。"
+    },
+    {
+      "key": "Log.RestoreAddMenuNoTargets",
+      "value": "[Restore] 没有可删除的 AddMenu 对象。"
+    },
+    {
+      "key": "Log.RestoreAddMenuRemoved",
+      "value": "[Restore] 已删除 AddMenu：{0}"
+    },
+    {
+      "key": "Log.RestoreAddMenuRemovedCount",
+      "value": "[Restore] AddMenu 删除数量：{0}"
+    },
+    {
+      "key": "Log.RestoreComponentRemoved",
+      "value": "[Restore] 已删除组件：{0} @ {1}"
+    },
+    {
+      "key": "Log.RestoreComponentNotFound",
+      "value": "[Restore] 未找到组件：{0}"
     }
   ]
 }

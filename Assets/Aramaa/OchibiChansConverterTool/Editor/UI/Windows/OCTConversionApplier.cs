@@ -678,7 +678,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             private void DrawRestoreModeToggle()
             {
-                var nextEnabled = EditorGUILayout.ToggleLeft("逆変換モード（おちびちゃんズ -> 元アバター）", _restoreModeEnabled);
+                var nextEnabled = EditorGUILayout.ToggleLeft(L("Toggle.RestoreMode"), _restoreModeEnabled);
                 if (nextEnabled == _restoreModeEnabled)
                 {
                     return;
@@ -690,25 +690,25 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             private void DrawRestoreModePrefabObjectField()
             {
-                EditorGUILayout.HelpBox("逆変換モードでは、候補プルダウンを使わず元アバター Prefab を自動解決します。", MessageType.Info);
+                EditorGUILayout.HelpBox(L("Help.RestoreModeDescription"), MessageType.Info);
 
                 if (_sourceTarget == null)
                 {
-                    EditorGUILayout.HelpBox("元アバターを解決するには、Hierarchy の対象アバターを選択してください。", MessageType.Warning);
+                    EditorGUILayout.HelpBox(L("Help.RestoreSelectTarget"), MessageType.Warning);
                     DrawRestoreManualPrefabField();
                     return;
                 }
 
                 if (EditorUtility.IsPersistent(_sourceTarget))
                 {
-                    EditorGUILayout.HelpBox("Project アセットは逆変換の対象外です。Hierarchy 上のオブジェクトを指定してください。", MessageType.Error);
+                    EditorGUILayout.HelpBox(L("Help.RestorePersistentTargetInvalid"), MessageType.Error);
                     DrawRestoreManualPrefabField();
                     return;
                 }
 
                 if (!PrefabUtility.IsPartOfPrefabInstance(_sourceTarget))
                 {
-                    EditorGUILayout.HelpBox("選択中オブジェクトは Prefab Instance ではないため自動解決できません。", MessageType.Warning);
+                    EditorGUILayout.HelpBox(L("Help.RestoreNonPrefabInstance"), MessageType.Warning);
                     DrawRestoreManualPrefabField();
                     return;
                 }
@@ -720,17 +720,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         _sourcePrefabAsset = resolvedPrefab;
                     }
 
-                    DrawRestorePrefabDirectInputField("元アバター Prefab（自動解決）");
+                    DrawRestorePrefabDirectInputField(L("Label.RestorePrefabAutoResolved"));
                     return;
                 }
 
-                EditorGUILayout.HelpBox("元アバター Prefab の自動解決に失敗しました。手動で指定してください。", MessageType.Warning);
+                EditorGUILayout.HelpBox(L("Help.RestoreAutoResolveFailed"), MessageType.Warning);
                 DrawRestoreManualPrefabField();
             }
 
             private void DrawRestoreManualPrefabField()
             {
-                DrawRestorePrefabDirectInputField("元アバター Prefab（手動指定）");
+                DrawRestorePrefabDirectInputField(L("Label.RestorePrefabManual"));
             }
 
             private void DrawRestorePrefabDirectInputField(string label)
@@ -745,7 +745,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 if (_sourcePrefabAsset == null)
                 {
-                    EditorGUILayout.HelpBox("Project から元アバターの Prefab を指定してください。", MessageType.Info);
+                    EditorGUILayout.HelpBox(L("Help.RestoreSelectOriginalPrefab"), MessageType.Info);
                     return;
                 }
 
