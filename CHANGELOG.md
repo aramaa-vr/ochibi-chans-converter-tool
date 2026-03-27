@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.6-beta.4]（Pre-release）
+### 主な変更点
+- **逆変換（Restore Mode）フローを追加**：逆変換専用の処理経路とプロセッサを実装し、通常変換と分岐した手順で安全に復元できるようにしました
+- **逆変換時のPrefab指定を強化**：自動解決されたPrefabをUI上で確認・上書きできるようにし、候補切り替え時の選択反映や入力導線を改善しました
+- **逆変換時の処理分岐を調整**：Ex AddMenu 配置解決は逆変換時にスキップし、逆変換側の分岐を優先することで意図しない配置探索を避けるようにしました
+- **ローカライズとログ文言を更新**：Restore Mode関連のUI文言・ログを多言語経路に合わせて整理し、案内の一貫性を改善しました
+- **FaceMeshキャッシュ形式を更新**：`FaceMeshCache.v9.json` に切り替え、`OriginalAvatarPrefabPath` を既存キャッシュ項目と同等に永続化しました
+- **パッケージバージョンを更新**：`ToolVersion` / `package.json` / 配布URLを **0.5.6-beta.4** に更新しました
+
 ## [0.5.6-beta.3]（Pre-release）
 ### 主な変更点
 - **FaceMesh一致判定の補助キーを拡張**：`Animator.avatar` の GUID/LocalId と AssetPath を署名に追加し、VisemeメッシュIDが取りにくいケースでも候補一致を補強しました
