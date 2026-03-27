@@ -84,6 +84,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             // 仕様: 逆変換は「プルダウン先頭候補」を基準に決定する。
             // 候補の優先順位（FindPreferredPrefabPathUnder + フォルダ順）と一致させるため、先頭固定で扱う。
+            // 補足: 現在の仕様では、バリアントプレハブの元を追っていき最初に見つかったBaseFolderではないバリアントプレハブを元のアバターと指定する仕様
+            // そのため、_candidatePrefabPathsに候補がない時点でそもそも元プレハブ検索は失敗するため検索が成功したデータ内から取得を行う
             var firstCandidatePath = _candidatePrefabPaths[0];
             if (string.IsNullOrEmpty(firstCandidatePath))
             {
