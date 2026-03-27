@@ -720,18 +720,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         _sourcePrefabAsset = resolvedPrefab;
                     }
 
-                    EditorGUILayout.LabelField("元アバター Prefab（自動解決）", EditorStyles.boldLabel);
-                    EditorGUI.BeginChangeCheck();
-                    var nextPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        _sourcePrefabAsset = nextPrefab;
-                    }
-
-                    if (_sourcePrefabAsset != null && !IsPrefabAsset(_sourcePrefabAsset))
-                    {
-                        EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
-                    }
+                    DrawRestorePrefabDirectInputField("元アバター Prefab（自動解決）");
                     return;
                 }
 
@@ -741,7 +730,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             private void DrawRestoreManualPrefabField()
             {
-                EditorGUILayout.LabelField("元アバター Prefab（手動指定）", EditorStyles.boldLabel);
+                DrawRestorePrefabDirectInputField("元アバター Prefab（手動指定）");
+            }
+
+            private void DrawRestorePrefabDirectInputField(string label)
+            {
+                EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
                 EditorGUI.BeginChangeCheck();
                 var manualPrefab = (GameObject)EditorGUILayout.ObjectField(_sourcePrefabAsset, typeof(GameObject), allowSceneObjects: false);
                 if (EditorGUI.EndChangeCheck())
