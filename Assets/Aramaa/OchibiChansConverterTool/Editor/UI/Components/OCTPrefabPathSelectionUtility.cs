@@ -90,18 +90,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
-        /// 指定フォルダから Prefab パス一覧を収集します。
+        /// 指定フォルダ直下（子フォルダは除外）の Prefab パス一覧を収集します。
         /// </summary>
         /// <param name="folder">探索対象フォルダ。</param>
-        /// <param name="sameDirectoryOnly">
-        /// true の場合は指定フォルダ直下のみ、false の場合は子フォルダも含めて収集します。
-        /// </param>
-        private static List<string> CollectPrefabPaths(string folder, bool sameDirectoryOnly = true)
+        private static List<string> CollectPrefabPaths(string folder)
         {
             if (string.IsNullOrEmpty(folder)) return new List<string>();
 
             var normalizedFolder = NormalizeAssetPath(folder);
-            // AssetDatabase.FindAssets は sameDirectoryOnly=false なら子フォルダも探索する。
+            // FindAssets は子フォルダも返すため、後段で「直下のみ」に絞り込む。
             var prefabGuids = AssetDatabase.FindAssets(PrefabSearchFilter, new[] { normalizedFolder });
             if (prefabGuids == null || prefabGuids.Length == 0) return new List<string>();
 
@@ -111,13 +108,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 if (string.IsNullOrEmpty(path)) continue;
                 if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) continue;
-
-                if (sameDirectoryOnly)
-                {
-                    // sameDirectoryOnly=true の場合は直下のみ許可（子フォルダは除外）。
-                    var pathDirectory = NormalizeAssetPath(Path.GetDirectoryName(path));
-                    if (!string.Equals(pathDirectory, normalizedFolder, StringComparison.OrdinalIgnoreCase)) continue;
-                }
+                var pathDirectory = NormalizeAssetPath(Path.GetDirectoryName(path));
+                if (!string.Equals(pathDirectory, normalizedFolder, StringComparison.OrdinalIgnoreCase)) continue;
 
                 candidates.Add(path);
             }
