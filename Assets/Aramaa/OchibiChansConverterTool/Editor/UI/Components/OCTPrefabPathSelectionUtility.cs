@@ -13,6 +13,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OCTPrefabPathSelectionUtility
     {
         private const string PrefabSearchFilter = "t:Prefab";
+        /// <summary>
+        /// 着せ替え用 Prefab 名を推定するための暫定キーワードです。
+        /// 本来はアバター製作者の命名言語に依存しない判定が望ましいですが、
+        /// 既存資産との互換性を優先し、現状は "Kisekae" を大文字小文字無視で使用します。
+        /// </summary>
         private const string PatternKisekae = "Kisekae";
 
         /// <summary>
