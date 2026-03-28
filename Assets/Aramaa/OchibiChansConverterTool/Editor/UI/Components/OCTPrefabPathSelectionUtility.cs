@@ -65,11 +65,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return PickPrefabByFilenamePattern(candidates, PatternKisekaeLower);
         }
 
+        /// <summary>
+        /// ファイル名（拡張子除く）に指定パターンを含む最初の Prefab パスを返します。
+        /// </summary>
+        /// <remarks>
+        /// 呼び出し側で候補順を整列しておくことで、返却結果を安定化できます。
+        /// </remarks>
         internal static string PickPrefabByFilenamePattern(IEnumerable<string> paths, string pattern)
         {
             if (paths == null) return null;
             if (string.IsNullOrEmpty(pattern)) return null;
 
+            // 部分一致で最初に見つかった候補を採用（大文字小文字は区別しない）。
             return paths.FirstOrDefault(path =>
                 Path.GetFileNameWithoutExtension(path)
                     .IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
