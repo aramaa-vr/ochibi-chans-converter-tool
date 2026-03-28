@@ -36,7 +36,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal static class OCTConversionPipeline
     {
-        private const string DuplicatedNameSuffix = " (Ochibi-chans)";
         /// <summary>
         /// ローカライズ文字列を取得します。
         /// </summary>
@@ -147,7 +146,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     restorePreviousSelection: false,
                     renameRule: duplicated => GameObjectUtility.GetUniqueNameForSibling(
                         duplicated != null ? duplicated.transform.parent : null,
-                        BuildDuplicateNameWithSuffix(sourceTarget.name)
+                        OCTDuplicateNamingUtility.BuildDuplicateNameWithSuffix(sourceTarget.name)
                     )
                 );
 
@@ -241,34 +240,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 Undo.CollapseUndoOperations(undoGroup);
             }
-        }
-
-        /// <summary>
-        /// 重複した接尾辞を避けながら複製先オブジェクト名を決定します。
-        /// </summary>
-        private static string BuildDuplicateNameWithSuffix(string sourceName)
-        {
-            // 元名が空の場合は接尾辞だけで安全な名前を作る。
-            if (string.IsNullOrWhiteSpace(sourceName))
-            {
-                return DuplicatedNameSuffix.TrimStart();
-            }
-
-            var normalizedSourceName = sourceName.TrimEnd();
-
-            // 既に同じ接尾辞が付いている場合は、二重付与を防ぐため一度取り除く。
-            if (normalizedSourceName.EndsWith(DuplicatedNameSuffix, StringComparison.Ordinal))
-            {
-                normalizedSourceName = normalizedSourceName.Substring(0, normalizedSourceName.Length - DuplicatedNameSuffix.Length).TrimEnd();
-            }
-
-            // 取り除いた結果が空白だけになったケースにも対応する。
-            if (string.IsNullOrWhiteSpace(normalizedSourceName))
-            {
-                return DuplicatedNameSuffix.TrimStart();
-            }
-
-            return normalizedSourceName + DuplicatedNameSuffix;
         }
 
         /// <summary>
