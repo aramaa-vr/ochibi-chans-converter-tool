@@ -20,9 +20,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var preferred = PickPrefabByFilenamePattern(candidates, "Kisekae Variant");
             if (!string.IsNullOrEmpty(preferred)) return preferred;
 
-            preferred = PickPrefabByFilenamePattern(candidates, "Kaihen_Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
             preferred = PickPrefabByFilenamePattern(candidates, "Kisekae");
             if (!string.IsNullOrEmpty(preferred)) return preferred;
 
