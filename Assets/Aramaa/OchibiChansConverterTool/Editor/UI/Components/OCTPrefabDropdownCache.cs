@@ -269,43 +269,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private static string FindPreferredPrefabPathUnder(string folder)
         {
-            var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { folder });
-            if (prefabGuids == null || prefabGuids.Length == 0) return null;
-
-            var candidates = new List<string>();
-            foreach (var guid in prefabGuids)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                if (string.IsNullOrEmpty(path)) continue;
-                if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) continue;
-
-                candidates.Add(path);
-            }
-
-            if (candidates.Count == 0) return null;
-
-            var preferred = PickPrefabByFilenamePattern(candidates, "Kisekae Variant");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, "Kaihen_Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, "Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            return candidates[0];
-        }
-
-        private static string PickPrefabByFilenamePattern(IEnumerable<string> paths, string pattern)
-        {
-            if (paths == null) return null;
-            if (string.IsNullOrEmpty(pattern)) return null;
-
-            var match = paths.FirstOrDefault(path =>
-                Path.GetFileNameWithoutExtension(path)
-                    .IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
-
-            return match;
+            return OCTPrefabPathSelectionUtility.FindPreferredPrefabPathUnder(folder);
         }
     }
 }
