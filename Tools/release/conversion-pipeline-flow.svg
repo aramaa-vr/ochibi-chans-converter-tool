@@ -49,7 +49,7 @@
     <rect x="120" y="510" width="960" height="170" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
     <text x="150" y="552" class="head">2) 元アバター複製（Ctrl+D 相当）</text>
     <text x="150" y="582" class="text">OCTDuplicateLikeCtrlDHandler で複製し、重複接尾辞を避けた命名を適用。</text>
-    <text x="150" y="612" class="mono">OCTDuplicateLikeCtrlDHandler.Duplicate() / BuildDuplicateNameWithSuffix()</text>
+    <text x="150" y="612" class="mono">OCTDuplicateLikeCtrlDHandler.Duplicate() / BuildUniqueDuplicateNameForSibling()</text>
     <text x="150" y="640" class="text">出力: duplicatedTargets（以降は常に複製先を処理対象にする）</text>
     <text x="150" y="666" class="note">restoreMode=true 時は複製直後に逆変換用Adjuster除去を実施</text>
     <text x="150" y="692" class="note">失敗時: Error.DuplicateFailed を記録して false return</text>
@@ -62,7 +62,8 @@
     <rect x="120" y="730" width="960" height="130" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="2.4"/>
     <text x="150" y="772" class="head">3) （任意）MA BoneProxy 補正</text>
     <text x="150" y="802" class="text">applyMaboneProxyProcessing=true のときのみ判定し、MA未導入環境は安全にスキップ。</text>
-    <text x="150" y="830" class="mono">OCTModularAvatarUtility.IsModularAvatarAvailable / ProcessBoneProxies()</text>
+    <text x="150" y="830" class="note">restoreMode=true 時はこの前段で Ex AddMenu を先に除去してから補正へ進む</text>
+    <text x="150" y="852" class="mono">OCTModularAvatarUtility.IsModularAvatarAvailable / ProcessBoneProxies()</text>
   </g>
 
   <line x1="600" y1="860" x2="600" y2="900" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
@@ -100,7 +101,7 @@
     <text x="150" y="1492" class="text">6-3) 不足 Component を追加し、ObjectReference を複製先へリマップ</text>
     <text x="150" y="1522" class="text">6-4) SkinnedMeshRenderer は BlendShape ウェイトのみ同期</text>
     <text x="150" y="1552" class="text">6-5) Ex AddMenu Prefab を未配置時のみ追加（重複判定あり）</text>
-    <text x="150" y="1578" class="note">restoreMode=true 時は追加せず、既存 Ex AddMenu を除去</text>
+    <text x="150" y="1578" class="note">restoreMode=true 時は追加せず（Ex AddMenu 除去は前段で実施済み）</text>
     <text x="150" y="1606" class="mono">ApplyCoreAvatarSynchronization() / TryAddExPrefabIfMissing()</text>
     <text x="150" y="1634" class="note">同期対象: duplicatedTargets（元アバターへ直接適用しない）</text>
     <text x="150" y="1660" class="note">補足: Ex AddMenu は Prefab アセットを Instantiate して配置</text>
