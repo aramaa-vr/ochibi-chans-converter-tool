@@ -105,7 +105,8 @@ def check_license_docs(root: Path, result: CheckResult) -> None:
 
 def load_package_json(root: Path, result: CheckResult) -> dict:
     package_path = root / "Assets/Aramaa/OchibiChansConverterTool/package.json"
-    log_info(f"package.json を読み込みます: {package_path.as_posix()}")
+    rel_package_path = package_path.relative_to(root).as_posix()
+    log_info(f"package.json を読み込みます: {rel_package_path}")
     try:
         package = json.loads(read_text(package_path))
         log_info("package.json の JSON 解析に成功しました")
@@ -125,6 +126,8 @@ def check_package_consistency(package: dict, result: CheckResult) -> None:
 
     if not isinstance(version, str) or not version:
         result.error("package.json の version が不正です")
+    else:
+        log_info(f"package.json version を確認しました: {version}")
     if not isinstance(url, str) or not url:
         result.error("package.json の url が不正です")
     elif isinstance(version, str):
@@ -135,11 +138,17 @@ def check_package_consistency(package: dict, result: CheckResult) -> None:
             result.error(
                 "package.json の version と url 内バージョンが一致しません"
             )
+        else:
+            log_info("package.json の url と version の整合を確認しました")
 
     if license_name != "Custom":
         result.warn(f"package.json の license が Custom ではありません: {license_name}")
+    else:
+        log_info("package.json の license=Custom を確認しました")
     if licenses_url != "https://github.com/aramaa-vr/ochibi-chans-converter-tool/blob/master/LICENSE":
         result.warn("package.json の licensesUrl が想定値と異なります")
+    else:
+        log_info("package.json の licensesUrl を確認しました")
 
 
 def check_changelog(root: Path, package: dict, result: CheckResult) -> None:
