@@ -21,7 +21,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         internal static string FindPreferredPrefabPathUnder(string folder)
         {
             // ドロップダウン候補の探索では「指定フォルダ直下のみ」を対象にする。
-            var candidates = CollectPrefabPaths(folder, sameDirectoryOnly: true);
+            var candidates = CollectPrefabPaths(folder);
             if (candidates.Count == 0) return null;
 
             // "Kisekae" を含む候補を優先し、無ければ先頭候補を返す。
@@ -47,7 +47,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (string.IsNullOrEmpty(directory)) return null;
 
             var sourceFileName = Path.GetFileNameWithoutExtension(sourcePrefabPath) ?? string.Empty;
-            var candidates = CollectPrefabPaths(directory, sameDirectoryOnly: true)
+            var candidates = CollectPrefabPaths(directory)
                 // kisekae を含む名前だけを候補化
                 .Where(path =>
                     Path.GetFileNameWithoutExtension(path).IndexOf(PatternKisekae, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -91,7 +91,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// <param name="sameDirectoryOnly">
         /// true の場合は指定フォルダ直下のみ、false の場合は子フォルダも含めて収集します。
         /// </param>
-        private static List<string> CollectPrefabPaths(string folder, bool sameDirectoryOnly)
+        private static List<string> CollectPrefabPaths(string folder, bool sameDirectoryOnly = true)
         {
             if (string.IsNullOrEmpty(folder)) return new List<string>();
 
