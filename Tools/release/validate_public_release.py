@@ -33,6 +33,10 @@ TEXT_SCAN_EXCLUDE_PARTS = {"LicenseVN3/"}
 SCAN_ALLOWLIST = {"Tools/release/validate_public_release.py"}
 
 
+def log_info(message: str) -> None:
+    print(f"[INFO] {message}")
+
+
 
 
 def configure_console_encoding() -> None:
@@ -75,32 +79,44 @@ def read_text(path: Path) -> str:
 
 
 def check_required_files(root: Path, result: CheckResult) -> None:
+    log_info("必須ファイルの存在を確認します")
     for rel in REQUIRED_FILES:
         path = root / rel
         if not path.exists():
             result.error(f"必須ファイルが見つかりません: {rel}")
+            continue
+        log_info(f"必須ファイル OK: {rel}")
 
 
 def check_license_docs(root: Path, result: CheckResult) -> None:
+    log_info("LICENSE と THIRD_PARTY_NOTICES.md の内容を確認します")
     license_text = read_text(root / "LICENSE")
     if "VN3ライセンス" not in license_text:
         result.error("LICENSE に VN3ライセンスの記載がありません")
+    else:
+        log_info("LICENSE の VN3ライセンス記載を確認しました")
 
     third_party_text = read_text(root / "THIRD_PARTY_NOTICES.md")
     if "同梱" not in third_party_text:
         result.warn("THIRD_PARTY_NOTICES.md に同梱ポリシー記載が見当たりません")
+    else:
+        log_info("THIRD_PARTY_NOTICES.md の同梱ポリシー記載を確認しました")
 
 
 def load_package_json(root: Path, result: CheckResult) -> dict:
     package_path = root / "Assets/Aramaa/OchibiChansConverterTool/package.json"
+    log_info(f"package.json を読み込みます: {package_path.as_posix()}")
     try:
-        return json.loads(read_text(package_path))
+        package = json.loads(read_text(package_path))
+        log_info("package.json の JSON 解析に成功しました")
+        return package
     except json.JSONDecodeError as exc:
         result.error(f"package.json の解析に失敗しました: {exc}")
         return {}
 
 
 def check_package_consistency(package: dict, result: CheckResult) -> None:
+    log_info("package.json の version / url / license / licensesUrl 整合性を確認します")
 
     version = package.get("version")
     url = package.get("url")
@@ -128,9 +144,12 @@ def check_package_consistency(package: dict, result: CheckResult) -> None:
 
 def check_changelog(root: Path, package: dict, result: CheckResult) -> None:
     version = package.get("version", "")
+    log_info(f"CHANGELOG.md に version {version} の見出しがあるか確認します")
     changelog = read_text(root / "CHANGELOG.md")
     if f"## [{version}]" not in changelog:
         result.error(f"CHANGELOG.md に version {version} の見出しがありません")
+    else:
+        log_info(f"CHANGELOG.md の version {version} 見出しを確認しました")
 
 
 def should_scan_file(path: Path) -> bool:
@@ -143,6 +162,7 @@ def should_scan_file(path: Path) -> bool:
 
 
 def check_secrets(root: Path, result: CheckResult) -> None:
+    log_info("git 管理下ファイルに機密情報パターンがないか確認します")
     tracked = subprocess.run(
         ["git", "ls-files"],
         cwd=root,
@@ -152,12 +172,14 @@ def check_secrets(root: Path, result: CheckResult) -> None:
     ).stdout.splitlines()
 
     findings: list[str] = []
+    scanned_files = 0
     for rel in tracked:
         if rel in SCAN_ALLOWLIST:
             continue
         path = root / rel
         if not path.exists() or not path.is_file() or not should_scan_file(path):
             continue
+        scanned_files += 1
         try:
             content = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
@@ -169,9 +191,12 @@ def check_secrets(root: Path, result: CheckResult) -> None:
 
     if findings:
         result.error("機密情報の疑いがある文字列を検出しました: " + ", ".join(findings[:20]))
+    else:
+        log_info(f"機密情報チェック完了: スキャン対象 {scanned_files} ファイル")
 
 
 def check_git_clean(root: Path, result: CheckResult) -> None:
+    log_info("git 作業ツリーの未コミット差分を確認します")
     status = subprocess.run(
         ["git", "status", "--short"],
         cwd=root,
@@ -181,6 +206,8 @@ def check_git_clean(root: Path, result: CheckResult) -> None:
     ).stdout.strip()
     if status:
         result.warn("作業ツリーに未コミット差分があります")
+    else:
+        log_info("git 作業ツリーはクリーンです")
 
 
 def main() -> int:
