@@ -7,9 +7,8 @@
 // ============================================================================
 
 using System;
-using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
@@ -73,59 +72,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return desiredName;
             }
 
-            // 3) 比較対象となる「同じ階層の名前」を集める。
-            //    - 親がある場合: 同じ親の child（=兄弟）
-            //    - 親がない場合: 同じ Scene の root GameObject 群
-            //      （root 同士の重複もここで解決する）
-            var usedNames = new HashSet<string>(StringComparer.Ordinal);
+            // 3) Unity 標準の GetUniqueNameForSibling で一意名を取得する。
+            //    ただしこの API は「自分自身」も衝突候補に入るため、
+            //    先に一時名へ退避してから問い合わせることで、連番飛びを抑える。
             var parent = duplicatedObject.transform != null ? duplicatedObject.transform.parent : null;
-            if (parent != null)
-            {
-                for (int i = 0; i < parent.childCount; i++)
-                {
-                    var sibling = parent.GetChild(i);
-                    if (sibling == null || sibling.gameObject == null || sibling.gameObject == duplicatedObject)
-                    {
-                        continue;
-                    }
+            var originalName = duplicatedObject.name;
+            var temporaryName = $"__oct_tmp__{Guid.NewGuid():N}";
 
-                    usedNames.Add(sibling.gameObject.name);
-                }
+            try
+            {
+                duplicatedObject.name = temporaryName;
+                return GameObjectUtility.GetUniqueNameForSibling(parent, desiredName);
             }
-            else
+            finally
             {
-                Scene scene = duplicatedObject.scene;
-                if (scene.IsValid())
-                {
-                    var roots = scene.GetRootGameObjects();
-                    for (int i = 0; i < roots.Length; i++)
-                    {
-                        var root = roots[i];
-                        if (root == null || root == duplicatedObject)
-                        {
-                            continue;
-                        }
-
-                        usedNames.Add(root.name);
-                    }
-                }
-            }
-
-            // 4) 同名が無ければそのまま採用。
-            if (!usedNames.Contains(desiredName))
-            {
-                return desiredName;
-            }
-
-            // 5) 既に使われている場合は "(1)", "(2)"... の最小空き番号を採用。
-            //    これにより連番飛びを最小化し、見通しの良い命名にする。
-            for (int suffixNumber = 1; ; suffixNumber++)
-            {
-                var candidate = $"{desiredName} ({suffixNumber})";
-                if (!usedNames.Contains(candidate))
-                {
-                    return candidate;
-                }
+                // renameRule の呼び出し側で最終名を代入するまでの安全策として元名へ戻す。
+                duplicatedObject.name = originalName;
             }
         }
     }
