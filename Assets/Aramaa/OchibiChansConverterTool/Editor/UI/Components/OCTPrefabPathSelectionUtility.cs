@@ -27,11 +27,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             // ドロップダウン候補の探索では「指定フォルダ直下のみ」を対象にする。
             var candidates = CollectPrefabPaths(folder);
-            if (candidates.Count == 0) return null;
+            if (candidates.Count == 0)
+            {
+                return null;
+            }
 
             // "Kisekae" を含む候補を優先し、無ければ先頭候補を返す。
             var preferred = PickPrefabByFilenamePattern(candidates, PatternKisekae);
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
+            if (!string.IsNullOrEmpty(preferred))
+            {
+                return preferred;
+            }
 
             return candidates[0];
         }
@@ -45,11 +51,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             string sourcePrefabPath,
             Func<string, bool> candidatePredicate)
         {
-            if (string.IsNullOrEmpty(sourcePrefabPath)) return null;
+            if (string.IsNullOrEmpty(sourcePrefabPath))
+            {
+                return null;
+            }
 
             // OriginalAvatar 解決では「同一ディレクトリ内の兄弟 prefab」のみを見る。
             var directory = NormalizeAssetPath(Path.GetDirectoryName(sourcePrefabPath));
-            if (string.IsNullOrEmpty(directory)) return null;
+            if (string.IsNullOrEmpty(directory))
+            {
+                return null;
+            }
 
             var sourceFileName = Path.GetFileNameWithoutExtension(sourcePrefabPath) ?? string.Empty;
             var candidates = CollectPrefabPaths(directory)
@@ -62,11 +74,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 .OrderBy(path => Path.GetFileNameWithoutExtension(path), StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            if (candidates.Count == 0) return null;
+            if (candidates.Count == 0)
+            {
+                return null;
+            }
 
             // まず「元 prefab 名を含むもの」を優先（例: Chiffon -> Chiffon_kisekae）。
             var preferred = PickPrefabByFilenamePattern(candidates, sourceFileName);
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
+            if (!string.IsNullOrEmpty(preferred))
+            {
+                return preferred;
+            }
 
             // それが無ければ kisekae 名称一致の中から優先規則（短い名前優先）で採用。
             return PickPrefabByFilenamePattern(candidates, PatternKisekae);
@@ -80,8 +98,15 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </remarks>
         internal static string PickPrefabByFilenamePattern(IEnumerable<string> paths, string pattern)
         {
-            if (paths == null) return null;
-            if (string.IsNullOrEmpty(pattern)) return null;
+            if (paths == null)
+            {
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(pattern))
+            {
+                return null;
+            }
 
             // 条件一致が複数ある場合は、ファイル名（拡張子除く）の文字数が短いものを優先。
             // 同率時はファイル名順で安定化する。
@@ -100,21 +125,38 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// <param name="folder">探索対象フォルダ。</param>
         private static List<string> CollectPrefabPaths(string folder)
         {
-            if (string.IsNullOrEmpty(folder)) return new List<string>();
+            if (string.IsNullOrEmpty(folder))
+            {
+                return new List<string>();
+            }
 
             var normalizedFolder = NormalizeAssetPath(folder);
             // FindAssets は子フォルダも返すため、後段で「直下のみ」に絞り込む。
             var prefabGuids = AssetDatabase.FindAssets(PrefabSearchFilter, new[] { normalizedFolder });
-            if (prefabGuids == null || prefabGuids.Length == 0) return new List<string>();
+            if (prefabGuids == null || prefabGuids.Length == 0)
+            {
+                return new List<string>();
+            }
 
             var candidates = new List<string>();
             foreach (var guid in prefabGuids)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
-                if (string.IsNullOrEmpty(path)) continue;
-                if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) continue;
+                if (string.IsNullOrEmpty(path))
+                {
+                    continue;
+                }
+
+                if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 var pathDirectory = NormalizeAssetPath(Path.GetDirectoryName(path));
-                if (!string.Equals(pathDirectory, normalizedFolder, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!string.Equals(pathDirectory, normalizedFolder, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
 
                 candidates.Add(path);
             }
@@ -127,7 +169,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private static string NormalizeAssetPath(string path)
         {
-            return string.IsNullOrEmpty(path) ? path : path.Replace("\\", "/");
+            if (string.IsNullOrEmpty(path))
+            {
+                return path;
+            }
+
+            return path.Replace("\\", "/");
         }
     }
 }
