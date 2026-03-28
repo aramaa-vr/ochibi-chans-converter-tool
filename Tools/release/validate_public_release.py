@@ -239,14 +239,14 @@ def check_secrets(root: Path, result: CheckResult) -> None:
     ).stdout.splitlines()
 
     findings: list[str] = []
-    scanned_files = 0
+    scanned_files: list[str] = []
     for rel in tracked:
         if rel in SCAN_ALLOWLIST:
             continue
         path = root / rel
         if not path.exists() or not path.is_file() or not should_scan_file(path):
             continue
-        scanned_files += 1
+        scanned_files.append(rel)
         try:
             content = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
@@ -259,7 +259,9 @@ def check_secrets(root: Path, result: CheckResult) -> None:
     if findings:
         result.error("機密情報の疑いがある文字列を検出しました: " + ", ".join(findings[:20]))
     else:
-        log_info(f"機密情報チェック完了: スキャン対象 {scanned_files} ファイル")
+        log_info(f"機密情報チェック完了: スキャン対象 {len(scanned_files)} ファイル")
+    for rel in scanned_files:
+        log_info(f"[SECRETS] スキャン対象ファイル: {rel}")
 
 
 def check_git_clean(root: Path, result: CheckResult) -> None:
