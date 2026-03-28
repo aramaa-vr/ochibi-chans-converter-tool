@@ -73,11 +73,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return desiredName;
             }
 
-            // 3) Unity 標準 API（ObjectNames.GetUniqueName）で一意名を取得する。
-            //    先に「自分以外」の同階層名を列挙して渡すことで、
-            //    一時改名なしで自己衝突を回避する。
+            // 3) 自分以外の同階層名を収集して Unity 標準 API へ渡す。
+            //    ※ これで一時改名などの副作用なしに一意名を取得できる。
+            var existingNames = CollectPeerObjectNames(duplicatedObject);
+            return ObjectNames.GetUniqueName(existingNames, desiredName);
+        }
+
+        /// <summary>
+        /// duplicatedObject 自身を除いた「同階層オブジェクト名」を収集します。
+        /// - 親がある場合: 兄弟（同じ parent の child）
+        /// - 親がない場合: 同じ Scene の root
+        /// </summary>
+        private static string[] CollectPeerObjectNames(GameObject duplicatedObject)
+        {
+            var names = new List<string>();
             var parent = duplicatedObject.transform != null ? duplicatedObject.transform.parent : null;
-            var existingNames = new List<string>();
+
             if (parent != null)
             {
                 for (int i = 0; i < parent.childCount; i++)
@@ -88,25 +99,30 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         continue;
                     }
 
-                    existingNames.Add(sibling.gameObject.name);
+                    names.Add(sibling.gameObject.name);
                 }
+
+                return names.ToArray();
             }
-            else if (duplicatedObject.scene.IsValid())
+
+            if (!duplicatedObject.scene.IsValid())
             {
-                var roots = duplicatedObject.scene.GetRootGameObjects();
-                for (int i = 0; i < roots.Length; i++)
-                {
-                    var root = roots[i];
-                    if (root == null || root == duplicatedObject)
-                    {
-                        continue;
-                    }
-
-                    existingNames.Add(root.name);
-                }
+                return names.ToArray();
             }
 
-            return ObjectNames.GetUniqueName(existingNames.ToArray(), desiredName);
+            var roots = duplicatedObject.scene.GetRootGameObjects();
+            for (int i = 0; i < roots.Length; i++)
+            {
+                var root = roots[i];
+                if (root == null || root == duplicatedObject)
+                {
+                    continue;
+                }
+
+                names.Add(root.name);
+            }
+
+            return names.ToArray();
         }
     }
 }
