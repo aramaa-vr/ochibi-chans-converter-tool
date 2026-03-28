@@ -143,8 +143,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                         try
                         {
+                            // renameRule が空/同名を返した場合は、不要な name 再代入を避ける。
+                            // （Hierarchy 更新イベントや余計な差分発生を抑える）
                             var renamed = renameRule(createdObject);
-                            createdObject.name = string.IsNullOrWhiteSpace(renamed) ? createdObject.name : renamed;
+                            if (string.IsNullOrWhiteSpace(renamed))
+                            {
+                                continue;
+                            }
+
+                            if (!string.Equals(createdObject.name, renamed, StringComparison.Ordinal))
+                            {
+                                createdObject.name = renamed;
+                            }
                         }
                         catch (Exception ex)
                         {
