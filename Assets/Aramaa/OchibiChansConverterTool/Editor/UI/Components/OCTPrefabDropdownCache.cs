@@ -269,6 +269,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private static string FindPreferredPrefabPathUnder(string folder)
         {
+            // 既存の優先順位仕様は共通ユーティリティ側で一元管理する。
             return OCTPrefabPathSelectionUtility.FindPreferredPrefabPathUnder(folder);
         }
     }

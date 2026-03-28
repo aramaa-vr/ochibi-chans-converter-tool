@@ -308,6 +308,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private static string TryFindKisekaePrefabPathInSameDirectory(string prefabPath)
         {
+            // 候補列挙・名前優先順位は共通ユーティリティへ集約。
+            // ここでは「元アバター候補として有効か」の条件だけを渡す。
             return OCTPrefabPathSelectionUtility.FindPreferredKisekaeSiblingPrefabPath(
                 prefabPath,
                 path => IsOriginalAvatarPrefabPathCandidate(path) && PrefabPathHasDescriptor(path));
