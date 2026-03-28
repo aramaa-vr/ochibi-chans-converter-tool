@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 SECRET_PATTERN = re.compile(
@@ -161,6 +162,63 @@ def check_changelog(root: Path, package: dict, result: CheckResult) -> None:
         log_info(f"CHANGELOG.md の version {version} 見出しを確認しました")
 
 
+def build_zip_tree_lines(names: list[str]) -> list[str]:
+    root: dict[str, dict] = {}
+    for raw_name in sorted(names):
+        normalized = raw_name.rstrip("/")
+        if not normalized:
+            continue
+        parts = [part for part in normalized.split("/") if part]
+        cursor = root
+        for part in parts:
+            cursor = cursor.setdefault(part, {})
+
+    lines: list[str] = []
+
+    def append_lines(tree: dict[str, dict], prefix: str = "") -> None:
+        keys = sorted(tree.keys())
+        for idx, key in enumerate(keys):
+            is_last = idx == len(keys) - 1
+            connector = "└─ " if is_last else "├─ "
+            child = tree[key]
+            suffix = "/" if child else ""
+            lines.append(f"{prefix}{connector}{key}{suffix}")
+            next_prefix = f"{prefix}{'   ' if is_last else '│  '}"
+            append_lines(child, next_prefix)
+
+    append_lines(root)
+    return lines
+
+
+def check_build_zip_contents(root: Path, package: dict, result: CheckResult) -> None:
+    version = package.get("version")
+    if not isinstance(version, str) or not version:
+        result.warn("Build ZIP の内容確認をスキップしました: package version が不正です")
+        return
+
+    zip_rel = Path(f"Build/jp.aramaa.ochibi-chans-converter-tool-{version}.zip")
+    zip_path = root / zip_rel
+    log_info(f"Build ZIP の内容を確認します: {zip_rel.as_posix()}")
+    if not zip_path.exists():
+        result.warn(f"Build ZIP が見つかりません: {zip_rel.as_posix()}")
+        return
+
+    try:
+        with zipfile.ZipFile(zip_path) as zip_file:
+            names = zip_file.namelist()
+    except zipfile.BadZipFile:
+        result.error(f"Build ZIP の読み込みに失敗しました: {zip_rel.as_posix()}")
+        return
+
+    if not names:
+        result.warn(f"Build ZIP が空です: {zip_rel.as_posix()}")
+        return
+
+    log_info(f"Build ZIP エントリ数: {len(names)}")
+    for line in build_zip_tree_lines(names):
+        log_info(f"[ZIP] {line}")
+
+
 def should_scan_file(path: Path) -> bool:
     rel = path.as_posix()
     if any(part in rel for part in TEXT_SCAN_EXCLUDE_PARTS):
@@ -234,6 +292,7 @@ def main() -> int:
     package = load_package_json(root, result)
     check_package_consistency(package, result)
     check_changelog(root, package, result)
+    check_build_zip_contents(root, package, result)
     check_secrets(root, result)
     check_git_clean(root, result)
 
