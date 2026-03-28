@@ -17,6 +17,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private const string PatternKisekae = "Kisekae";
         private const string PatternKisekaeLower = "kisekae";
 
+        /// <summary>
+        /// 指定フォルダ配下（子フォルダ含む）から Prefab を収集し、既定の優先順位で1件選びます。
+        /// </summary>
         internal static string FindPreferredPrefabPathUnder(string folder)
         {
             // ドロップダウン候補の探索では「指定フォルダ配下すべて（子フォルダ含む）」を対象にする。
@@ -34,6 +37,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return candidates[0];
         }
 
+        /// <summary>
+        /// 指定 Prefab と同一ディレクトリ内の kisekae 候補を収集し、優先順位に従って1件返します。
+        /// </summary>
+        /// <param name="sourcePrefabPath">基準となる Prefab パス。</param>
+        /// <param name="candidatePredicate">候補に追加適用する条件（null なら条件なし）。</param>
         internal static string FindPreferredKisekaeSiblingPrefabPath(
             string sourcePrefabPath,
             Func<string, bool> candidatePredicate)
@@ -82,6 +90,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     .IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
+        /// <summary>
+        /// 指定フォルダから Prefab パス一覧を収集します。
+        /// </summary>
+        /// <param name="folder">探索対象フォルダ。</param>
+        /// <param name="sameDirectoryOnly">
+        /// true の場合は指定フォルダ直下のみ、false の場合は子フォルダも含めて収集します。
+        /// </param>
         private static List<string> CollectPrefabPaths(string folder, bool sameDirectoryOnly)
         {
             if (string.IsNullOrEmpty(folder)) return new List<string>();
