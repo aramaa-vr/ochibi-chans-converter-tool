@@ -348,9 +348,9 @@ def main() -> int:
     package = load_package_json(root, result)
     check_package_consistency(package, result)
     check_changelog(root, package, result)
-    check_build_zip_contents(root, package, result)
     check_purchase_required_assets_in_git(root, result)
     check_secrets(root, result)
+    check_build_zip_contents(root, package, result)
     check_git_clean(root, result)
 
     for warning in result.warnings:
