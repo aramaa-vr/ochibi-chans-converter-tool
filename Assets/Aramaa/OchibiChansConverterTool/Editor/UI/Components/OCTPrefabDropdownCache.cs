@@ -52,8 +52,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
         // 末尾の v8 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
-        // 互換が壊れる変更を入れたら v8 に上げる（JSON構造が同じでも上げてよい）。
-        private const string FaceMeshCacheFileName = "FaceMeshCache.v8.json";
+        // 互換が壊れる変更を入れたら上げる（JSON構造が同じでも上げてよい）。
+        private const string FaceMeshCacheFileName = "FaceMeshCache.v9.json";
 
         private static readonly Dictionary<string, CachedFaceMesh> CachedFaceMeshByPrefab =
             new Dictionary<string, CachedFaceMesh>();
@@ -70,6 +70,63 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         public IReadOnlyList<string> CandidateDisplayNames => _candidateDisplayNames;
         public int SelectedIndex => _selectedPrefabIndex;
         public GameObject SourcePrefabAsset => _sourcePrefabAsset;
+
+        /// <summary>
+        /// 現在の候補一覧（プルダウン）先頭に対応する元アバター Prefab を返します。
+        /// </summary>
+        public bool TryResolveOriginalAvatarPrefabFromFirstCandidate(out GameObject originalAvatarPrefab)
+        {
+            originalAvatarPrefab = null;
+            if (_candidatePrefabPaths.Count == 0)
+            {
+                return false;
+            }
+
+            // 仕様: 逆変換は「プルダウン先頭候補」を基準に決定する。
+            // 候補の優先順位（FindPreferredPrefabPathUnder + フォルダ順）と一致させるため、先頭固定で扱う。
+            // 補足: 現在の仕様では、バリアントプレハブの元を追っていき最初に見つかったBaseFolderではないバリアントプレハブを元のアバターと指定する仕様
+            // そのため、_candidatePrefabPathsに候補がない時点でそもそも元プレハブ検索は失敗するため検索が成功したデータ内から取得を行う
+            var firstCandidatePath = _candidatePrefabPaths[0];
+            if (string.IsNullOrEmpty(firstCandidatePath))
+            {
+                return false;
+            }
+
+            if (!TryGetCachedFaceMeshSignature(firstCandidatePath, out var firstCandidateSignature))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(firstCandidateSignature.OriginalAvatarPrefabPath))
+            {
+                return false;
+            }
+
+            return TryLoadOriginalAvatarPrefab(firstCandidateSignature.OriginalAvatarPrefabPath, out originalAvatarPrefab);
+        }
+
+        private static bool TryLoadOriginalAvatarPrefab(string prefabPath, out GameObject originalAvatarPrefab)
+        {
+            originalAvatarPrefab = null;
+            if (string.IsNullOrEmpty(prefabPath))
+            {
+                return false;
+            }
+
+            var loaded = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (loaded == null)
+            {
+                return false;
+            }
+
+            if (PrefabUtility.GetPrefabAssetType(loaded) == PrefabAssetType.NotAPrefab)
+            {
+                return false;
+            }
+
+            originalAvatarPrefab = loaded;
+            return true;
+        }
 
         /// <summary>
         /// 指定した Prefab が候補一覧に含まれるかを判定します。

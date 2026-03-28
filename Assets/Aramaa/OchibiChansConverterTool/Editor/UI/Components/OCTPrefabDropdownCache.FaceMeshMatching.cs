@@ -4,12 +4,15 @@
 // ============================================================================
 // - FaceMesh の抽出・一致判定を担当する分割ファイルです。
 // - 候補 Prefab が「同じ顔メッシュ系統か」を判定するロジックをまとめています。
+// - OriginalAvatarPrefabPath（元アバタープリファブのパス）もここで算出します。
 //
 // ============================================================================
 // 重要メモ（初心者向け）
 // ============================================================================
 // - ここは「比較/抽出」のみを扱い、UI や候補一覧の状態は変更しません。
 // - VRChat SDK が無い環境では #if で安全にスキップされます。
+// - OriginalAvatarPrefabPath は「Variant 系譜を上流へたどって最初に条件一致した .prefab」を採用します。
+//   （BaseFolder 配下は除外、ルートに Descriptor があることが条件）
 // ============================================================================
 
 using System;
@@ -47,9 +50,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 prefabGuid = string.Empty;
                 prefabName = string.Empty;
             }
+            _ = TryGetOriginalAvatarPrefabPath(root, out var originalAvatarPrefabPath);
 
             _ = TryGetAnimatorAvatarInfoFromDescriptor(descriptor, out var avatarId, out var avatarAssetPath);
-            return TryBuildFaceMeshSignature(mesh, avatarId, avatarAssetPath, prefabGuid, prefabName, out signature);
+            return TryBuildFaceMeshSignature(
+                mesh,
+                avatarId,
+                avatarAssetPath,
+                prefabGuid,
+                prefabName,
+                originalAvatarPrefabPath,
+                out signature);
 #else
             return false;
 #endif
@@ -230,6 +241,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             string avatarAssetPath,
             string prefabGuid,
             string prefabName,
+            string originalAvatarPrefabPath,
             out FaceMeshSignature signature)
         {
             signature = default;
@@ -258,10 +270,84 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 avatarAssetPath,
                 prefabGuid,
                 prefabName,
+                originalAvatarPrefabPath,
                 fbxGuid,
                 fbxName,
                 assetPath);
             return true;
+        }
+
+        private static bool TryGetOriginalAvatarPrefabPath(GameObject root, out string originalAvatarPrefabPath)
+        {
+            originalAvatarPrefabPath = string.Empty;
+            if (root == null) return false;
+
+            // 入口:
+            // - Prefab Instance なら「現在適用されている Prefab Asset」から開始
+            // - Prefab Asset ならその Asset 自身から開始
+            var currentPrefabAsset = ResolveLineageStartPrefabAsset(root);
+            while (currentPrefabAsset != null)
+            {
+                var currentPath = AssetDatabase.GetAssetPath(currentPrefabAsset);
+                // 条件を満たす最初の候補を採用する（要件準拠）。
+                if (IsOriginalAvatarPrefabPathCandidate(currentPath) &&
+                    PrefabAssetRootHasDescriptor(currentPrefabAsset))
+                {
+                    originalAvatarPrefabPath = currentPath;
+                    return true;
+                }
+
+                // Variant 系譜の上流（Base側）へ 1段ずつ遡る。
+                var nextPrefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(currentPrefabAsset);
+                if (nextPrefabAsset == currentPrefabAsset) break;
+                currentPrefabAsset = nextPrefabAsset;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Variant 系譜探索の開始地点となる Prefab Asset を決めます。
+        /// - Prefab Instance: インスタンスの適用元 Prefab Asset を返す
+        /// - Prefab Asset: そのアセット自身を返す
+        /// - それ以外: 系譜を辿れないため null
+        /// </summary>
+        private static GameObject ResolveLineageStartPrefabAsset(GameObject root)
+        {
+            if (root == null) return null;
+
+            if (PrefabUtility.IsPartOfPrefabInstance(root))
+            {
+                var instanceRoot = PrefabUtility.GetNearestPrefabInstanceRoot(root);
+                if (instanceRoot == null) return null;
+                return PrefabUtility.GetCorrespondingObjectFromSource(instanceRoot);
+            }
+
+            if (PrefabUtility.IsPartOfPrefabAsset(root))
+            {
+                return root;
+            }
+
+            return null;
+        }
+
+        private static bool IsOriginalAvatarPrefabPathCandidate(string prefabPath)
+        {
+            if (string.IsNullOrEmpty(prefabPath)) return false;
+            if (!prefabPath.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) return false;
+            // おちびちゃんズ配布側（BaseFolder）を除外し、元アバター側のみ対象にする。
+            if (prefabPath.StartsWith(BaseFolder + "/", StringComparison.OrdinalIgnoreCase)) return false;
+            return !string.Equals(prefabPath, BaseFolder, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool PrefabAssetRootHasDescriptor(GameObject prefabAsset)
+        {
+            if (prefabAsset == null) return false;
+#if VRC_SDK_VRCSDK3
+            return prefabAsset.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>() != null;
+#else
+            return false;
+#endif
         }
 
         private static bool TryBuildMeshId(Mesh mesh, out MeshId meshId)

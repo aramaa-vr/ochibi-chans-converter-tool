@@ -76,6 +76,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             GameObject sourceChibiPrefab,
             GameObject sourceTarget,
             bool applyMaboneProxyProcessing,
+            bool restoreMode,
             List<string> logs
         )
         {
@@ -174,6 +175,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 logs.Add("");
 
+                if (restoreMode)
+                {
+                    // 逆変換モードでは、複製直後に変換補助コンポーネントを除去してから本処理へ進む。
+                    logs.Add(L("Log.RestoreAdjustersStart"));
+                    foreach (var duplicated in duplicatedTargets.Where(x => x != null))
+                    {
+                        OCTRestoreModeProcessor.RemoveReverseConversionAdjusters(duplicated, logs);
+                    }
+                    logs.Add("");
+                }
+
                 // --------------------------------------------------------
                 // SVG 対応ステップ: 3) （任意）MA BoneProxy 補正
                 // --------------------------------------------------------
@@ -222,7 +234,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // 複製先へ変換を適用
                 // --------------------------------------------------------
-                var applySucceeded = ApplyConversionToTargets(sourceChibiPrefab, duplicatedTargets, logs: logs);
+                var applySucceeded = ApplyConversionToTargets(sourceChibiPrefab, duplicatedTargets, restoreMode, logs: logs);
                 return applySucceeded;
             }
             finally
@@ -236,6 +248,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private static string BuildDuplicateNameWithSuffix(string sourceName)
         {
+            // 元名が空の場合は接尾辞だけで安全な名前を作る。
             if (string.IsNullOrWhiteSpace(sourceName))
             {
                 return DuplicatedNameSuffix.TrimStart();
@@ -243,11 +256,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             var normalizedSourceName = sourceName.TrimEnd();
 
+            // 既に同じ接尾辞が付いている場合は、二重付与を防ぐため一度取り除く。
             if (normalizedSourceName.EndsWith(DuplicatedNameSuffix, StringComparison.Ordinal))
             {
                 normalizedSourceName = normalizedSourceName.Substring(0, normalizedSourceName.Length - DuplicatedNameSuffix.Length).TrimEnd();
             }
 
+            // 取り除いた結果が空白だけになったケースにも対応する。
             if (string.IsNullOrWhiteSpace(normalizedSourceName))
             {
                 return DuplicatedNameSuffix.TrimStart();
@@ -260,7 +275,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// 変換元 Prefab の参照を読み取り、複製先へ段階的に同期適用します。
         /// （変換パイプラインの 5〜7 ステップ相当）
         /// </summary>
-        private static bool ApplyConversionToTargets(GameObject sourceChibiPrefab, GameObject[] targets, List<string> logs)
+        private static bool ApplyConversionToTargets(GameObject sourceChibiPrefab, GameObject[] targets, bool restoreMode, List<string> logs)
         {
             logs ??= new List<string>();
             var log = new OCTConversionLogger(logs);
@@ -287,6 +302,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var basePrefabPath = AssetDatabase.GetAssetPath(sourceChibiPrefab);
             if (string.IsNullOrEmpty(basePrefabPath))
             {
+                // PrefabPath が取れない場合は LoadPrefabContents できないため、ここで中断する。
                 Debug.LogError(L("Error.SourcePrefabPathMissing"));
 
                 return false;
@@ -323,8 +339,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     out var expressionParameters
                 );
 
-                // Ochibichans_Addmenu は sourceChibiPrefab の内部にある想定
-                TryResolveExAddMenuPlacementFromSourcePrefab(basePrefabRoot, out var exAddMenuPlacement);
+                ExPrefabPlacement exAddMenuPlacement = default;
+                if (!restoreMode)
+                {
+                    // Ochibichans_Addmenu は sourceChibiPrefab の内部にある想定
+                    TryResolveExAddMenuPlacementFromSourcePrefab(basePrefabRoot, out exAddMenuPlacement);
+                }
 
                 // --------------------------------------------------------
                 // 変換対象へ反映
@@ -356,8 +376,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     // SVG 対応ステップ: 6) 複製先へ同期適用（コア処理）
                     ApplyCoreAvatarSynchronization(basePrefabRoot, dstRoot, logs);
 
-                    // Ex AddMenu Prefab 追加（未配置時のみ）
-                    if (exAddMenuPlacement.PrefabAsset != null)
+                    // Ex AddMenu 処理（restoreMode を優先分岐）
+                    if (restoreMode)
+                    {
+                        logs.Add(L("Log.RestoreSkipAddMenu"));
+                        OCTRestoreModeProcessor.RemoveExAddMenuObjectsIfExists(dstRoot, logs);
+                        logs.Add("");
+                    }
+                    else if (exAddMenuPlacement.PrefabAsset != null)
                     {
                         logs.Add(L("Log.ExPrefabHeader"));
                         TryAddExPrefabIfMissing(dstRoot, exAddMenuPlacement, logs);
@@ -796,6 +822,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             int missingPathCount = 0;
             int alreadySatisfiedCount = 0;
 
+            // src Armature 配下を走査し、同じ相対パスの dst へ不足分のみ追加する。
             foreach (var srcT in srcAll)
             {
                 if (srcT == null)
@@ -819,6 +846,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var srcComps = srcGO.GetComponents<Component>();
                 var srcByType = new Dictionary<Type, List<Component>>();
 
+                // 型ごとに束ねることで、同型Component複数持ちの不足数を正しく判定する。
                 foreach (var c in srcComps)
                 {
                     if (c == null)
@@ -853,6 +881,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         alreadySatisfiedCount++;
                     }
 
+                    // 既存個数を超える分だけ追加し、既存Componentの値は保持する。
                     for (int i = 0; i < srcList.Count; i++)
                     {
                         if (i < dstCount)
@@ -864,6 +893,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                         try
                         {
+                            // 一部Componentは追加不可な場合があるため、1件失敗で全体を止めない。
                             newComp = Undo.AddComponent(dstGO, type);
                         }
                         catch
@@ -878,6 +908,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                         try
                         {
+                            // 値コピー失敗時は追加済みComponentを残して継続し、全体変換の中断を避ける。
                             EditorUtility.CopySerialized(srcList[i], newComp);
                         }
                         catch
