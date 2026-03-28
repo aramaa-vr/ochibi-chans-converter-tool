@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
@@ -62,35 +63,62 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         public static string BuildUniqueDuplicateNameForSibling(GameObject duplicatedObject, string sourceName)
         {
+            // 1) まず「理想のベース名」を作る（例: Avatar (Ochibi-chans)）
             var desiredName = BuildDuplicateNameWithSuffix(sourceName);
+
+            // 2) 呼び出し側の都合で null が渡ってきても落とさず、
+            //    まずはベース名だけ返して処理継続できるようにする。
             if (duplicatedObject == null)
             {
                 return desiredName;
             }
 
-            var parent = duplicatedObject.transform != null ? duplicatedObject.transform.parent : null;
-            if (parent == null)
-            {
-                return desiredName;
-            }
-
+            // 3) 比較対象となる「同じ階層の名前」を集める。
+            //    - 親がある場合: 同じ親の child（=兄弟）
+            //    - 親がない場合: 同じ Scene の root GameObject 群
+            //      （root 同士の重複もここで解決する）
             var usedNames = new HashSet<string>(StringComparer.Ordinal);
-            for (int i = 0; i < parent.childCount; i++)
+            var parent = duplicatedObject.transform != null ? duplicatedObject.transform.parent : null;
+            if (parent != null)
             {
-                var sibling = parent.GetChild(i);
-                if (sibling == null || sibling.gameObject == null || sibling.gameObject == duplicatedObject)
+                for (int i = 0; i < parent.childCount; i++)
                 {
-                    continue;
-                }
+                    var sibling = parent.GetChild(i);
+                    if (sibling == null || sibling.gameObject == null || sibling.gameObject == duplicatedObject)
+                    {
+                        continue;
+                    }
 
-                usedNames.Add(sibling.gameObject.name);
+                    usedNames.Add(sibling.gameObject.name);
+                }
+            }
+            else
+            {
+                Scene scene = duplicatedObject.scene;
+                if (scene.IsValid())
+                {
+                    var roots = scene.GetRootGameObjects();
+                    for (int i = 0; i < roots.Length; i++)
+                    {
+                        var root = roots[i];
+                        if (root == null || root == duplicatedObject)
+                        {
+                            continue;
+                        }
+
+                        usedNames.Add(root.name);
+                    }
+                }
             }
 
+            // 4) 同名が無ければそのまま採用。
             if (!usedNames.Contains(desiredName))
             {
                 return desiredName;
             }
 
+            // 5) 既に使われている場合は "(1)", "(2)"... の最小空き番号を採用。
+            //    これにより連番飛びを最小化し、見通しの良い命名にする。
             for (int suffixNumber = 1; ; suffixNumber++)
             {
                 var candidate = $"{desiredName} ({suffixNumber})";
