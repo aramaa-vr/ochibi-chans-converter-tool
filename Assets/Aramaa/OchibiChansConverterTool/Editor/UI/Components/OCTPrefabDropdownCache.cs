@@ -265,7 +265,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
-        /// 指定フォルダ配下の Prefab から、優先順位に従って候補を1つ選びます。
+        /// 指定フォルダ直下の Prefab（子フォルダは含まない）から、優先順位に従って候補を1つ選びます。
         /// </summary>
         private static string FindPreferredPrefabPathUnder(string folder)
         {

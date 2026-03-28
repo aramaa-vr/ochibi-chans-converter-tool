@@ -21,7 +21,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private const string PatternKisekae = "Kisekae";
 
         /// <summary>
-        /// 指定フォルダ配下（子フォルダ含む）から Prefab を収集し、既定の優先順位で1件選びます。
+        /// 指定フォルダ直下（子フォルダは含まない）から Prefab を収集し、既定の優先順位で1件選びます。
         /// </summary>
         internal static string FindPreferredPrefabPathUnder(string folder)
         {
