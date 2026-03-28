@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.6-beta.5]（Pre-release）
+### 主な変更点
+- **逆変換時の Ex AddMenu 除去タイミングを前倒し**：複製直後（MA BoneProxy 補正前）に Ex AddMenu を除去するようにし、Armature 配下へオブジェクトが残留する回帰を防止しました
+- **複製名付与ロジックを整理**：`OCTDuplicateNamingUtility` を導入し、`(Ochibi-chans)` タグの重複付与を抑えつつ Unity 標準の一意名生成で命名を安定化しました
+- **複製時の不要な name 再代入を抑制**：同名/空文字の rename 結果では代入をスキップし、Hierarchy 更新イベントや不要差分の発生を抑えました
+- **リリース検証スクリプトを強化**：`validate_public_release.py` に検証ログ詳細化・Build ZIP ツリー確認・secrets 対象ログ・購入必須アセット誤同梱チェックを追加し、チェック順序も調整しました
+- **パッケージバージョンを更新**：`ToolVersion` / `package.json` を **0.5.6-beta.5** に更新しました
+
 ## [0.5.6-beta.4]（Pre-release）
 ### 主な変更点
 - **逆変換（Restore Mode）フローを追加**：逆変換専用の処理経路とプロセッサを実装し、通常変換と分岐した手順で安全に復元できるようにしました

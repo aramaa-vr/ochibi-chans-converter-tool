@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 SECRET_PATTERN = re.compile(
@@ -31,6 +32,21 @@ TEXT_SCAN_EXCLUDE_SUFFIXES = {
 }
 TEXT_SCAN_EXCLUDE_PARTS = {"LicenseVN3/"}
 SCAN_ALLOWLIST = {"Tools/release/validate_public_release.py"}
+PURCHASE_REQUIRED_ASSET_EXTENSIONS = {
+    ".fbx",
+    ".blend",
+    ".obj",
+    ".dae",
+    ".anim",
+    ".controller",
+    ".avatar",
+    ".prefab",
+    ".mat",
+}
+
+
+def log_info(message: str) -> None:
+    print(f"[INFO] {message}")
 
 
 
@@ -75,32 +91,45 @@ def read_text(path: Path) -> str:
 
 
 def check_required_files(root: Path, result: CheckResult) -> None:
+    log_info("必須ファイルの存在を確認します")
     for rel in REQUIRED_FILES:
         path = root / rel
         if not path.exists():
             result.error(f"必須ファイルが見つかりません: {rel}")
+            continue
+        log_info(f"必須ファイル OK: {rel}")
 
 
 def check_license_docs(root: Path, result: CheckResult) -> None:
+    log_info("LICENSE と THIRD_PARTY_NOTICES.md の内容を確認します")
     license_text = read_text(root / "LICENSE")
     if "VN3ライセンス" not in license_text:
         result.error("LICENSE に VN3ライセンスの記載がありません")
+    else:
+        log_info("LICENSE の VN3ライセンス記載を確認しました")
 
     third_party_text = read_text(root / "THIRD_PARTY_NOTICES.md")
     if "同梱" not in third_party_text:
         result.warn("THIRD_PARTY_NOTICES.md に同梱ポリシー記載が見当たりません")
+    else:
+        log_info("THIRD_PARTY_NOTICES.md の同梱ポリシー記載を確認しました")
 
 
 def load_package_json(root: Path, result: CheckResult) -> dict:
     package_path = root / "Assets/Aramaa/OchibiChansConverterTool/package.json"
+    rel_package_path = package_path.relative_to(root).as_posix()
+    log_info(f"package.json を読み込みます: {rel_package_path}")
     try:
-        return json.loads(read_text(package_path))
+        package = json.loads(read_text(package_path))
+        log_info("package.json の JSON 解析に成功しました")
+        return package
     except json.JSONDecodeError as exc:
         result.error(f"package.json の解析に失敗しました: {exc}")
         return {}
 
 
 def check_package_consistency(package: dict, result: CheckResult) -> None:
+    log_info("package.json の version / url / license / licensesUrl 整合性を確認します")
 
     version = package.get("version")
     url = package.get("url")
@@ -109,6 +138,8 @@ def check_package_consistency(package: dict, result: CheckResult) -> None:
 
     if not isinstance(version, str) or not version:
         result.error("package.json の version が不正です")
+    else:
+        log_info(f"package.json version を確認しました: {version}")
     if not isinstance(url, str) or not url:
         result.error("package.json の url が不正です")
     elif isinstance(version, str):
@@ -119,18 +150,127 @@ def check_package_consistency(package: dict, result: CheckResult) -> None:
             result.error(
                 "package.json の version と url 内バージョンが一致しません"
             )
+        else:
+            log_info("package.json の url と version の整合を確認しました")
 
     if license_name != "Custom":
         result.warn(f"package.json の license が Custom ではありません: {license_name}")
+    else:
+        log_info("package.json の license=Custom を確認しました")
     if licenses_url != "https://github.com/aramaa-vr/ochibi-chans-converter-tool/blob/master/LICENSE":
         result.warn("package.json の licensesUrl が想定値と異なります")
+    else:
+        log_info("package.json の licensesUrl を確認しました")
 
 
 def check_changelog(root: Path, package: dict, result: CheckResult) -> None:
     version = package.get("version", "")
+    log_info(f"CHANGELOG.md に version {version} の見出しがあるか確認します")
     changelog = read_text(root / "CHANGELOG.md")
     if f"## [{version}]" not in changelog:
         result.error(f"CHANGELOG.md に version {version} の見出しがありません")
+    else:
+        log_info(f"CHANGELOG.md の version {version} 見出しを確認しました")
+
+
+def build_zip_tree_lines(names: list[str]) -> list[str]:
+    root: dict[str, dict] = {}
+    for raw_name in sorted(names):
+        normalized = raw_name.rstrip("/")
+        if not normalized:
+            continue
+        parts = [part for part in normalized.split("/") if part]
+        cursor = root
+        for part in parts:
+            cursor = cursor.setdefault(part, {})
+
+    lines: list[str] = []
+
+    def append_lines(tree: dict[str, dict], prefix: str = "") -> None:
+        keys = sorted(tree.keys())
+        for idx, key in enumerate(keys):
+            is_last = idx == len(keys) - 1
+            connector = "└─ " if is_last else "├─ "
+            child = tree[key]
+            suffix = "/" if child else ""
+            lines.append(f"{prefix}{connector}{key}{suffix}")
+            next_prefix = f"{prefix}{'   ' if is_last else '│  '}"
+            append_lines(child, next_prefix)
+
+    append_lines(root)
+    return lines
+
+
+def check_build_zip_contents(root: Path, package: dict, result: CheckResult) -> None:
+    version = package.get("version")
+    if not isinstance(version, str) or not version:
+        result.warn("Build ZIP の内容確認をスキップしました: package version が不正です")
+        return
+
+    zip_rel = Path(f"Build/jp.aramaa.ochibi-chans-converter-tool-{version}.zip")
+    zip_path = root / zip_rel
+    log_info(f"Build ZIP の内容を確認します: {zip_rel.as_posix()}")
+    if not zip_path.exists():
+        result.warn(f"Build ZIP が見つかりません: {zip_rel.as_posix()}")
+        return
+
+    try:
+        with zipfile.ZipFile(zip_path) as zip_file:
+            names = zip_file.namelist()
+    except zipfile.BadZipFile:
+        result.error(f"Build ZIP の読み込みに失敗しました: {zip_rel.as_posix()}")
+        return
+
+    if not names:
+        result.warn(f"Build ZIP が空です: {zip_rel.as_posix()}")
+        return
+
+    log_info(f"Build ZIP エントリ数: {len(names)}")
+    for line in build_zip_tree_lines(names):
+        log_info(f"[ZIP] {line}")
+    check_purchase_required_assets_in_zip(zip_rel, names, result)
+
+
+def is_purchase_required_asset(path_text: str) -> bool:
+    lowered = path_text.lower()
+    return any(lowered.endswith(ext) for ext in PURCHASE_REQUIRED_ASSET_EXTENSIONS)
+
+
+def check_purchase_required_assets_in_zip(
+    zip_rel: Path,
+    names: list[str],
+    result: CheckResult,
+) -> None:
+    log_info("Build ZIP に購入必須アセット本体が含まれていないか確認します")
+    findings = [
+        name for name in names if name and not name.endswith("/") and is_purchase_required_asset(name)
+    ]
+    if findings:
+        result.error(
+            "Build ZIP に購入必須アセット本体の疑いがあるファイルを検出しました: "
+            + ", ".join(findings[:20])
+        )
+    else:
+        log_info(f"Build ZIP の購入必須アセット本体チェック完了: 問題なし ({zip_rel.as_posix()})")
+
+
+def check_purchase_required_assets_in_git(root: Path, result: CheckResult) -> None:
+    log_info("git 管理データに購入必須アセット本体が含まれていないか確認します")
+    tracked = subprocess.run(
+        ["git", "ls-files"],
+        cwd=root,
+        check=True,
+        text=True,
+        capture_output=True,
+    ).stdout.splitlines()
+    findings = [rel for rel in tracked if is_purchase_required_asset(rel)]
+    if findings:
+        result.error(
+            "git 管理データに購入必須アセット本体の疑いがあるファイルを検出しました: "
+            + ", ".join(findings[:20])
+        )
+    else:
+        log_info("git 管理データの購入必須アセット本体チェック完了: 問題なし")
 
 
 def should_scan_file(path: Path) -> bool:
@@ -143,6 +283,7 @@ def should_scan_file(path: Path) -> bool:
 
 
 def check_secrets(root: Path, result: CheckResult) -> None:
+    log_info("git 管理下ファイルに機密情報パターンがないか確認します")
     tracked = subprocess.run(
         ["git", "ls-files"],
         cwd=root,
@@ -152,12 +293,14 @@ def check_secrets(root: Path, result: CheckResult) -> None:
     ).stdout.splitlines()
 
     findings: list[str] = []
+    scanned_files: list[str] = []
     for rel in tracked:
         if rel in SCAN_ALLOWLIST:
             continue
         path = root / rel
         if not path.exists() or not path.is_file() or not should_scan_file(path):
             continue
+        scanned_files.append(rel)
         try:
             content = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
@@ -169,9 +312,14 @@ def check_secrets(root: Path, result: CheckResult) -> None:
 
     if findings:
         result.error("機密情報の疑いがある文字列を検出しました: " + ", ".join(findings[:20]))
+    else:
+        log_info(f"機密情報チェック完了: スキャン対象 {len(scanned_files)} ファイル")
+    for rel in scanned_files:
+        log_info(f"[SECRETS] スキャン対象ファイル: {rel}")
 
 
 def check_git_clean(root: Path, result: CheckResult) -> None:
+    log_info("git 作業ツリーの未コミット差分を確認します")
     status = subprocess.run(
         ["git", "status", "--short"],
         cwd=root,
@@ -181,6 +329,8 @@ def check_git_clean(root: Path, result: CheckResult) -> None:
     ).stdout.strip()
     if status:
         result.warn("作業ツリーに未コミット差分があります")
+    else:
+        log_info("git 作業ツリーはクリーンです")
 
 
 def main() -> int:
@@ -198,7 +348,9 @@ def main() -> int:
     package = load_package_json(root, result)
     check_package_consistency(package, result)
     check_changelog(root, package, result)
+    check_purchase_required_assets_in_git(root, result)
     check_secrets(root, result)
+    check_build_zip_contents(root, package, result)
     check_git_clean(root, result)
 
     for warning in result.warnings:
