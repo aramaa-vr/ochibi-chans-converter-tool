@@ -20,8 +20,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         internal static string FindPreferredPrefabPathUnder(string folder)
         {
-            // ドロップダウン候補の探索では「指定フォルダ配下すべて（子フォルダ含む）」を対象にする。
-            var candidates = CollectPrefabPaths(folder, sameDirectoryOnly: false);
+            // ドロップダウン候補の探索では「指定フォルダ直下のみ」を対象にする。
+            var candidates = CollectPrefabPaths(folder, sameDirectoryOnly: true);
             if (candidates.Count == 0) return null;
 
             // "Kisekae" を含む候補を優先し、無ければ先頭候補を返す。
