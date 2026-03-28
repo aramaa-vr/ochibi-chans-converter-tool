@@ -16,6 +16,8 @@
 // ============================================================================
 
 using System;
+using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 namespace Aramaa.OchibiChansConverterTool.Editor
@@ -293,7 +295,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 if (IsOriginalAvatarPrefabPathCandidate(currentPath) &&
                     PrefabAssetRootHasDescriptor(currentPrefabAsset))
                 {
-                    originalAvatarPrefabPath = currentPath;
+                    originalAvatarPrefabPath = TryFindKisekaePrefabPathInSameDirectory(currentPath) ?? currentPath;
                     return true;
                 }
 
@@ -304,6 +306,50 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return false;
+        }
+
+        private static string TryFindKisekaePrefabPathInSameDirectory(string prefabPath)
+        {
+            if (string.IsNullOrEmpty(prefabPath)) return null;
+
+            var directory = Path.GetDirectoryName(prefabPath)?.Replace("\\", "/");
+            if (string.IsNullOrEmpty(directory)) return null;
+            var sourceFileName = Path.GetFileNameWithoutExtension(prefabPath) ?? string.Empty;
+
+            var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { directory });
+            if (prefabGuids == null || prefabGuids.Length == 0) return null;
+
+            var candidates = prefabGuids
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(path => !string.IsNullOrEmpty(path))
+                .Where(path => path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
+                .Where(path => string.Equals(Path.GetDirectoryName(path)?.Replace("\\", "/"), directory, StringComparison.OrdinalIgnoreCase))
+                .Where(path => IsOriginalAvatarPrefabPathCandidate(path))
+                .Where(path =>
+                    Path.GetFileNameWithoutExtension(path).IndexOf("kisekae", StringComparison.OrdinalIgnoreCase) >= 0)
+                .Where(path => PrefabPathHasDescriptor(path))
+                .OrderBy(path => Path.GetFileNameWithoutExtension(path), StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (candidates.Count == 0) return null;
+
+            // 既存のファイル名パターン選択ロジックを共通利用して、
+            // 元Prefab名を含む kisekae（例: Chiffon -> Chiffon_kisekae）を最優先します。
+            var preferred = PickPrefabByFilenamePattern(candidates, sourceFileName);
+            if (string.IsNullOrEmpty(preferred))
+            {
+                preferred = PickPrefabByFilenamePattern(candidates, "kisekae");
+            }
+
+            return string.IsNullOrEmpty(preferred) ? null : preferred;
+        }
+
+        private static bool PrefabPathHasDescriptor(string prefabPath)
+        {
+            if (string.IsNullOrEmpty(prefabPath)) return false;
+
+            var prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            return PrefabAssetRootHasDescriptor(prefabAsset);
         }
 
         /// <summary>
