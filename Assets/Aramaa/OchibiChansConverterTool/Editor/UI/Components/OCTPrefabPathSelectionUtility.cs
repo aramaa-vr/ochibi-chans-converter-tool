@@ -35,7 +35,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             // 選定フロー:
             // 1) "Kisekae" を名前に含むもの
             // 2) 見つからなければ先頭候補（従来互換）
-            // "Kisekae" を含む候補を優先し、無ければ先頭候補を返す。
             var preferred = PickPrefabByFilenamePattern(candidates, PatternKisekae);
             if (!string.IsNullOrEmpty(preferred))
             {
@@ -82,9 +81,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return null;
             }
 
-            // 例:
             // source が "Chiffon" の場合、まず "Chiffon_kisekae" のような関連名を優先する。
-            // まず「元 prefab 名を含むもの」を優先（例: Chiffon -> Chiffon_kisekae）。
             var preferred = PickPrefabByFilenamePattern(candidates, sourceFileName);
             if (!string.IsNullOrEmpty(preferred))
             {
