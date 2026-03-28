@@ -51,9 +51,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private const string BaseFolder = OCTEditorConstants.BaseFolder;
 
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
-        // 末尾の v8 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
+        // 末尾の v10 は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
         // 互換が壊れる変更を入れたら上げる（JSON構造が同じでも上げてよい）。
-        private const string FaceMeshCacheFileName = "FaceMeshCache.v9.json";
+        private const string FaceMeshCacheFileName = "FaceMeshCache.v10.json";
 
         private static readonly Dictionary<string, CachedFaceMesh> CachedFaceMeshByPrefab =
             new Dictionary<string, CachedFaceMesh>();
@@ -269,43 +269,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private static string FindPreferredPrefabPathUnder(string folder)
         {
-            var prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { folder });
-            if (prefabGuids == null || prefabGuids.Length == 0) return null;
-
-            var candidates = new List<string>();
-            foreach (var guid in prefabGuids)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                if (string.IsNullOrEmpty(path)) continue;
-                if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) continue;
-
-                candidates.Add(path);
-            }
-
-            if (candidates.Count == 0) return null;
-
-            var preferred = PickPrefabByFilenamePattern(candidates, "Kisekae Variant");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, "Kaihen_Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, "Kisekae");
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            return candidates[0];
-        }
-
-        private static string PickPrefabByFilenamePattern(IEnumerable<string> paths, string pattern)
-        {
-            if (paths == null) return null;
-            if (string.IsNullOrEmpty(pattern)) return null;
-
-            var match = paths.FirstOrDefault(path =>
-                Path.GetFileNameWithoutExtension(path)
-                    .IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
-
-            return match;
+            // 既存の優先順位仕様は共通ユーティリティ側で一元管理する。
+            return OCTPrefabPathSelectionUtility.FindPreferredPrefabPathUnder(folder);
         }
     }
 }
