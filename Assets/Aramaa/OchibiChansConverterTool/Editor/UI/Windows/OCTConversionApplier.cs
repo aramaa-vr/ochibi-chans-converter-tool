@@ -617,7 +617,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         return;
                     }
 
-                    if (!IsPrefabAsset(_sourcePrefabAsset))
+                    if (!IsProjectPrefabAsset(_sourcePrefabAsset))
                     {
                         EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
                         return;
@@ -655,7 +655,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     return;
                 }
 
-                if (!IsPrefabAsset(_sourcePrefabAsset))
+                if (!IsProjectPrefabAsset(_sourcePrefabAsset))
                 {
                     EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
                     return;
@@ -745,7 +745,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             private void ApplyPrefabSelectionUsingDropdownLogic(GameObject nextPrefab)
             {
-                if (nextPrefab == null || IsPrefabAsset(nextPrefab))
+                if (nextPrefab == null || IsProjectPrefabAsset(nextPrefab))
                 {
                     _prefabDropdownCache.ApplyManualSelection(nextPrefab);
                     _sourcePrefabAsset = _prefabDropdownCache.SourcePrefabAsset;
@@ -771,7 +771,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     return;
                 }
 
-                if (!IsPrefabAsset(_sourcePrefabAsset))
+                if (!IsProjectPrefabAsset(_sourcePrefabAsset))
                 {
                     EditorGUILayout.HelpBox(L("Help.NotPrefabSelected"), MessageType.Error);
                 }
@@ -789,7 +789,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     _sourceTarget.scene.IsValid() &&
                     _sourceTarget.scene.isLoaded &&
                     _sourcePrefabAsset != null &&
-                    IsPrefabAsset(_sourcePrefabAsset);
+                    IsProjectPrefabAsset(_sourcePrefabAsset);
 
                 using (new EditorGUI.DisabledScope(!canExecute))
                 {
@@ -868,7 +868,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     return;
                 }
 
-                if (_sourcePrefabAsset == null || !IsPrefabAsset(_sourcePrefabAsset))
+                if (_sourcePrefabAsset == null || !IsProjectPrefabAsset(_sourcePrefabAsset))
                 {
                     EditorUtility.DisplayDialog(
                         L("Dialog.ToolTitle"),
@@ -941,7 +941,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             /// <summary>
             /// 「Project 上の Prefab アセット」かどうかを判定します。
             /// </summary>
-            private static bool IsPrefabAsset(GameObject go)
+            private static bool IsProjectPrefabAsset(GameObject go)
             {
                 if (go == null)
                 {
