@@ -32,6 +32,17 @@ TEXT_SCAN_EXCLUDE_SUFFIXES = {
 }
 TEXT_SCAN_EXCLUDE_PARTS = {"LicenseVN3/"}
 SCAN_ALLOWLIST = {"Tools/release/validate_public_release.py"}
+PURCHASE_REQUIRED_ASSET_EXTENSIONS = {
+    ".fbx",
+    ".blend",
+    ".obj",
+    ".dae",
+    ".anim",
+    ".controller",
+    ".avatar",
+    ".prefab",
+    ".mat",
+}
 
 
 def log_info(message: str) -> None:
@@ -217,6 +228,49 @@ def check_build_zip_contents(root: Path, package: dict, result: CheckResult) -> 
     log_info(f"Build ZIP エントリ数: {len(names)}")
     for line in build_zip_tree_lines(names):
         log_info(f"[ZIP] {line}")
+    check_purchase_required_assets_in_zip(zip_rel, names, result)
+
+
+def is_purchase_required_asset(path_text: str) -> bool:
+    lowered = path_text.lower()
+    return any(lowered.endswith(ext) for ext in PURCHASE_REQUIRED_ASSET_EXTENSIONS)
+
+
+def check_purchase_required_assets_in_zip(
+    zip_rel: Path,
+    names: list[str],
+    result: CheckResult,
+) -> None:
+    log_info("Build ZIP に購入必須アセット本体が含まれていないか確認します")
+    findings = [
+        name for name in names if name and not name.endswith("/") and is_purchase_required_asset(name)
+    ]
+    if findings:
+        result.error(
+            "Build ZIP に購入必須アセット本体の疑いがあるファイルを検出しました: "
+            + ", ".join(findings[:20])
+        )
+    else:
+        log_info(f"Build ZIP の購入必須アセット本体チェック完了: 問題なし ({zip_rel.as_posix()})")
+
+
+def check_purchase_required_assets_in_git(root: Path, result: CheckResult) -> None:
+    log_info("git 管理データに購入必須アセット本体が含まれていないか確認します")
+    tracked = subprocess.run(
+        ["git", "ls-files"],
+        cwd=root,
+        check=True,
+        text=True,
+        capture_output=True,
+    ).stdout.splitlines()
+    findings = [rel for rel in tracked if is_purchase_required_asset(rel)]
+    if findings:
+        result.error(
+            "git 管理データに購入必須アセット本体の疑いがあるファイルを検出しました: "
+            + ", ".join(findings[:20])
+        )
+    else:
+        log_info("git 管理データの購入必須アセット本体チェック完了: 問題なし")
 
 
 def should_scan_file(path: Path) -> bool:
@@ -295,6 +349,7 @@ def main() -> int:
     check_package_consistency(package, result)
     check_changelog(root, package, result)
     check_build_zip_contents(root, package, result)
+    check_purchase_required_assets_in_git(root, result)
     check_secrets(root, result)
     check_git_clean(root, result)
 
