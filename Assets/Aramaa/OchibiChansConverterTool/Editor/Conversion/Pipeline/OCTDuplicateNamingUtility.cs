@@ -7,6 +7,7 @@
 // ============================================================================
 
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -72,23 +73,40 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return desiredName;
             }
 
-            // 3) Unity 標準の GetUniqueNameForSibling で一意名を取得する。
-            //    ただしこの API は「自分自身」も衝突候補に入るため、
-            //    先に一時名へ退避してから問い合わせることで、連番飛びを抑える。
+            // 3) Unity 標準 API（ObjectNames.GetUniqueName）で一意名を取得する。
+            //    先に「自分以外」の同階層名を列挙して渡すことで、
+            //    一時改名なしで自己衝突を回避する。
             var parent = duplicatedObject.transform != null ? duplicatedObject.transform.parent : null;
-            var originalName = duplicatedObject.name;
-            var temporaryName = $"__oct_tmp__{Guid.NewGuid():N}";
+            var existingNames = new List<string>();
+            if (parent != null)
+            {
+                for (int i = 0; i < parent.childCount; i++)
+                {
+                    var sibling = parent.GetChild(i);
+                    if (sibling == null || sibling.gameObject == null || sibling.gameObject == duplicatedObject)
+                    {
+                        continue;
+                    }
 
-            try
-            {
-                duplicatedObject.name = temporaryName;
-                return GameObjectUtility.GetUniqueNameForSibling(parent, desiredName);
+                    existingNames.Add(sibling.gameObject.name);
+                }
             }
-            finally
+            else if (duplicatedObject.scene.IsValid())
             {
-                // renameRule の呼び出し側で最終名を代入するまでの安全策として元名へ戻す。
-                duplicatedObject.name = originalName;
+                var roots = duplicatedObject.scene.GetRootGameObjects();
+                for (int i = 0; i < roots.Length; i++)
+                {
+                    var root = roots[i];
+                    if (root == null || root == duplicatedObject)
+                    {
+                        continue;
+                    }
+
+                    existingNames.Add(root.name);
+                }
             }
+
+            return ObjectNames.GetUniqueName(existingNames.ToArray(), desiredName);
         }
     }
 }
