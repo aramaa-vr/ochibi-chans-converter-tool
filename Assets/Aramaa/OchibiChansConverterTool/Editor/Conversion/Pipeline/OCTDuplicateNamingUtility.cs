@@ -7,6 +7,8 @@
 // ============================================================================
 
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
 {
@@ -53,6 +55,50 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             return normalizedSourceName + duplicatedNameSuffixWithSpace;
+        }
+
+        /// <summary>
+        /// 複製直後オブジェクト自身を除外した兄弟集合に対して、重複しない名前を返します。
+        /// </summary>
+        public static string BuildUniqueDuplicateNameForSibling(GameObject duplicatedObject, string sourceName)
+        {
+            var desiredName = BuildDuplicateNameWithSuffix(sourceName);
+            if (duplicatedObject == null)
+            {
+                return desiredName;
+            }
+
+            var parent = duplicatedObject.transform != null ? duplicatedObject.transform.parent : null;
+            if (parent == null)
+            {
+                return desiredName;
+            }
+
+            var usedNames = new HashSet<string>(StringComparer.Ordinal);
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                var sibling = parent.GetChild(i);
+                if (sibling == null || sibling.gameObject == null || sibling.gameObject == duplicatedObject)
+                {
+                    continue;
+                }
+
+                usedNames.Add(sibling.gameObject.name);
+            }
+
+            if (!usedNames.Contains(desiredName))
+            {
+                return desiredName;
+            }
+
+            for (int suffixNumber = 1; ; suffixNumber++)
+            {
+                var candidate = $"{desiredName} ({suffixNumber})";
+                if (!usedNames.Contains(candidate))
+                {
+                    return candidate;
+                }
+            }
         }
     }
 }

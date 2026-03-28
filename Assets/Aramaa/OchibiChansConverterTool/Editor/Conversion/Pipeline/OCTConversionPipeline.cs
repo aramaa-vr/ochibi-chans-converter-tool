@@ -144,9 +144,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 var duplicatedTargets = OCTDuplicateLikeCtrlDHandler.Duplicate(
                     new[] { sourceTarget },
                     restorePreviousSelection: false,
-                    renameRule: duplicated => GameObjectUtility.GetUniqueNameForSibling(
-                        duplicated != null ? duplicated.transform.parent : null,
-                        OCTDuplicateNamingUtility.BuildDuplicateNameWithSuffix(sourceTarget.name)
+                    renameRule: duplicated => OCTDuplicateNamingUtility.BuildUniqueDuplicateNameForSibling(
+                        duplicated,
+                        sourceTarget.name
                     )
                 );
 
