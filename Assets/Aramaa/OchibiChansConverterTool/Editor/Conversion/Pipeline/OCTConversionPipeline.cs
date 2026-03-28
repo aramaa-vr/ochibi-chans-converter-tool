@@ -181,6 +181,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     foreach (var duplicated in duplicatedTargets.Where(x => x != null))
                     {
                         OCTRestoreModeProcessor.RemoveReverseConversionAdjusters(duplicated, logs);
+
+                        // 逆変換時は MA BoneProxy 補正の前に AddMenu を除去しておく。
+                        // （AddMenu 配下オブジェクトが Armature 内へ残留する回帰を防ぐ）
+                        OCTRestoreModeProcessor.RemoveExAddMenuObjectsIfExists(duplicated, logs);
                     }
                     logs.Add("");
                 }
@@ -233,7 +237,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 // 複製先へ変換を適用
                 // --------------------------------------------------------
-                var applySucceeded = ApplyConversionToTargets(sourceChibiPrefab, duplicatedTargets, restoreMode, logs: logs);
+                var applySucceeded = ApplyConversionToTargets(
+                    sourceChibiPrefab,
+                    duplicatedTargets,
+                    restoreMode,
+                    logs: logs
+                );
                 return applySucceeded;
             }
             finally
@@ -246,7 +255,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// 変換元 Prefab の参照を読み取り、複製先へ段階的に同期適用します。
         /// （変換パイプラインの 5〜7 ステップ相当）
         /// </summary>
-        private static bool ApplyConversionToTargets(GameObject sourceChibiPrefab, GameObject[] targets, bool restoreMode, List<string> logs)
+        private static bool ApplyConversionToTargets(
+            GameObject sourceChibiPrefab,
+            GameObject[] targets,
+            bool restoreMode,
+            List<string> logs
+        )
         {
             logs ??= new List<string>();
             var log = new OCTConversionLogger(logs);
@@ -351,7 +365,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     if (restoreMode)
                     {
                         logs.Add(L("Log.RestoreSkipAddMenu"));
-                        OCTRestoreModeProcessor.RemoveExAddMenuObjectsIfExists(dstRoot, logs);
                         logs.Add("");
                     }
                     else if (exAddMenuPlacement.PrefabAsset != null)
