@@ -13,9 +13,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     internal static class OCTPrefabPathSelectionUtility
     {
         private const string PrefabSearchFilter = "t:Prefab";
-        private const string PatternKisekaeVariant = "Kisekae Variant";
         private const string PatternKisekae = "Kisekae";
-        private const string PatternKisekaeLower = "kisekae";
 
         /// <summary>
         /// 指定フォルダ配下（子フォルダ含む）から Prefab を収集し、既定の優先順位で1件選びます。
@@ -26,12 +24,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var candidates = CollectPrefabPaths(folder, sameDirectoryOnly: false);
             if (candidates.Count == 0) return null;
 
-            // 既存仕様の優先順を維持:
-            // 1) "Kisekae Variant"  2) "Kisekae"  3) 先頭候補
-            var preferred = PickPrefabByFilenamePattern(candidates, PatternKisekaeVariant);
-            if (!string.IsNullOrEmpty(preferred)) return preferred;
-
-            preferred = PickPrefabByFilenamePattern(candidates, PatternKisekae);
+            // "Kisekae" を含む候補を優先し、無ければ先頭候補を返す。
+            var preferred = PickPrefabByFilenamePattern(candidates, PatternKisekae);
             if (!string.IsNullOrEmpty(preferred)) return preferred;
 
             return candidates[0];
@@ -56,7 +50,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var candidates = CollectPrefabPaths(directory, sameDirectoryOnly: true)
                 // kisekae を含む名前だけを候補化
                 .Where(path =>
-                    Path.GetFileNameWithoutExtension(path).IndexOf(PatternKisekaeLower, StringComparison.OrdinalIgnoreCase) >= 0)
+                    Path.GetFileNameWithoutExtension(path).IndexOf(PatternKisekae, StringComparison.OrdinalIgnoreCase) >= 0)
                 // 呼び出し側の追加条件（例: Descriptor必須）を適用
                 .Where(path => candidatePredicate == null || candidatePredicate(path))
                 // 同率時の結果が毎回ぶれないよう、先に安定ソートしておく
@@ -70,7 +64,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             if (!string.IsNullOrEmpty(preferred)) return preferred;
 
             // それが無ければ kisekae 名称一致の先頭を採用。
-            return PickPrefabByFilenamePattern(candidates, PatternKisekaeLower);
+            return PickPrefabByFilenamePattern(candidates, PatternKisekae);
         }
 
         /// <summary>
