@@ -68,32 +68,36 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                 var cacheFile = JsonUtility.FromJson<FaceMeshCacheFile>(json);
                 if (cacheFile == null) return;
-                if (cacheFile.Entries == null) return;
 
-                foreach (var entry in cacheFile.Entries)
+                CachedFaceMeshByPrefab.Clear();
+                MergeAnimatorDiffJsonByPrefabPair.Clear();
+
+                if (cacheFile.Entries != null)
                 {
-                    if (entry == null) continue;
-                    if (string.IsNullOrEmpty(entry.PrefabPath)) continue;
-                    if (string.IsNullOrEmpty(entry.DependencyHash)) continue;
+                    foreach (var entry in cacheFile.Entries)
+                    {
+                        if (entry == null) continue;
+                        if (string.IsNullOrEmpty(entry.PrefabPath)) continue;
+                        if (string.IsNullOrEmpty(entry.DependencyHash)) continue;
 
-                    if (!TryParseHash128(entry.DependencyHash, out var hash)) continue;
+                        if (!TryParseHash128(entry.DependencyHash, out var hash)) continue;
 
-                    var meshId = new MeshId(entry.FaceMeshGuid ?? string.Empty, entry.FaceMeshLocalId, entry.HasLocalId);
-                    var avatarId = new MeshId(entry.AvatarGuid ?? string.Empty, entry.AvatarLocalId, entry.AvatarHasLocalId);
-                    var signature = new FaceMeshSignature(
-                        meshId,
-                        avatarId,
-                        entry.AvatarAssetPath ?? string.Empty,
-                        entry.PrefabGuid ?? string.Empty,
-                        entry.PrefabName ?? string.Empty,
-                        entry.OriginalAvatarPrefabPath ?? string.Empty,
-                        entry.FbxGuid ?? string.Empty,
-                        entry.FbxName ?? string.Empty,
-                        entry.FaceMeshAssetPath ?? string.Empty);
-                    CachedFaceMeshByPrefab[entry.PrefabPath] = new CachedFaceMesh(hash, signature, entry.HasFaceMesh);
+                        var meshId = new MeshId(entry.FaceMeshGuid ?? string.Empty, entry.FaceMeshLocalId, entry.HasLocalId);
+                        var avatarId = new MeshId(entry.AvatarGuid ?? string.Empty, entry.AvatarLocalId, entry.AvatarHasLocalId);
+                        var signature = new FaceMeshSignature(
+                            meshId,
+                            avatarId,
+                            entry.AvatarAssetPath ?? string.Empty,
+                            entry.PrefabGuid ?? string.Empty,
+                            entry.PrefabName ?? string.Empty,
+                            entry.OriginalAvatarPrefabPath ?? string.Empty,
+                            entry.FbxGuid ?? string.Empty,
+                            entry.FbxName ?? string.Empty,
+                            entry.FaceMeshAssetPath ?? string.Empty);
+                        CachedFaceMeshByPrefab[entry.PrefabPath] = new CachedFaceMesh(hash, signature, entry.HasFaceMesh);
+                    }
                 }
 
-                MergeAnimatorDiffJsonByPrefabPair.Clear();
                 if (cacheFile.MergeAnimatorDiffEntries != null)
                 {
                     foreach (var entry in cacheFile.MergeAnimatorDiffEntries)
