@@ -47,6 +47,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 string prefabGuid,
                 string prefabName,
                 string originalAvatarPrefabPath,
+                string mergeAnimatorDiffJson,
                 string fbxGuid,
                 string fbxName,
                 string faceMeshAssetPath)
@@ -57,6 +58,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 PrefabGuid = prefabGuid;
                 PrefabName = prefabName;
                 OriginalAvatarPrefabPath = originalAvatarPrefabPath;
+                MergeAnimatorDiffJson = mergeAnimatorDiffJson;
                 FbxGuid = fbxGuid;
                 FbxName = fbxName;
                 FaceMeshAssetPath = faceMeshAssetPath;
@@ -68,6 +70,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             public string PrefabGuid { get; }
             public string PrefabName { get; }
             public string OriginalAvatarPrefabPath { get; }
+            public string MergeAnimatorDiffJson { get; }
             public string FbxGuid { get; }
             public string FbxName { get; }
             public string FaceMeshAssetPath { get; }
@@ -91,6 +94,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     prefabGuid,
                     prefabName,
                     OriginalAvatarPrefabPath,
+                    MergeAnimatorDiffJson,
+                    FbxGuid,
+                    FbxName,
+                    FaceMeshAssetPath);
+            }
+
+            public FaceMeshSignature WithMergeAnimatorDiff(string originalAvatarPrefabPath, string mergeAnimatorDiffJson)
+            {
+                return new FaceMeshSignature(
+                    MeshId,
+                    AvatarId,
+                    AvatarAssetPath,
+                    PrefabGuid,
+                    PrefabName,
+                    originalAvatarPrefabPath,
+                    mergeAnimatorDiffJson,
                     FbxGuid,
                     FbxName,
                     FaceMeshAssetPath);

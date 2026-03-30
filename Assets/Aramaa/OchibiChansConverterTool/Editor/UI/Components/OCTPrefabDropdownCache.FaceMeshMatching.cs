@@ -60,6 +60,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 prefabGuid,
                 prefabName,
                 originalAvatarPrefabPath,
+                string.Empty,
                 out signature);
 #else
             return false;
@@ -271,6 +272,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 prefabGuid,
                 prefabName,
                 originalAvatarPrefabPath,
+                string.Empty,
                 fbxGuid,
                 fbxName,
                 assetPath);

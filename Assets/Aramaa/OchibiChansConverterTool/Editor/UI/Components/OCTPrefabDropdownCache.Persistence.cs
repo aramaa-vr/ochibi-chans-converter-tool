@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
@@ -52,6 +53,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         entry.PrefabGuid ?? string.Empty,
                         entry.PrefabName ?? string.Empty,
                         entry.OriginalAvatarPrefabPath ?? string.Empty,
+                        entry.MergeAnimatorDiffJson ?? string.Empty,
                         entry.FbxGuid ?? string.Empty,
                         entry.FbxName ?? string.Empty,
                         entry.FaceMeshAssetPath ?? string.Empty);
@@ -88,6 +90,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         PrefabGuid = cached.FaceMeshSignature.PrefabGuid,
                         PrefabName = cached.FaceMeshSignature.PrefabName,
                         OriginalAvatarPrefabPath = cached.FaceMeshSignature.OriginalAvatarPrefabPath,
+                        MergeAnimatorDiffJson = cached.FaceMeshSignature.MergeAnimatorDiffJson,
                         FbxGuid = cached.FaceMeshSignature.FbxGuid,
                         FbxName = cached.FaceMeshSignature.FbxName,
                         FaceMeshAssetPath = cached.FaceMeshSignature.FaceMeshAssetPath,
@@ -154,9 +157,56 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             public string PrefabGuid;
             public string PrefabName;
             public string OriginalAvatarPrefabPath;
+            public string MergeAnimatorDiffJson;
             public string FbxGuid;
             public string FbxName;
             public string FaceMeshAssetPath;
+        }
+
+        internal static bool TryGetMergeAnimatorDiffJson(string chibiPrefabPath, string originalAvatarPrefabPath, out string mergeAnimatorDiffJson)
+        {
+            mergeAnimatorDiffJson = string.Empty;
+            if (string.IsNullOrEmpty(chibiPrefabPath) || string.IsNullOrEmpty(originalAvatarPrefabPath)) return false;
+
+            EnsureFaceMeshCacheLoaded();
+            if (!CachedFaceMeshByPrefab.TryGetValue(chibiPrefabPath, out var cached)) return false;
+
+            var signature = cached.FaceMeshSignature;
+            if (!string.Equals(signature.OriginalAvatarPrefabPath, originalAvatarPrefabPath, StringComparison.Ordinal)) return false;
+            if (string.IsNullOrEmpty(signature.MergeAnimatorDiffJson)) return false;
+
+            mergeAnimatorDiffJson = signature.MergeAnimatorDiffJson;
+            return true;
+        }
+
+        internal static void SaveMergeAnimatorDiffJson(string chibiPrefabPath, string originalAvatarPrefabPath, string mergeAnimatorDiffJson)
+        {
+            if (string.IsNullOrEmpty(chibiPrefabPath) || string.IsNullOrEmpty(originalAvatarPrefabPath)) return;
+
+            EnsureFaceMeshCacheLoaded();
+
+            var hash = AssetDatabase.GetAssetDependencyHash(chibiPrefabPath);
+            if (CachedFaceMeshByPrefab.TryGetValue(chibiPrefabPath, out var cached))
+            {
+                var updatedSignature = cached.FaceMeshSignature.WithMergeAnimatorDiff(originalAvatarPrefabPath, mergeAnimatorDiffJson ?? string.Empty);
+                CachedFaceMeshByPrefab[chibiPrefabPath] = new CachedFaceMesh(hash, updatedSignature, cached.HasFaceMesh);
+                MarkFaceMeshCacheDirty();
+                return;
+            }
+
+            var emptySignature = new FaceMeshSignature(
+                default,
+                default,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                originalAvatarPrefabPath,
+                mergeAnimatorDiffJson ?? string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty);
+            CachedFaceMeshByPrefab[chibiPrefabPath] = new CachedFaceMesh(hash, emptySignature, hasFaceMesh: false);
+            MarkFaceMeshCacheDirty();
         }
     }
 }
