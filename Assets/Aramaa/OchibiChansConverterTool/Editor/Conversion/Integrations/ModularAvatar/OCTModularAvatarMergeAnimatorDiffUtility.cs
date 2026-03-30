@@ -148,6 +148,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     sourceAvatarPrefabPath,
                     JsonUtility.ToJson(payload, true));
             }
+            else
+            {
+                logs.Add($"[MA MergeAnimator Diff] Save skipped: prefab path unresolved (chibi: {sourceChibiPrefabPath}, original: {sourceAvatarPrefabPath})");
+            }
 
             logs.Add($"[MA MergeAnimator Diff] Applied: {diffItems.Count}");
         }
@@ -170,6 +174,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var chibiPrefabPath = ResolvePrefabAssetPath(avatarRoot);
             if (string.IsNullOrEmpty(chibiPrefabPath) || string.IsNullOrEmpty(originalAvatarPrefabPath))
             {
+                logs.Add($"[MA MergeAnimator Diff] Restore skipped: prefab path unresolved (chibi: {chibiPrefabPath}, original: {originalAvatarPrefabPath})");
                 return;
             }
 
