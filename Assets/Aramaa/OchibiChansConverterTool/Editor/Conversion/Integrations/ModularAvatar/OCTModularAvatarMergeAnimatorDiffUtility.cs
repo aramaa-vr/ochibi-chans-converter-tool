@@ -24,6 +24,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private sealed class MergeAnimatorDiffItem
         {
             public string objectFullPath;
+            public int componentIndex;
             public string sourceGuid;
             public string targetGuid;
         }
@@ -31,6 +32,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private sealed class MergeAnimatorEntry
         {
             public Component Component;
+            public int ComponentIndex;
             public string AnimatorGuid;
             public UnityEngine.Object AnimatorAsset;
         }
@@ -74,40 +76,61 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             foreach (var kv in chibiMap)
             {
                 var path = kv.Key;
-                var chibiEntry = kv.Value;
-                if (chibiEntry == null || string.IsNullOrEmpty(chibiEntry.AnimatorGuid))
+                var chibiEntries = kv.Value;
+                if (chibiEntries == null)
                 {
                     continue;
                 }
 
-                if (!sourceMap.TryGetValue(path, out var sourceEntry) || sourceEntry == null)
+                if (!sourceMap.TryGetValue(path, out var sourceEntries) || sourceEntries == null)
                 {
                     continue;
                 }
 
-                if (string.IsNullOrEmpty(sourceEntry.AnimatorGuid) || string.Equals(sourceEntry.AnimatorGuid, chibiEntry.AnimatorGuid, StringComparison.Ordinal))
+                if (!dstMap.TryGetValue(path, out var dstEntries) || dstEntries == null)
                 {
                     continue;
                 }
 
-                if (!dstMap.TryGetValue(path, out var dstEntry) || dstEntry == null)
+                foreach (var chibiEntry in chibiEntries)
                 {
-                    continue;
-                }
+                    if (chibiEntry == null || string.IsNullOrEmpty(chibiEntry.AnimatorGuid))
+                    {
+                        continue;
+                    }
 
-                Undo.RecordObject(dstEntry.Component, "Apply MergeAnimator Ref");
-                if (!TrySetAnimatorAsset(dstEntry.Component, chibiEntry.AnimatorAsset))
-                {
-                    continue;
-                }
-                EditorUtility.SetDirty(dstEntry.Component);
+                    var sourceEntry = sourceEntries.Find(e => e != null && e.ComponentIndex == chibiEntry.ComponentIndex);
+                    if (sourceEntry == null)
+                    {
+                        continue;
+                    }
 
-                diffItems.Add(new MergeAnimatorDiffItem
-                {
-                    objectFullPath = path,
-                    sourceGuid = sourceEntry.AnimatorGuid,
-                    targetGuid = chibiEntry.AnimatorGuid
-                });
+                    if (string.IsNullOrEmpty(sourceEntry.AnimatorGuid) || string.Equals(sourceEntry.AnimatorGuid, chibiEntry.AnimatorGuid, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    var dstEntry = dstEntries.Find(e => e != null && e.ComponentIndex == chibiEntry.ComponentIndex);
+                    if (dstEntry == null)
+                    {
+                        continue;
+                    }
+
+                    Undo.RecordObject(dstEntry.Component, "Apply MergeAnimator Ref");
+                    if (!TrySetAnimatorAsset(dstEntry.Component, chibiEntry.AnimatorAsset))
+                    {
+                        continue;
+                    }
+                    EditorUtility.SetDirty(dstEntry.Component);
+
+                    diffItems.Add(new MergeAnimatorDiffItem
+                    {
+                        objectFullPath = path,
+                        componentIndex = chibiEntry.ComponentIndex,
+                        sourceGuid = sourceEntry.AnimatorGuid,
+                        targetGuid = chibiEntry.AnimatorGuid
+                    });
+                }
             }
 
             // 差分保存キーは (おちびPrefabPath, 元アバターPrefabPath)。
@@ -182,9 +205,16 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-                if (!dstMap.TryGetValue(item.objectFullPath, out var dstEntry) || dstEntry == null)
+                if (!dstMap.TryGetValue(item.objectFullPath, out var dstEntries) || dstEntries == null)
                 {
                     logs.Add($"[MA MergeAnimator Diff] Restore warn: path not found: {item.objectFullPath}");
+                    continue;
+                }
+
+                var dstEntry = dstEntries.Find(e => e != null && e.ComponentIndex == item.componentIndex);
+                if (dstEntry == null)
+                {
+                    logs.Add($"[MA MergeAnimator Diff] Restore warn: component index not found: {item.objectFullPath}[{item.componentIndex}]");
                     continue;
                 }
 
@@ -215,9 +245,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// <summary>
         /// ルート配下の MergeAnimator を、ルート相対フルパスをキーに収集します。
         /// </summary>
-        private static Dictionary<string, MergeAnimatorEntry> BuildMergeAnimatorMap(GameObject root)
+        private static Dictionary<string, List<MergeAnimatorEntry>> BuildMergeAnimatorMap(GameObject root)
         {
-            var map = new Dictionary<string, MergeAnimatorEntry>(StringComparer.Ordinal);
+            var map = new Dictionary<string, List<MergeAnimatorEntry>>(StringComparer.Ordinal);
             if (root == null)
             {
                 return map;
@@ -232,6 +262,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 }
 
                 var components = transform.GetComponents<Component>();
+                var componentIndex = -1;
                 foreach (var component in components)
                 {
                     if (!IsMergeAnimatorComponent(component))
@@ -239,18 +270,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         continue;
                     }
 
+                    componentIndex++;
                     if (!TryGetAnimatorAsset(component, out var animatorAsset, out var animatorGuid))
                     {
                         continue;
                     }
 
                     var objectPath = BuildObjectFullPath(root.transform, transform);
-                    map[objectPath] = new MergeAnimatorEntry
+                    if (!map.TryGetValue(objectPath, out var entries))
+                    {
+                        entries = new List<MergeAnimatorEntry>();
+                        map[objectPath] = entries;
+                    }
+
+                    entries.Add(new MergeAnimatorEntry
                     {
                         Component = component,
+                        ComponentIndex = componentIndex,
                         AnimatorGuid = animatorGuid,
                         AnimatorAsset = animatorAsset
-                    };
+                    });
                 }
             }
 
