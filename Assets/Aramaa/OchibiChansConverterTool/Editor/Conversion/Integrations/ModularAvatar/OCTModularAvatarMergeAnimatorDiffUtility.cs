@@ -13,12 +13,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     /// </summary>
     internal static class OCTModularAvatarMergeAnimatorDiffUtility
     {
-        private const int JsonVersion = 1;
-
         [Serializable]
         private sealed class MergeAnimatorDiffJson
         {
-            public int version;
+            // フォーマット互換は FaceMeshCache ファイル名（v11 など）側で管理する。
             public List<MergeAnimatorDiffItem> items = new List<MergeAnimatorDiffItem>();
         }
 
@@ -120,7 +118,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 var payload = new MergeAnimatorDiffJson
                 {
-                    version = JsonVersion,
                     items = diffItems ?? new List<MergeAnimatorDiffItem>()
                 };
                 OCTPrefabDropdownCache.SaveMergeAnimatorDiffJson(
