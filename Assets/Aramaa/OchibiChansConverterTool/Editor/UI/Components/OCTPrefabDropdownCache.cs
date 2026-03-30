@@ -53,7 +53,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
         // 末尾は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
         // 互換が壊れる変更を入れたら上げる（JSON構造が同じでも上げてよい）。
-        private const string FaceMeshCacheFileName = "FaceMeshCache.v10.json";
+        private const string FaceMeshCacheFileName = "FaceMeshCache.v11.json";
 
         private static readonly Dictionary<string, CachedFaceMesh> CachedFaceMeshByPrefab =
             new Dictionary<string, CachedFaceMesh>();

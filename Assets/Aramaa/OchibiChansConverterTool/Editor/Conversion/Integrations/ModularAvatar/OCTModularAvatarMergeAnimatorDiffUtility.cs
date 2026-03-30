@@ -33,7 +33,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private sealed class MergeAnimatorEntry
         {
             public Component Component;
-            public string ObjectFullPath;
             public string AnimatorGuid;
             public UnityEngine.Object AnimatorAsset;
         }
@@ -237,7 +236,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     map[objectPath] = new MergeAnimatorEntry
                     {
                         Component = component,
-                        ObjectFullPath = objectPath,
                         AnimatorGuid = animatorGuid,
                         AnimatorAsset = animatorAsset
                     };
@@ -261,12 +259,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             var rel = AnimationUtility.CalculateTransformPath(target, root);
-            if (string.IsNullOrEmpty(rel))
-            {
-                return root.name;
-            }
-
-            return $"{root.name}/{rel}";
+            return string.IsNullOrEmpty(rel) ? "/" : rel;
         }
 
         private static string ResolvePrefabAssetPath(GameObject root)
