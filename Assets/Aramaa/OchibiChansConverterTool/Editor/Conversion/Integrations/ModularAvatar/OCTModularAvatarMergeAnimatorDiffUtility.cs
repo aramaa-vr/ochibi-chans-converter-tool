@@ -49,6 +49,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// 通常変換（元 -> おちび）時に、
+        /// MergeAnimator の参照差分を適用し、差分JSONを FaceMeshCache へ保存します。
+        /// </summary>
         public static void ApplyChibiSideAnimatorRefsAndStoreDiffs(
             string sourceChibiPrefabPath,
             GameObject sourceAvatarRoot,
@@ -68,6 +72,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var dstMap = BuildMergeAnimatorMap(dstRoot);
 
             var diffItems = new List<MergeAnimatorDiffItem>();
+            // 同一パス同士で比較し、GUID が異なるものだけ差分として扱う。
             foreach (var kv in chibiMap)
             {
                 var path = kv.Key;
@@ -107,6 +112,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 });
             }
 
+            // 差分保存キーは (おちびPrefabPath, 元アバターPrefabPath)。
+            // 片方でも解決できない場合は安全にスキップする。
             var sourceAvatarPrefabPath = ResolvePrefabAssetPath(sourceAvatarRoot);
             if (!string.IsNullOrEmpty(sourceChibiPrefabPath) &&
                 !string.IsNullOrEmpty(sourceAvatarPrefabPath))
@@ -125,6 +132,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs.Add($"[MA MergeAnimator Diff] Applied: {diffItems.Count}");
         }
 
+        /// <summary>
+        /// 逆変換（おちび -> 元）時に、FaceMeshCache の差分JSONから参照を復元します。
+        /// </summary>
         public static void RestoreAnimatorRefsFromStoredDiff(
             string originalAvatarPrefabPath,
             GameObject avatarRoot,
@@ -165,6 +175,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
+            // 復元先は現在の avatarRoot 側。
+            // パス不一致やGUID解決不可は warning ログだけ出して継続する。
             var dstMap = BuildMergeAnimatorMap(avatarRoot);
             foreach (var item in parsed.items)
             {
@@ -203,6 +215,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// ルート配下の MergeAnimator を、ルート相対フルパスをキーに収集します。
+        /// </summary>
         private static Dictionary<string, MergeAnimatorEntry> BuildMergeAnimatorMap(GameObject root)
         {
             var map = new Dictionary<string, MergeAnimatorEntry>(StringComparer.Ordinal);
@@ -245,12 +260,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return map;
         }
 
+        /// <summary>
+        /// 型名ベースで MergeAnimator コンポーネントか判定します（MA未参照でも動くようにするため）。
+        /// </summary>
         private static bool IsMergeAnimatorComponent(Component component)
         {
             return component != null
                    && string.Equals(component.GetType().Name, "ModularAvatarMergeAnimator", StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// ルート相対パスを返します。ルート自身は "/" として扱います。
+        /// </summary>
         private static string BuildObjectFullPath(Transform root, Transform target)
         {
             if (root == null || target == null)
@@ -262,6 +283,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return string.IsNullOrEmpty(rel) ? "/" : rel;
         }
 
+        /// <summary>
+        /// 対象 GameObject から対応する PrefabAssetPath を解決します。
+        /// </summary>
         private static string ResolvePrefabAssetPath(GameObject root)
         {
             if (root == null)
@@ -287,6 +311,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return string.Empty;
         }
 
+        /// <summary>
+        /// MergeAnimator の参照アセットと GUID を取得します。
+        /// GUID 取得できない場合は false を返します。
+        /// </summary>
         private static bool TryGetAnimatorAsset(Component component, out UnityEngine.Object asset, out string guid)
         {
             asset = null;
@@ -318,6 +346,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             return !string.IsNullOrEmpty(guid);
         }
 
+        /// <summary>
+        /// MergeAnimator の参照アセットを書き戻します。
+        /// </summary>
         private static bool TrySetAnimatorAsset(Component component, UnityEngine.Object asset)
         {
             if (component == null || asset == null)
@@ -336,6 +367,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private static readonly Dictionary<Type, MergeAnimatorAccessor> AccessorCache = new Dictionary<Type, MergeAnimatorAccessor>();
 
+        /// <summary>
+        /// 参照先プロパティ（animator / animatorController）へのアクセサを解決します。
+        /// 反射コストを下げるため、型ごとにキャッシュします。
+        /// </summary>
         private static bool TryResolveAccessor(Type componentType, out MergeAnimatorAccessor accessor)
         {
             accessor = null;
@@ -349,6 +384,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return accessor != null;
             }
 
+            // フィールド優先で探索（Unity シリアライズフィールドに寄せる）。
             var field = componentType
                 .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .FirstOrDefault(f => typeof(UnityEngine.Object).IsAssignableFrom(f.FieldType)
@@ -364,6 +400,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return true;
             }
 
+            // フィールドが無い場合はプロパティを探索する。
             var property = componentType
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .FirstOrDefault(p => p.CanRead

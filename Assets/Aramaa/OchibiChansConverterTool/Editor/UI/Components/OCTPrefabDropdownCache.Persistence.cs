@@ -23,6 +23,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
     {
         private readonly struct MergeAnimatorDiffCacheKey : IEquatable<MergeAnimatorDiffCacheKey>
         {
+            /// <summary>
+            /// MergeAnimator差分キャッシュの複合キーを初期化します。
+            /// </summary>
             public MergeAnimatorDiffCacheKey(string chibiPrefabPath, string originalAvatarPrefabPath)
             {
                 ChibiPrefabPath = chibiPrefabPath ?? string.Empty;
@@ -32,17 +35,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             public string ChibiPrefabPath { get; }
             public string OriginalAvatarPrefabPath { get; }
 
+            /// <summary>
+            /// 複合キー同士を完全一致（Ordinal）で比較します。
+            /// </summary>
             public bool Equals(MergeAnimatorDiffCacheKey other)
             {
                 return string.Equals(ChibiPrefabPath, other.ChibiPrefabPath, StringComparison.Ordinal) &&
                        string.Equals(OriginalAvatarPrefabPath, other.OriginalAvatarPrefabPath, StringComparison.Ordinal);
             }
 
+            /// <summary>
+            /// object 比較用の Equals 実装です。
+            /// </summary>
             public override bool Equals(object obj)
             {
                 return obj is MergeAnimatorDiffCacheKey other && Equals(other);
             }
 
+            /// <summary>
+            /// Dictionary キーとして使うためのハッシュ値を返します。
+            /// </summary>
             public override int GetHashCode()
             {
                 unchecked
@@ -56,6 +68,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         private static readonly Dictionary<MergeAnimatorDiffCacheKey, string> MergeAnimatorDiffJsonByPrefabPair =
             new Dictionary<MergeAnimatorDiffCacheKey, string>();
 
+        /// <summary>
+        /// Library 配下の FaceMeshCache(v11) を読み込み、FaceMesh情報と MergeAnimator差分を復元します。
+        /// </summary>
         private static void LoadFaceMeshCacheFromLibrary()
         {
             try
@@ -72,6 +87,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 CachedFaceMeshByPrefab.Clear();
                 MergeAnimatorDiffJsonByPrefabPair.Clear();
 
+                // FaceMesh 本体キャッシュを復元
                 if (cacheFile.Entries != null)
                 {
                     foreach (var entry in cacheFile.Entries)
@@ -98,6 +114,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
                 }
 
+                // MergeAnimator 差分キャッシュを復元
                 if (cacheFile.MergeAnimatorDiffEntries != null)
                 {
                     foreach (var entry in cacheFile.MergeAnimatorDiffEntries)
@@ -118,6 +135,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// 現在メモリ上にある FaceMesh キャッシュと MergeAnimator 差分を Library 配下へ保存します。
+        /// </summary>
         private static void SaveFaceMeshCacheToLibrary()
         {
             if (!_faceMeshCacheDirty) return;
@@ -176,12 +196,18 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
         }
 
+        /// <summary>
+        /// FaceMeshCache ファイルの保存先パスを返します。
+        /// </summary>
         private static string GetFaceMeshCacheFilePath()
         {
             var projectRoot = Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
             return Path.Combine(projectRoot, "Library", "Aramaa", "OchibiChansConverterTool", FaceMeshCacheFileName);
         }
 
+        /// <summary>
+        /// 文字列から Hash128 を安全にパースします。
+        /// </summary>
         private static bool TryParseHash128(string value, out Hash128 hash)
         {
             hash = default;
@@ -237,6 +263,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             public string MergeAnimatorDiffJson;
         }
 
+        /// <summary>
+        /// (おちびPrefabPath, 元アバターPrefabPath) キーで MergeAnimator 差分JSONを取得します。
+        /// </summary>
         internal static bool TryGetMergeAnimatorDiffJson(string chibiPrefabPath, string originalAvatarPrefabPath, out string mergeAnimatorDiffJson)
         {
             mergeAnimatorDiffJson = string.Empty;
@@ -248,6 +277,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                    !string.IsNullOrEmpty(mergeAnimatorDiffJson);
         }
 
+        /// <summary>
+        /// (おちびPrefabPath, 元アバターPrefabPath) キーで MergeAnimator 差分JSONを保存します。
+        /// </summary>
         internal static void SaveMergeAnimatorDiffJson(string chibiPrefabPath, string originalAvatarPrefabPath, string mergeAnimatorDiffJson)
         {
             if (string.IsNullOrEmpty(chibiPrefabPath) || string.IsNullOrEmpty(originalAvatarPrefabPath)) return;
