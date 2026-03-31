@@ -53,7 +53,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         // Library に保存するファイル名（プロジェクト単位・ユーザー単位）。
         // 末尾は「キャッシュ互換性（このキャッシュを再利用して良いか）」のバージョン。
         // 互換が壊れる変更を入れたら上げる（JSON構造が同じでも上げてよい）。
-        private const string FaceMeshCacheFileName = "FaceMeshCache.v10.json";
+        private const string FaceMeshCacheFileName = "FaceMeshCache.v11.json";
 
         private static readonly Dictionary<string, CachedFaceMesh> CachedFaceMeshByPrefab =
             new Dictionary<string, CachedFaceMesh>();
@@ -151,6 +151,39 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         public static void SaveCacheToDisk()
         {
             SaveFaceMeshCacheToLibrary();
+        }
+
+        /// <summary>
+        /// MergeAnimator 差分のキー統一用に、元アバターPrefabパスを既存解決ロジックで取得します。
+        /// </summary>
+        internal static bool TryResolveOriginalAvatarPrefabPathForMergeDiff(GameObject avatarRoot, out string originalAvatarPrefabPath)
+        {
+            return TryGetOriginalAvatarPrefabPath(avatarRoot, out originalAvatarPrefabPath);
+        }
+
+        /// <summary>
+        /// おちびPrefabパスから、既存キャッシュに記録済みの元アバターPrefabパスを取得します。
+        /// </summary>
+        internal static bool TryResolveOriginalAvatarPrefabPathFromChibiPrefabPath(string chibiPrefabPath, out string originalAvatarPrefabPath)
+        {
+            originalAvatarPrefabPath = string.Empty;
+            if (string.IsNullOrEmpty(chibiPrefabPath))
+            {
+                return false;
+            }
+
+            if (!TryGetCachedFaceMeshSignature(chibiPrefabPath, out var signature))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(signature.OriginalAvatarPrefabPath))
+            {
+                return false;
+            }
+
+            originalAvatarPrefabPath = signature.OriginalAvatarPrefabPath;
+            return true;
         }
 
         /// <summary>
