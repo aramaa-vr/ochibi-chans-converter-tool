@@ -245,6 +245,24 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
+                // 意図:
+                // - 逆変換時に「現在値が差分保存時の targetGuid と一致する場合だけ」復元する。
+                // - これにより、ユーザーが後から別参照へ変更していたケースでの意図しない上書きを避ける。
+                if (!string.IsNullOrEmpty(item.targetGuid))
+                {
+                    if (!TryGetAnimatorAsset(dstEntry.Component, out _, out var currentGuid) || string.IsNullOrEmpty(currentGuid))
+                    {
+                        logs.Add($"[MA MergeAnimator Diff] Restore warn: current GUID not resolved: {item.objectFullPath}[{item.componentIndex}]");
+                        continue;
+                    }
+
+                    if (!string.Equals(currentGuid, item.targetGuid, StringComparison.Ordinal))
+                    {
+                        logs.Add($"[MA MergeAnimator Diff] Restore warn: target GUID mismatch: {item.objectFullPath}[{item.componentIndex}] current={currentGuid} expected={item.targetGuid}");
+                        continue;
+                    }
+                }
+
                 var sourceAssetPath = AssetDatabase.GUIDToAssetPath(item.sourceGuid);
                 if (string.IsNullOrEmpty(sourceAssetPath))
                 {
