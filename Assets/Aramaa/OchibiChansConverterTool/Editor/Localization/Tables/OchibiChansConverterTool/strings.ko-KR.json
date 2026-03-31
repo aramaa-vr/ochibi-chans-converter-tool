@@ -750,6 +750,10 @@
       "value": "[Ochibi-chans] 얼굴 메시 캐시 저장 실패: {0}"
     },
     {
+      "key": "Warning.MergeAnimatorDiffReverseLookupAmbiguous",
+      "value": "[Ochibi-chans] MergeAnimator diff 역조회 결과가 모호합니다: original={0}, candidates={1}, values=[{2}]"
+    },
+    {
       "key": "Warning.SerializedBlendshapeCopyFailed",
       "value": "[Ochibi-chans] {0}의 SMR Serialized Blendshape 복사 실패: {1}"
     },

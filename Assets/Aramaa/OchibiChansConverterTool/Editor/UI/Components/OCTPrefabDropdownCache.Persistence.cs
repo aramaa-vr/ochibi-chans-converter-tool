@@ -352,7 +352,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // - 一意に決まらない場合は誤適用を避けるため必ず失敗として扱う。
                 // - ただし「なぜ復元できなかったか」を追跡できるよう、候補数と候補値を明示ログへ残す。
                 Debug.LogWarning(
-                    $"[OCT][MA MergeAnimator Diff] Chibi prefab reverse lookup is ambiguous. original={originalAvatarPrefabPath}, candidates={matched.Length}, values=[{string.Join(", ", matched)}]");
+                    F(
+                        "Warning.MergeAnimatorDiffReverseLookupAmbiguous",
+                        originalAvatarPrefabPath,
+                        matched.Length,
+                        string.Join(", ", matched)));
                 return false;
             }
 
