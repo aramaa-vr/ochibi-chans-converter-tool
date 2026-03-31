@@ -72,6 +72,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var dstMap = BuildMergeAnimatorMap(dstRoot);
 
             var diffItems = new List<MergeAnimatorDiffItem>();
+            // 設計方針:
+            // - 本ツールは「おおよそ一致していれば調整する」ことを目的とする。
+            // - すべてのユーザー編集パターン（大規模な名前変更/再配置）への追従は目指さない。
+            // - 複雑なフォールバック照合は入れず、パス + componentIndex の単純一致を優先する。
             // 同一パス同士で比較し、GUID が異なるものだけ差分として扱う。
             foreach (var kv in chibiMap)
             {
@@ -252,6 +256,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private static Dictionary<string, List<MergeAnimatorEntry>> BuildMergeAnimatorMap(GameObject root)
         {
+            // 運用前提:
+            // - 通常運用では、ユーザーが MergeAnimator 対象オブジェクトの名称/配置を大きく変更しない。
+            // - そのため「複雑な推測マッチ」は採用せず、単純で追跡しやすいキーを使う。
             var map = new Dictionary<string, List<MergeAnimatorEntry>>(StringComparer.Ordinal);
             if (root == null)
             {
