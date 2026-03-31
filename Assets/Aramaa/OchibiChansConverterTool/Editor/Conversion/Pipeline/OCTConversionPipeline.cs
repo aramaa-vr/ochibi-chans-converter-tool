@@ -239,6 +239,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 // --------------------------------------------------------
                 var applySucceeded = ApplyConversionToTargets(
                     sourceChibiPrefab,
+                    sourceTarget,
                     duplicatedTargets,
                     restoreMode,
                     logs: logs
@@ -257,6 +258,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// </summary>
         private static bool ApplyConversionToTargets(
             GameObject sourceChibiPrefab,
+            GameObject sourceAvatarRoot,
             GameObject[] targets,
             bool restoreMode,
             List<string> logs
@@ -360,6 +362,23 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
                     // SVG 対応ステップ: 6) 複製先へ同期適用（コア処理）
                     ApplyCoreAvatarSynchronization(basePrefabRoot, dstRoot, logs);
+
+                    if (restoreMode)
+                    {
+                        OCTModularAvatarMergeAnimatorDiffUtility.RestoreAnimatorRefsFromStoredDiff(
+                            originalAvatarPrefabPath: basePrefabPath,
+                            avatarRoot: dstRoot,
+                            logs: logs);
+                    }
+                    else
+                    {
+                        OCTModularAvatarMergeAnimatorDiffUtility.ApplyChibiSideAnimatorRefsAndStoreDiffs(
+                            sourceChibiPrefabPath: basePrefabPath,
+                            sourceAvatarRoot: sourceAvatarRoot,
+                            sourceChibiRoot: basePrefabRoot,
+                            dstRoot: dstRoot,
+                            logs: logs);
+                    }
 
                     // Ex AddMenu 処理（restoreMode を優先分岐）
                     if (restoreMode)
