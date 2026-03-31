@@ -327,6 +327,35 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
+        /// 保存済み MergeAnimator 差分キーから、originalAvatarPrefabPath に対応する chibiPrefabPath を逆引きします。
+        /// 一意に決まる場合のみ true を返します。
+        /// </summary>
+        internal static bool TryResolveChibiPrefabPathFromStoredMergeDiff(string originalAvatarPrefabPath, out string chibiPrefabPath)
+        {
+            chibiPrefabPath = string.Empty;
+            if (string.IsNullOrEmpty(originalAvatarPrefabPath))
+            {
+                return false;
+            }
+
+            EnsureFaceMeshCacheLoaded();
+            var matched = MergeAnimatorDiffJsonByPrefabPair.Keys
+                .Where(k => string.Equals(k.OriginalAvatarPrefabPath, originalAvatarPrefabPath, StringComparison.Ordinal))
+                .Select(k => k.ChibiPrefabPath)
+                .Where(path => !string.IsNullOrEmpty(path))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+
+            if (matched.Length != 1)
+            {
+                return false;
+            }
+
+            chibiPrefabPath = matched[0];
+            return true;
+        }
+
+        /// <summary>
         /// 文字列JSONを MergeAnimator 差分DTOへ変換します。
         /// 失敗時は null を返します。
         /// </summary>

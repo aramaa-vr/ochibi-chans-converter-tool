@@ -188,6 +188,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs ??= new List<string>();
 
             var chibiPrefabPath = ResolvePrefabAssetPath(avatarRoot);
+            if (string.IsNullOrEmpty(chibiPrefabPath) &&
+                OCTPrefabDropdownCache.TryResolveChibiPrefabPathFromStoredMergeDiff(originalAvatarPrefabPath, out var resolvedChibiPrefabPath))
+            {
+                chibiPrefabPath = resolvedChibiPrefabPath;
+            }
+
             if (string.IsNullOrEmpty(chibiPrefabPath) || string.IsNullOrEmpty(originalAvatarPrefabPath))
             {
                 logs.Add($"[MA MergeAnimator Diff] Restore skipped: prefab path unresolved (chibi: {chibiPrefabPath}, original: {originalAvatarPrefabPath})");
