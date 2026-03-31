@@ -754,6 +754,10 @@
       "value": "[Ochibi-chans] MergeAnimator diff 역조회 결과가 모호합니다: original={0}, candidates={1}, values=[{2}]"
     },
     {
+      "key": "Warning.MergeAnimatorDiffInvalidEntriesSkipped",
+      "value": "[Ochibi-chans] 저장 중 잘못된 MergeAnimator diff 캐시 항목을 건너뛰었습니다: {0}"
+    },
+    {
       "key": "Warning.SerializedBlendshapeCopyFailed",
       "value": "[Ochibi-chans] {0}의 SMR Serialized Blendshape 복사 실패: {1}"
     },

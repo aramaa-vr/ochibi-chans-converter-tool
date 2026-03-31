@@ -754,6 +754,10 @@
       "value": "[OchibiChansConverterTool] MergeAnimator 差分の逆引きが一意に決まりませんでした: original={0}, candidates={1}, values=[{2}]"
     },
     {
+      "key": "Warning.MergeAnimatorDiffInvalidEntriesSkipped",
+      "value": "[OchibiChansConverterTool] MergeAnimator 差分キャッシュに不正なエントリがあり、{0} 件を保存対象から除外しました。"
+    },
+    {
       "key": "Warning.SerializedBlendshapeCopyFailed",
       "value": "[OchibiChansConverterTool] Serialized blendshape copy failed for SMR on {0}: {1}"
     },

@@ -754,6 +754,10 @@
       "value": "[Ochibi-chans] MergeAnimator 差分反向查找結果不唯一：original={0}, candidates={1}, values=[{2}]"
     },
     {
+      "key": "Warning.MergeAnimatorDiffInvalidEntriesSkipped",
+      "value": "[Ochibi-chans] 儲存時略過了無效的 MergeAnimator 差分快取項目：{0}"
+    },
+    {
       "key": "Warning.SerializedBlendshapeCopyFailed",
       "value": "[Ochibi-chans] {0} 上的 SMR 序列化 Blendshape 複製失敗：{1}"
     },

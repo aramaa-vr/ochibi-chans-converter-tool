@@ -181,6 +181,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     });
                 }
 
+                var invalidMergeAnimatorDiffEntryCount = 0;
                 foreach (var pair in MergeAnimatorDiffJsonByPrefabPair
                              .OrderBy(p => p.Key.ChibiPrefabPath, StringComparer.Ordinal)
                              .ThenBy(p => p.Key.OriginalAvatarPrefabPath, StringComparer.Ordinal))
@@ -193,6 +194,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     var mergeAnimatorDiff = TryParseMergeAnimatorDiffPayload(pair.Value);
                     if (mergeAnimatorDiff == null)
                     {
+                        invalidMergeAnimatorDiffEntryCount++;
                         continue;
                     }
 
@@ -202,6 +204,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         OriginalAvatarPrefabPath = pair.Key.OriginalAvatarPrefabPath,
                         MergeAnimatorDiff = mergeAnimatorDiff
                     });
+                }
+
+                // 意図:
+                // - 不正JSONは従来通り保存対象から除外して安全側に倒す。
+                // - ただし silent skip だと原因追跡が難しいため、件数だけ warning で通知する。
+                if (invalidMergeAnimatorDiffEntryCount > 0)
+                {
+                    Debug.LogWarning(F("Warning.MergeAnimatorDiffInvalidEntriesSkipped", invalidMergeAnimatorDiffEntryCount));
                 }
 
                 var json = JsonUtility.ToJson(cacheFile, true);

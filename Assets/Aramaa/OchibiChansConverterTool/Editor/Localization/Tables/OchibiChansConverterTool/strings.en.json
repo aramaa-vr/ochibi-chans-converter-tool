@@ -754,6 +754,10 @@
       "value": "[Ochibi-chans] MergeAnimator diff reverse lookup is ambiguous: original={0}, candidates={1}, values=[{2}]"
     },
     {
+      "key": "Warning.MergeAnimatorDiffInvalidEntriesSkipped",
+      "value": "[Ochibi-chans] Invalid MergeAnimator diff cache entries were skipped during save: {0}"
+    },
+    {
       "key": "Warning.SerializedBlendshapeCopyFailed",
       "value": "[Ochibi-chans] Serialized blendshape copy failed for SMR on {0}: {1}"
     },
