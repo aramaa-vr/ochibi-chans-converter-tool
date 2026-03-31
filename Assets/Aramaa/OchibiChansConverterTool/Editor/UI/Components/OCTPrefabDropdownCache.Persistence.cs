@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace Aramaa.OchibiChansConverterTool.Editor
@@ -147,7 +148,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             try
             {
                 var cacheFile = new FaceMeshCacheFile();
-                foreach (var pair in CachedFaceMeshByPrefab)
+                foreach (var pair in CachedFaceMeshByPrefab.OrderBy(p => p.Key, StringComparer.Ordinal))
                 {
                     var cached = pair.Value;
                     cacheFile.Entries.Add(new FaceMeshCacheEntry
@@ -171,7 +172,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     });
                 }
 
-                foreach (var pair in MergeAnimatorDiffJsonByPrefabPair)
+                foreach (var pair in MergeAnimatorDiffJsonByPrefabPair
+                             .OrderBy(p => p.Key.ChibiPrefabPath, StringComparer.Ordinal)
+                             .ThenBy(p => p.Key.OriginalAvatarPrefabPath, StringComparer.Ordinal))
                 {
                     if (string.IsNullOrEmpty(pair.Value))
                     {
