@@ -162,6 +162,31 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
+        /// おちびPrefabパスから、既存キャッシュに記録済みの元アバターPrefabパスを取得します。
+        /// </summary>
+        internal static bool TryResolveOriginalAvatarPrefabPathFromChibiPrefabPath(string chibiPrefabPath, out string originalAvatarPrefabPath)
+        {
+            originalAvatarPrefabPath = string.Empty;
+            if (string.IsNullOrEmpty(chibiPrefabPath))
+            {
+                return false;
+            }
+
+            if (!TryGetCachedFaceMeshSignature(chibiPrefabPath, out var signature))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(signature.OriginalAvatarPrefabPath))
+            {
+                return false;
+            }
+
+            originalAvatarPrefabPath = signature.OriginalAvatarPrefabPath;
+            return true;
+        }
+
+        /// <summary>
         /// 対象アバターの変更に備えて、次回の候補再構築を予約します。
         /// </summary>
         public void MarkNeedsRefresh()

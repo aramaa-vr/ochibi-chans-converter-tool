@@ -146,6 +146,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             {
                 sourceAvatarPrefabPath = normalizedOriginalAvatarPrefabPath;
             }
+            else if (OCTPrefabDropdownCache.TryResolveOriginalAvatarPrefabPathFromChibiPrefabPath(sourceChibiPrefabPath, out var cachedOriginalAvatarPrefabPath) &&
+                     !string.IsNullOrEmpty(cachedOriginalAvatarPrefabPath))
+            {
+                sourceAvatarPrefabPath = cachedOriginalAvatarPrefabPath;
+            }
 
             if (!string.IsNullOrEmpty(sourceChibiPrefabPath) &&
                 !string.IsNullOrEmpty(sourceAvatarPrefabPath))
