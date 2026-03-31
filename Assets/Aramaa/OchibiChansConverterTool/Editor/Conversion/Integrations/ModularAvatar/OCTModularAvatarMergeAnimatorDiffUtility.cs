@@ -140,6 +140,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             // 差分保存キーは (おちびPrefabPath, 元アバターPrefabPath)。
             // 片方でも解決できない場合は安全にスキップする。
             var sourceAvatarPrefabPath = ResolvePrefabAssetPath(sourceAvatarRoot);
+            // キー不一致を減らすため、既存の「元アバターPrefab解決」ロジックで正規化を試みる。
+            if (OCTPrefabDropdownCache.TryResolveOriginalAvatarPrefabPathForMergeDiff(sourceAvatarRoot, out var normalizedOriginalAvatarPrefabPath) &&
+                !string.IsNullOrEmpty(normalizedOriginalAvatarPrefabPath))
+            {
+                sourceAvatarPrefabPath = normalizedOriginalAvatarPrefabPath;
+            }
+
             if (!string.IsNullOrEmpty(sourceChibiPrefabPath) &&
                 !string.IsNullOrEmpty(sourceAvatarPrefabPath))
             {

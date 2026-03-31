@@ -154,6 +154,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
+        /// MergeAnimator 差分のキー統一用に、元アバターPrefabパスを既存解決ロジックで取得します。
+        /// </summary>
+        internal static bool TryResolveOriginalAvatarPrefabPathForMergeDiff(GameObject avatarRoot, out string originalAvatarPrefabPath)
+        {
+            return TryGetOriginalAvatarPrefabPath(avatarRoot, out originalAvatarPrefabPath);
+        }
+
+        /// <summary>
         /// 対象アバターの変更に備えて、次回の候補再構築を予約します。
         /// </summary>
         public void MarkNeedsRefresh()
