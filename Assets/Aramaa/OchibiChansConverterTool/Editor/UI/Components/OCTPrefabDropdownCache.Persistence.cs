@@ -122,10 +122,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         if (entry == null) continue;
                         if (string.IsNullOrEmpty(entry.ChibiPrefabPath)) continue;
                         if (string.IsNullOrEmpty(entry.OriginalAvatarPrefabPath)) continue;
-                        if (string.IsNullOrEmpty(entry.MergeAnimatorDiffJson)) continue;
+                        if (entry.MergeAnimatorDiff == null) continue;
 
                         var key = new MergeAnimatorDiffCacheKey(entry.ChibiPrefabPath, entry.OriginalAvatarPrefabPath);
-                        MergeAnimatorDiffJsonByPrefabPair[key] = entry.MergeAnimatorDiffJson;
+                        var mergeAnimatorDiffJson = JsonUtility.ToJson(entry.MergeAnimatorDiff, false);
+                        if (string.IsNullOrEmpty(mergeAnimatorDiffJson)) continue;
+                        MergeAnimatorDiffJsonByPrefabPair[key] = mergeAnimatorDiffJson;
                     }
                 }
             }
@@ -176,11 +178,17 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         continue;
                     }
 
+                    var mergeAnimatorDiff = TryParseMergeAnimatorDiffPayload(pair.Value);
+                    if (mergeAnimatorDiff == null)
+                    {
+                        continue;
+                    }
+
                     cacheFile.MergeAnimatorDiffEntries.Add(new MergeAnimatorDiffCacheEntry
                     {
                         ChibiPrefabPath = pair.Key.ChibiPrefabPath,
                         OriginalAvatarPrefabPath = pair.Key.OriginalAvatarPrefabPath,
-                        MergeAnimatorDiffJson = pair.Value
+                        MergeAnimatorDiff = mergeAnimatorDiff
                     });
                 }
 
@@ -260,7 +268,22 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         {
             public string ChibiPrefabPath;
             public string OriginalAvatarPrefabPath;
-            public string MergeAnimatorDiffJson;
+            public MergeAnimatorDiffPayload MergeAnimatorDiff;
+        }
+
+        [Serializable]
+        private sealed class MergeAnimatorDiffPayload
+        {
+            public List<MergeAnimatorDiffItem> items = new List<MergeAnimatorDiffItem>();
+        }
+
+        [Serializable]
+        private sealed class MergeAnimatorDiffItem
+        {
+            public string objectFullPath;
+            public int componentIndex;
+            public string sourceGuid;
+            public string targetGuid;
         }
 
         /// <summary>
@@ -288,6 +311,27 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             var key = new MergeAnimatorDiffCacheKey(chibiPrefabPath, originalAvatarPrefabPath);
             MergeAnimatorDiffJsonByPrefabPair[key] = mergeAnimatorDiffJson ?? string.Empty;
             MarkFaceMeshCacheDirty();
+        }
+
+        /// <summary>
+        /// 文字列JSONを MergeAnimator 差分DTOへ変換します。
+        /// 失敗時は null を返します。
+        /// </summary>
+        private static MergeAnimatorDiffPayload TryParseMergeAnimatorDiffPayload(string mergeAnimatorDiffJson)
+        {
+            if (string.IsNullOrEmpty(mergeAnimatorDiffJson))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonUtility.FromJson<MergeAnimatorDiffPayload>(mergeAnimatorDiffJson);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }
