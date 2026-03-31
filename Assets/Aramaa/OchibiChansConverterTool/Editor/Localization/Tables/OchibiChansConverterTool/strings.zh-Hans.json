@@ -750,6 +750,14 @@
       "value": "[Ochibi-chans] 保存面部网格缓存失败：{0}"
     },
     {
+      "key": "Warning.MergeAnimatorDiffReverseLookupAmbiguous",
+      "value": "[Ochibi-chans] MergeAnimator 差分反向查找结果不唯一：original={0}, candidates={1}, values=[{2}]"
+    },
+    {
+      "key": "Warning.MergeAnimatorDiffInvalidEntriesSkipped",
+      "value": "[Ochibi-chans] 保存时跳过了无效的 MergeAnimator 差分缓存条目：{0}"
+    },
+    {
       "key": "Warning.SerializedBlendshapeCopyFailed",
       "value": "[Ochibi-chans] {0} 上的 SMR 序列化 Blendshape 复制失败：{1}"
     },
