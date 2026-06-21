@@ -28,11 +28,10 @@ VRChatアバターを **「おちびちゃんズ」に変換**する Unity Edito
 </div>
 
 <div class="notice-callout">
-  <strong>できること</strong>
+  <strong>できること</strong>  
   Hierarchyのアバターを複製し、変換先おちびちゃんズの設定（Scale / FX / Expressions / ViewPosition 等）を上書きします。  
 
-  <strong>【お知らせ】</strong>
-  
+  <strong>【お知らせ】</strong>  
   最新の「おちびちゃんズ」では、  
   アバターの高さを調整し、靴底を床に合わせる機能が更新されています。  
   
