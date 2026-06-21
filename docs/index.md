@@ -7,6 +7,16 @@ nav_order: 1
 
 ![おちびちゃんズ化ツールのヒーロー画像]({{ "/assets/img/ochibi-chans-converter-tool/common/hero.webp" | relative_url }}){: .home-hero-img }
 
+<div class="notice-callout">
+  <strong>【お知らせ】</strong>  <br>
+  最新の「おちびちゃんズ」では、  <br>
+  アバターの高さを調整し、靴底を床に合わせる機能が更新されています。  <br>
+  <br>
+  現在「おちびちゃんズ化ツール」はこの更新に未対応のため、正常に動作しない場合があります。  <br>
+  <br>
+  近日中に対応予定です。  <br>
+</div>
+
 <div class="landing-hero" markdown="1">
 
 # おちびちゃんズ化ツール
@@ -29,15 +39,7 @@ VRChatアバターを **「おちびちゃんズ」に変換**する Unity Edito
 
 <div class="notice-callout">
   <strong>できること</strong>  
-  Hierarchyのアバターを複製し、変換先おちびちゃんズの設定（Scale / FX / Expressions / ViewPosition 等）を上書きします。  
-
-  <strong>【お知らせ】</strong>  
-  最新の「おちびちゃんズ」では、  
-  アバターの高さを調整し、靴底を床に合わせる機能が更新されています。  
-  
-  現在「おちびちゃんズ化ツール」はこの更新に未対応のため、正常に動作しない場合があります。  
-  
-  近日中に対応予定です。    
+  Hierarchyのアバターを複製し、変換先おちびちゃんズの設定（Scale / FX / Expressions / ViewPosition 等）を上書きします。    
 </div>
 
 ## 困ったとき
