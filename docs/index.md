@@ -8,7 +8,7 @@ nav_order: 1
 ![おちびちゃんズ化ツールのヒーロー画像]({{ "/assets/img/ochibi-chans-converter-tool/common/hero.webp" | relative_url }}){: .home-hero-img }
 
 <div class="notice-callout">
-  <strong>【お知らせ】</strong>  <br>
+  <strong>【お知らせ】</strong>  
   最新の「おちびちゃんズ」では、  <br>
   アバターの高さを調整し、靴底を床に合わせる機能が更新されています。  <br>
   <br>
