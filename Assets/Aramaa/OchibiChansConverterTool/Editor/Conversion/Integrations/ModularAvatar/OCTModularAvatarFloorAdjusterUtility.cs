@@ -90,13 +90,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 #endif
             RemoveComponentsByTypeName(
                 avatarRoot,
-                OCTEditorConstants.LegacySkeletalFloorAdjusterTypeName,
-                logs,
-                "Log.FloorAdjusterConflictRemoved",
-                notFoundLogKey: null
-            );
-            RemoveComponentsByTypeName(
-                avatarRoot,
                 OCTEditorConstants.LegacyFloorAdjusterTypeName,
                 logs,
                 "Log.FloorAdjusterConflictRemoved",
@@ -125,14 +118,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 removeEmptyGameObject: true
             );
 #endif
-            RemoveComponentsByTypeName(
-                avatarRoot,
-                OCTEditorConstants.LegacySkeletalFloorAdjusterTypeName,
-                logs,
-                "Log.RestoreComponentRemoved",
-                "Log.RestoreComponentNotFound"
-            );
-
             var armature = OCTEditorUtility.FindAvatarMainArmature(avatarRoot.transform);
             if (armature == null)
             {
@@ -478,8 +463,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             var typeName = component.GetType().Name;
-            return string.Equals(typeName, OCTEditorConstants.LegacyFloorAdjusterTypeName, StringComparison.Ordinal)
-                   || string.Equals(typeName, OCTEditorConstants.LegacySkeletalFloorAdjusterTypeName, StringComparison.Ordinal);
+            return string.Equals(typeName, OCTEditorConstants.LegacyFloorAdjusterTypeName, StringComparison.Ordinal);
         }
 
         private static string BuildRelativePathFromRoot(Transform root, Transform target)

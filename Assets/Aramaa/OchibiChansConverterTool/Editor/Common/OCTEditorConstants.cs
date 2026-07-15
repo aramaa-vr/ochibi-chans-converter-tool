@@ -26,7 +26,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         public const string AddMenuPrefabFileName = "Ochibichans_Addmenu.prefab";
         public const string AddMenuNameKeyword = "Ochibichans_Addmenu";
         public const string LegacyFloorAdjusterTypeName = "FloorAdjuster";
-        public const string LegacySkeletalFloorAdjusterTypeName = "SkeletalFloorAdjuster";
     }
 }
 #endif
