@@ -19,6 +19,11 @@
       "name": "nadena.dev.modular-avatar",
       "expression": "",
       "define": "CHIBI_MODULAR_AVATAR"
+    },
+    {
+      "name": "nadena.dev.modular-avatar",
+      "expression": ">=1.17.0",
+      "define": "CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER"
     }
   ],
   "noEngineReferences": false

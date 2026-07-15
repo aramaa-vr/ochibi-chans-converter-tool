@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-#if CHIBI_MODULAR_AVATAR
+#if CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER
 using nadena.dev.modular_avatar.core;
 #endif
 
@@ -20,7 +20,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         internal static bool HasModularAvatarFloorAdjuster(GameObject avatarRoot)
         {
-#if CHIBI_MODULAR_AVATAR
+#if CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER
             return avatarRoot != null
                    && avatarRoot.GetComponentsInChildren<ModularAvatarFloorAdjuster>(includeInactive: true).Length > 0;
 #else
@@ -52,7 +52,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return true;
             }
 
-#if CHIBI_MODULAR_AVATAR
+#if CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER
             if (sourceComponent is ModularAvatarFloorAdjuster)
             {
                 return true;
@@ -79,7 +79,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             logs ??= new List<string>();
 
-#if CHIBI_MODULAR_AVATAR
+#if CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER
             RemoveModularAvatarFloorAdjusters(
                 avatarRoot,
                 logs,
@@ -109,7 +109,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-#if CHIBI_MODULAR_AVATAR
+#if CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER
             RemoveModularAvatarFloorAdjusters(
                 avatarRoot,
                 logs,
@@ -171,7 +171,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     continue;
                 }
 
-#if CHIBI_MODULAR_AVATAR
+#if CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER
                 var modularAvatarFloorAdjuster = srcTransform.GetComponent<ModularAvatarFloorAdjuster>();
                 if (modularAvatarFloorAdjuster != null)
                 {
@@ -228,7 +228,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return false;
             }
 
-#if CHIBI_MODULAR_AVATAR
+#if CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER
             if (component is ModularAvatarFloorAdjuster)
             {
                 return true;
@@ -340,7 +340,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             bool removeEmptyGameObject
         )
         {
-#if CHIBI_MODULAR_AVATAR
+#if CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER
             var adjusters = avatarRoot.GetComponentsInChildren<ModularAvatarFloorAdjuster>(includeInactive: true);
             foreach (var adjuster in adjusters)
             {
@@ -374,7 +374,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
         private static bool CanRemoveEmptyFloorAdjusterObject(GameObject target, GameObject avatarRoot)
         {
-#if CHIBI_MODULAR_AVATAR
+#if CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER
             if (target == null || target == avatarRoot || target.transform.childCount > 0)
             {
                 return false;
