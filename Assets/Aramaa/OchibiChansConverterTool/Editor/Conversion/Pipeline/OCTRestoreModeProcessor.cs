@@ -25,19 +25,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
-            var armature = OCTEditorUtility.FindAvatarMainArmature(avatarRoot.transform);
-            if (armature == null)
-            {
-                logs.Add(F("Log.RestoreArmatureMissing", OCTConversionLogFormatter.GetHierarchyPath(avatarRoot.transform)));
-                return;
-            }
-
-            logs.Add(F("Log.RestoreArmatureAdjusterStart", OCTConversionLogFormatter.GetHierarchyPath(armature)));
-
-            // TODO: 仮作成 FloorAdjusterは一つしかないので許容とする
-            RemoveComponentByTypeName(armature.gameObject, "FloorAdjuster", logs);
-            // TODO: そもそもおちびちゃんズはModularAvatarScaleAdjuster使ってないようなので一旦保留
-            // RemoveComponentByTypeName(armature.gameObject, "ModularAvatarScaleAdjuster", logs);
+            OCTModularAvatarFloorAdjusterUtility.RemoveFloorAdjustersForRestore(avatarRoot, logs);
+            return;
         }
 
         public static void RemoveExAddMenuObjectsIfExists(GameObject avatarRoot, List<string> logs)
@@ -124,48 +113,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 Path.GetFileName(prefabPath),
                 OCTEditorConstants.AddMenuPrefabFileName,
                 StringComparison.OrdinalIgnoreCase);
-        }
-
-        internal static void RemoveComponentByTypeName(GameObject target, string typeName, List<string> logs)
-        {
-            logs ??= new List<string>();
-            if (target == null || string.IsNullOrEmpty(typeName))
-            {
-                return;
-            }
-
-            var removedCount = 0;
-            var transforms = target.GetComponentsInChildren<Transform>(includeInactive: true);
-            foreach (var t in transforms)
-            {
-                if (t == null)
-                {
-                    continue;
-                }
-
-                var components = t.GetComponents<Component>();
-                foreach (var component in components)
-                {
-                    if (component == null)
-                    {
-                        continue;
-                    }
-
-                    if (!string.Equals(component.GetType().Name, typeName, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    Undo.DestroyObjectImmediate(component);
-                    removedCount++;
-                    logs.Add(F("Log.RestoreComponentRemoved", typeName, OCTConversionLogFormatter.GetHierarchyPath(t)));
-                }
-            }
-
-            if (removedCount == 0)
-            {
-                logs.Add(F("Log.RestoreComponentNotFound", typeName));
-            }
         }
 
         private static string NormalizeStandaloneAddMenuName(string objectName)

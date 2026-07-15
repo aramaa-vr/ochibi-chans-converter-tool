@@ -359,7 +359,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     logs.Add("");
 
                     // SVG 対応ステップ: 6) 複製先へ同期適用（コア処理）
-                    ApplyCoreAvatarSynchronization(basePrefabRoot, dstRoot, logs);
+                    ApplyCoreAvatarSynchronization(basePrefabRoot, dstRoot, restoreMode, logs);
 
                     // Ex AddMenu 処理（restoreMode を優先分岐）
                     if (restoreMode)
@@ -691,7 +691,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         /// <summary>
         /// 複製先へ同期適用するコア処理（Transform / Component / BlendShape）をまとめて実行します。
         /// </summary>
-        private static void ApplyCoreAvatarSynchronization(GameObject srcRoot, GameObject dstRoot, List<string> logs)
+        private static void ApplyCoreAvatarSynchronization(
+            GameObject srcRoot,
+            GameObject dstRoot,
+            bool restoreMode,
+            List<string> logs
+        )
         {
             logs ??= new List<string>();
 
@@ -719,7 +724,21 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             logs.Add(L("Log.Step.6.Substep2"));
             CopyArmatureTransforms(srcArmature, dstArmature, logs);
             logs.Add(L("Log.Step.6.Substep3"));
-            AddMissingComponentsUnderArmature(srcRoot, dstRoot, srcArmature, dstArmature, logs);
+            if (!restoreMode && OCTModularAvatarFloorAdjusterUtility.HasAnyFloorAdjuster(srcRoot))
+            {
+                OCTModularAvatarFloorAdjusterUtility.RemoveConflictingFloorAdjusters(dstRoot, logs);
+            }
+
+            AddMissingComponentsUnderArmature(srcRoot, dstRoot, srcArmature, dstArmature, restoreMode, logs);
+            if (!restoreMode)
+            {
+                OCTModularAvatarFloorAdjusterUtility.CopyFloorAdjustersOutsideArmature(
+                    srcRoot,
+                    dstRoot,
+                    srcArmature,
+                    logs
+                );
+            }
             logs.Add(L("Log.Step.6.Substep4"));
             OCTSkinnedMeshUtility.CopySkinnedMeshRenderersBlendShapesOnlyWithLog(srcRoot, dstRoot, logs);
         }
@@ -788,6 +807,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             GameObject dstRoot,
             Transform srcArmature,
             Transform dstArmature,
+            bool restoreMode,
             List<string> logs
         )
         {
@@ -839,6 +859,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                     }
 
                     if (c is Transform)
+                    {
+                        continue;
+                    }
+
+                    if (OCTModularAvatarFloorAdjusterUtility.IsFloorAdjusterComponent(c)
+                        && (restoreMode
+                            || !OCTModularAvatarFloorAdjusterUtility.ShouldCopyFloorAdjusterComponent(srcRoot, c)))
                     {
                         continue;
                     }
