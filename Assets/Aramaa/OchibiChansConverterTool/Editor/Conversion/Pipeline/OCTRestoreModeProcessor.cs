@@ -25,6 +25,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 return;
             }
 
+            OCTModularAvatarFloorAdjusterUtility.RemoveModularAvatarFloorAdjustersForRestore(avatarRoot, logs);
+
             var armature = OCTEditorUtility.FindAvatarMainArmature(avatarRoot.transform);
             if (armature == null)
             {
