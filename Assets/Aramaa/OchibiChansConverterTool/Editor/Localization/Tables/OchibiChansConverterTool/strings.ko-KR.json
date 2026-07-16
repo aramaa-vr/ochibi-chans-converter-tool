@@ -686,10 +686,6 @@
       "value": "Armature Transform 동기화"
     },
     {
-      "key": "Undo.SyncFloorAdjuster",
-      "value": "Floor Adjuster 동기화"
-    },
-    {
       "key": "Undo.SyncBlendShapes",
       "value": "BlendShapes 동기화"
     },
@@ -900,10 +896,6 @@
     {
       "key": "Log.RestoreComponentRemoved",
       "value": "[Restore] 컴포넌트 삭제: {0} @ {1}"
-    },
-    {
-      "key": "Log.FloorAdjusterConflictRemoved",
-      "value": "충돌하는 Floor Adjuster 삭제: {0} @ {1}"
     },
     {
       "key": "Log.RestoreComponentNotFound",

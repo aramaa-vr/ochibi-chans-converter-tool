@@ -686,10 +686,6 @@
       "value": "同步 Armature Transform"
     },
     {
-      "key": "Undo.SyncFloorAdjuster",
-      "value": "同步 Floor Adjuster"
-    },
-    {
       "key": "Undo.SyncBlendShapes",
       "value": "同步 BlendShapes"
     },
@@ -900,10 +896,6 @@
     {
       "key": "Log.RestoreComponentRemoved",
       "value": "[Restore] 已删除组件：{0} @ {1}"
-    },
-    {
-      "key": "Log.FloorAdjusterConflictRemoved",
-      "value": "已删除冲突的 Floor Adjuster：{0} @ {1}"
     },
     {
       "key": "Log.RestoreComponentNotFound",

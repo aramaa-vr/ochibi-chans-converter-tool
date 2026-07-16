@@ -686,10 +686,6 @@
       "value": "Sync Armature Transform"
     },
     {
-      "key": "Undo.SyncFloorAdjuster",
-      "value": "Sync Floor Adjuster"
-    },
-    {
       "key": "Undo.SyncBlendShapes",
       "value": "Sync BlendShapes"
     },
@@ -900,10 +896,6 @@
     {
       "key": "Log.RestoreComponentRemoved",
       "value": "[Restore] Removed component: {0} @ {1}"
-    },
-    {
-      "key": "Log.FloorAdjusterConflictRemoved",
-      "value": "Removed conflicting Floor Adjuster: {0} @ {1}"
     },
     {
       "key": "Log.RestoreComponentNotFound",

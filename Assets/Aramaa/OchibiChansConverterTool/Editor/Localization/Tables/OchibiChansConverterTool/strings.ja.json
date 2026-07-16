@@ -686,10 +686,6 @@
       "value": "Armature Transform を同期"
     },
     {
-      "key": "Undo.SyncFloorAdjuster",
-      "value": "Floor Adjuster を同期"
-    },
-    {
       "key": "Undo.SyncBlendShapes",
       "value": "BlendShapes を同期"
     },
@@ -900,10 +896,6 @@
     {
       "key": "Log.RestoreComponentRemoved",
       "value": "[Restore] コンポーネント削除: {0} @ {1}"
-    },
-    {
-      "key": "Log.FloorAdjusterConflictRemoved",
-      "value": "Floor Adjuster の競合コンポーネントを削除: {0} @ {1}"
     },
     {
       "key": "Log.RestoreComponentNotFound",
