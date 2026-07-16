@@ -45,28 +45,6 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 .Any(IsLegacyFloorAdjusterComponent);
         }
 
-        internal static bool ShouldCopyFloorAdjusterComponent(GameObject sourceRoot, Component sourceComponent)
-        {
-            if (sourceComponent == null || !IsFloorAdjusterComponent(sourceComponent))
-            {
-                return true;
-            }
-
-#if CHIBI_MODULAR_AVATAR_FLOOR_ADJUSTER
-            if (sourceComponent is ModularAvatarFloorAdjuster)
-            {
-                return true;
-            }
-
-            if (HasModularAvatarFloorAdjuster(sourceRoot))
-            {
-                return false;
-            }
-#endif
-
-            return true;
-        }
-
         /// <summary>
         /// 変換元のFloor Adjusterを正として、変換先に残っている旧/新方式の競合を除去します。
         /// </summary>
@@ -88,6 +66,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 removeEmptyGameObject: false
             );
 #endif
+            RemoveComponentsByTypeName(
+                avatarRoot,
+                OCTEditorConstants.LegacySkeletalFloorAdjusterTypeName,
+                logs,
+                "Log.FloorAdjusterConflictRemoved",
+                notFoundLogKey: null
+            );
             RemoveComponentsByTypeName(
                 avatarRoot,
                 OCTEditorConstants.LegacyFloorAdjusterTypeName,
@@ -118,6 +103,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 removeEmptyGameObject: true
             );
 #endif
+            RemoveComponentsByTypeName(
+                avatarRoot,
+                OCTEditorConstants.LegacySkeletalFloorAdjusterTypeName,
+                logs,
+                "Log.RestoreComponentRemoved",
+                "Log.RestoreComponentNotFound"
+            );
             var armature = OCTEditorUtility.FindAvatarMainArmature(avatarRoot.transform);
             if (armature == null)
             {
@@ -142,13 +134,14 @@ namespace Aramaa.OchibiChansConverterTool.Editor
         }
 
         /// <summary>
-        /// Armature外に配置されるFloor Adjusterを変換先へ複製します。
-        /// Armature上の旧方式は、既存のArmatureコンポーネント同期で処理します。
+        /// Floor Adjusterを変換先へ複製します。
+        /// 変換先に対応するTransformが無い場合は、必要な階層ごと作成します。
         /// </summary>
-        internal static void CopyFloorAdjustersOutsideArmature(
+        internal static void CopyFloorAdjusters(
             GameObject srcRoot,
             GameObject dstRoot,
             Transform srcArmature,
+            Transform dstArmature,
             List<string> logs
         )
         {
@@ -166,7 +159,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             foreach (var srcTransform in sourceTransforms)
             {
-                if (srcTransform == null || IsUnderTransform(srcTransform, srcArmature))
+                if (srcTransform == null)
                 {
                     continue;
                 }
@@ -180,6 +173,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         srcTransform,
                         srcRoot,
                         dstRoot,
+                        srcArmature,
+                        dstArmature,
                         log,
                         ref copiedCount,
                         ref skippedCount
@@ -203,6 +198,8 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         srcTransform,
                         srcRoot,
                         dstRoot,
+                        srcArmature,
+                        dstArmature,
                         log,
                         ref copiedCount,
                         ref skippedCount
@@ -243,33 +240,26 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             Transform srcTransform,
             GameObject srcRoot,
             GameObject dstRoot,
+            Transform srcArmature,
+            Transform dstArmature,
             OCTConversionLogger log,
             ref int copiedCount,
             ref int skippedCount
         )
         {
-            var relativePath = BuildRelativePathFromRoot(srcRoot.transform, srcTransform);
-            var dstTransform = string.IsNullOrEmpty(relativePath)
-                ? dstRoot.transform
-                : dstRoot.transform.Find(relativePath);
-            GameObject createdObject = null;
-
+            var createdObjects = new List<GameObject>();
+            var dstTransform = FindOrCreateDestinationTransform(
+                srcTransform,
+                srcRoot.transform,
+                dstRoot.transform,
+                srcArmature,
+                dstArmature,
+                createdObjects
+            );
             if (dstTransform == null)
             {
-                var parentPath = BuildRelativePathFromRoot(srcRoot.transform, srcTransform.parent);
-                var dstParent = string.IsNullOrEmpty(parentPath)
-                    ? dstRoot.transform
-                    : dstRoot.transform.Find(parentPath);
-                if (dstParent == null)
-                {
-                    skippedCount++;
-                    return;
-                }
-
-                createdObject = new GameObject(srcTransform.name);
-                Undo.RegisterCreatedObjectUndo(createdObject, L("Undo.SyncFloorAdjuster"));
-                Undo.SetTransformParent(createdObject.transform, dstParent, L("Undo.SyncFloorAdjuster"));
-                dstTransform = createdObject.transform;
+                skippedCount++;
+                return;
             }
 
             Undo.RecordObject(dstTransform, L("Undo.SyncFloorAdjuster"));
@@ -296,10 +286,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
 
             if (destinationComponent == null)
             {
-                if (createdObject != null)
-                {
-                    Undo.DestroyObjectImmediate(createdObject);
-                }
+                DestroyCreatedObjects(createdObjects);
                 skippedCount++;
                 return;
             }
@@ -310,14 +297,11 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
             catch
             {
-                if (createdObject != null)
-                {
-                    Undo.DestroyObjectImmediate(createdObject);
-                }
-                else if (addedComponent)
+                if (addedComponent)
                 {
                     Undo.DestroyObjectImmediate(destinationComponent);
                 }
+                DestroyCreatedObjects(createdObjects);
                 skippedCount++;
                 return;
             }
@@ -330,6 +314,80 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 sourceComponent.GetType().Name,
                 OCTConversionLogFormatter.GetHierarchyPath(dstTransform)
             );
+        }
+
+        private static Transform FindOrCreateDestinationTransform(
+            Transform srcTransform,
+            Transform srcRoot,
+            Transform dstRoot,
+            Transform srcArmature,
+            Transform dstArmature,
+            List<GameObject> createdObjects
+        )
+        {
+            if (srcTransform == null || srcRoot == null || dstRoot == null)
+            {
+                return null;
+            }
+
+            var sourceBase = srcRoot;
+            var destinationBase = dstRoot;
+            if (srcArmature != null && dstArmature != null && IsUnderTransform(srcTransform, srcArmature))
+            {
+                sourceBase = srcArmature;
+                destinationBase = dstArmature;
+            }
+
+            var sourceChain = new List<Transform>();
+            for (var current = srcTransform; current != null && current != sourceBase; current = current.parent)
+            {
+                sourceChain.Add(current);
+            }
+
+            if (srcTransform != sourceBase && (sourceChain.Count == 0 || sourceChain[sourceChain.Count - 1].parent != sourceBase))
+            {
+                return null;
+            }
+
+            sourceChain.Reverse();
+            var destination = destinationBase;
+            foreach (var sourceChild in sourceChain)
+            {
+                var child = destination.Find(sourceChild.name);
+                if (child == null)
+                {
+                    var createdObject = new GameObject(sourceChild.name);
+                    Undo.RegisterCreatedObjectUndo(createdObject, L("Undo.SyncFloorAdjuster"));
+                    Undo.SetTransformParent(createdObject.transform, destination, L("Undo.SyncFloorAdjuster"));
+                    Undo.RecordObject(createdObject.transform, L("Undo.SyncFloorAdjuster"));
+                    createdObject.transform.localPosition = sourceChild.localPosition;
+                    createdObject.transform.localRotation = sourceChild.localRotation;
+                    createdObject.transform.localScale = sourceChild.localScale;
+                    createdObject.SetActive(sourceChild.gameObject.activeSelf);
+                    createdObjects.Add(createdObject);
+                    child = createdObject.transform;
+                }
+
+                destination = child;
+            }
+
+            return destination;
+        }
+
+        private static void DestroyCreatedObjects(List<GameObject> createdObjects)
+        {
+            if (createdObjects == null)
+            {
+                return;
+            }
+
+            for (var i = createdObjects.Count - 1; i >= 0; i--)
+            {
+                if (createdObjects[i] != null)
+                {
+                    Undo.DestroyObjectImmediate(createdObjects[i]);
+                }
+            }
         }
 
         private static void RemoveModularAvatarFloorAdjusters(
@@ -463,37 +521,10 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             }
 
             var typeName = component.GetType().Name;
-            return string.Equals(typeName, OCTEditorConstants.LegacyFloorAdjusterTypeName, StringComparison.Ordinal);
+            return string.Equals(typeName, OCTEditorConstants.LegacyFloorAdjusterTypeName, StringComparison.Ordinal)
+                   || string.Equals(typeName, OCTEditorConstants.LegacySkeletalFloorAdjusterTypeName, StringComparison.Ordinal);
         }
 
-        private static string BuildRelativePathFromRoot(Transform root, Transform target)
-        {
-            if (root == null || target == null)
-            {
-                return string.Empty;
-            }
-
-            if (target == root)
-            {
-                return string.Empty;
-            }
-
-            var names = new List<string>();
-            var current = target;
-            while (current != null && current != root)
-            {
-                names.Add(current.name);
-                current = current.parent;
-            }
-
-            if (current != root)
-            {
-                return string.Empty;
-            }
-
-            names.Reverse();
-            return string.Join("/", names);
-        }
     }
 }
 #endif

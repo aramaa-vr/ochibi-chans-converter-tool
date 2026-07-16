@@ -1,0 +1,21 @@
+{
+  "name": "Aramaa.OchibiChansConverterTool.Editor.Tests",
+  "rootNamespace": "Aramaa.OchibiChansConverterTool.Editor.Tests",
+  "references": [
+    "Aramaa.OchibiChansConverterTool.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
