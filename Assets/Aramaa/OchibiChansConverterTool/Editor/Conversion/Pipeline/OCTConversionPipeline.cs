@@ -729,14 +729,13 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                 OCTModularAvatarFloorAdjusterUtility.RemoveConflictingFloorAdjusters(dstRoot, logs);
             }
 
-            AddMissingComponentsUnderArmature(srcRoot, dstRoot, srcArmature, dstArmature, logs);
+            AddMissingComponentsUnderArmature(srcRoot, dstRoot, srcArmature, dstArmature, restoreMode, logs);
             if (!restoreMode)
             {
-                OCTModularAvatarFloorAdjusterUtility.CopyFloorAdjusters(
+                OCTModularAvatarFloorAdjusterUtility.CopyFloorAdjustersOutsideArmature(
                     srcRoot,
                     dstRoot,
                     srcArmature,
-                    dstArmature,
                     logs
                 );
             }
@@ -808,6 +807,7 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             GameObject dstRoot,
             Transform srcArmature,
             Transform dstArmature,
+            bool restoreMode,
             List<string> logs
         )
         {
@@ -863,10 +863,9 @@ namespace Aramaa.OchibiChansConverterTool.Editor
                         continue;
                     }
 
-                    // Floor Adjuster は、対応する Transform が無い場合にオブジェクトごと
-                    // 作成する専用処理で同期する。ここで通常の Component 同期に混ぜると、
-                    // Armature 配下の不足オブジェクトが missing path 扱いでスキップされる。
-                    if (OCTModularAvatarFloorAdjusterUtility.IsFloorAdjusterComponent(c))
+                    if (OCTModularAvatarFloorAdjusterUtility.IsFloorAdjusterComponent(c)
+                        && (restoreMode
+                            || !OCTModularAvatarFloorAdjusterUtility.ShouldCopyFloorAdjusterComponent(srcRoot, c)))
                     {
                         continue;
                     }
