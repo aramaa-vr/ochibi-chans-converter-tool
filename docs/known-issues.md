@@ -36,6 +36,7 @@ nav_order: 7
 | 🐞 要調査 | 眼鏡が小さくなる報告 | 調査中 | ON/OFF差分を共有 |
 | ⚠️ 仕様/注意 | FaceEmo等との競合 | 競合注意 | デフォ状態で切り分け |
 | ⚠️ 仕様/注意 | 下半身シュリンクの手動解除が必要な場合 | 注意点 | 変換後に確認 |
+| ⚠️ 既知の制限 | MA Floor Adjusterが複数有効になる場合がある | `MA-0019` | 変換前に余分なMA Floor Adjusterを削除/無効化 |
 
 ---
 
@@ -67,6 +68,7 @@ nav_order: 7
 
 - **FaceEmo等との競合**: 表情メニューが期待どおり動かない場合あり。まずデフォ状態で確認。
 - **下半身シュリンク**: 変換後、衣装によっては手動解除が必要な場合あり。
+- **MA Floor Adjusterの複数有効**: 通常変換時、変換先アバターに別パスの有効な `ModularAvatarFloorAdjuster` が既にあると、変換元から追加された MA Floor Adjuster と複数有効になる場合があります。Modular Avatar の `MA-0019` が発生し、床調整が適用されないため、変換前に余分な MA Floor Adjuster を削除または無効化してください。
 
 ---
 
@@ -81,7 +83,7 @@ nav_order: 7
 ## Discord報告テンプレ
 
 ```text
-【ツールver】：0.5.2-beta
+【ツールver】：
 【Unity ver】：2022.3.22f1
 【VRCSDK ver】：3.10.1
 【変換元アバター】：Plum

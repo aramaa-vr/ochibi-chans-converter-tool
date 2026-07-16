@@ -14,8 +14,8 @@ nav_order: 6
 
 ## まず確認（共通）
 
-> 🚨 **重要：Modular Avatar は `1.16.2` の利用を推奨しています。**  \
-> それ以外のバージョンでは、想定どおりに動作しない場合があります。
+> 🚨 **重要：旧式 Floor Adjuster を使用する場合は Modular Avatar `1.16.2` 以上、Modular Avatar の `MA Floor Adjuster` を使用する場合は `1.17.0` 以上が必要です。**  \
+> 使用する Floor Adjuster の種類に対応した Modular Avatar のバージョンを選択してください。
 {: .warning }
 
 1. VCCでツールが Installed
@@ -42,7 +42,7 @@ nav_order: 6
 3. キャッシュを削除して再生成
 
 キャッシュ:
-- `Library/Aramaa/OchibiChansConverterTool/FaceMeshCache.v7.json`
+- `Library/Aramaa/OchibiChansConverterTool/FaceMeshCache.v10.json`
 
 ## 逆変換で自動解決されたPrefabを手動で直したい
 
