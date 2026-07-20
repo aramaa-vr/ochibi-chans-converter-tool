@@ -720,6 +720,12 @@ namespace Aramaa.OchibiChansConverterTool.Editor
             CopyArmatureTransforms(srcArmature, dstArmature, logs);
             logs.Add(L("Log.Step.6.Substep3"));
             AddMissingComponentsUnderArmature(srcRoot, dstRoot, srcArmature, dstArmature, logs);
+            OCTModularAvatarFloorAdjusterUtility.CopyModularAvatarFloorAdjustersOutsideArmature(
+                srcRoot,
+                dstRoot,
+                srcArmature,
+                logs
+            );
             logs.Add(L("Log.Step.6.Substep4"));
             OCTSkinnedMeshUtility.CopySkinnedMeshRenderersBlendShapesOnlyWithLog(srcRoot, dstRoot, logs);
         }

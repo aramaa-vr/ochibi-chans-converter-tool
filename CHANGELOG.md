@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.7]
+### 主な変更点
+- なし
+
+## [0.5.7-beta.1]（Pre-release）
+### 主な変更点
+- **旧式 Floor Adjuster の同期処理を維持**：Armature 配下の既存 Component 同期ロジックを変更せず、旧式 `FloorAdjuster` が従来どおり変換・復元されるようにしました
+- **Modular Avatar Floor Adjuster に対応**：Armature 外にある `ModularAvatarFloorAdjuster` の不足分を変換先へ追加し、既存の変換先 Component は上書きしないようにしました
+- **逆変換時の MA Floor Adjuster 除去に対応**：復元処理の開始時に変換先アバター配下の `ModularAvatarFloorAdjuster` を Undo 対応で除去します
+- **Floor Adjuster 対応コードを整理**：旧式 Floor Adjuster 専用の重複処理・不要な定数・未使用ローカライズキーを削除し、既存の汎用同期処理と MA 専用処理を分離しました
+
+### 既知の制限
+- 通常変換時、変換先アバターに別パスの有効な `ModularAvatarFloorAdjuster` が既に存在すると、変換元から追加された MA Floor Adjuster と複数有効になる可能性があります。その場合、Modular Avatar の `MA-0019` により床調整が適用されません
+
 ## [0.5.6]
 ### 主な変更点
 - なし
