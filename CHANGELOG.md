@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.7]
+### 主な変更点
+- なし
+
 ## [0.5.7-beta.1]（Pre-release）
 ### 主な変更点
 - **旧式 Floor Adjuster の同期処理を維持**：Armature 配下の既存 Component 同期ロジックを変更せず、旧式 `FloorAdjuster` が従来どおり変換・復元されるようにしました
